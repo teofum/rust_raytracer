@@ -1,6 +1,7 @@
-use rust_raytracer::ppm;
 use std::fs::File;
 use std::io;
+
+use rust_raytracer::ppm;
 
 fn main() -> io::Result<()> {
     let mut file = File::create("out.ppm")?;
