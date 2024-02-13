@@ -1,5 +1,10 @@
-pub fn write_to_stdout(width: u32, height: u32) {
-    println!("P3\n{width} {height}\n255");
+use std::{
+    fs::File,
+    io::{self, Write},
+};
+
+pub fn write_to_file(file: &mut File, width: u32, height: u32) -> io::Result<()> {
+    file.write_all(format!("P3\n{width} {height}\n255\n").as_bytes())?;
 
     // Generate test image
     for y in 0..height {
@@ -12,7 +17,9 @@ pub fn write_to_stdout(width: u32, height: u32) {
             let g = (g * 255.999) as u8;
             let b = (b * 255.999) as u8;
 
-            println!("{r} {g} {b}")
+            file.write_all(format!("{r} {g} {b}\n").as_bytes())?;
         }
     }
+
+    Ok(())
 }
