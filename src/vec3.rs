@@ -5,6 +5,7 @@ pub struct Vec3(pub f64, pub f64, pub f64);
 
 // Type aliases
 pub type Color = Vec3;
+pub type Point3 = Vec3;
 
 impl Vec3 {
     // Constructors
