@@ -6,14 +6,16 @@ use std::{
 use crate::buffer::Buffer;
 use crate::vec3::Color;
 
-fn clamp(x: f64) -> f64 {
-    x.clamp(0.0, 1.0)
+const GAMMA: f64 = 1.0 / 2.2;
+
+fn map(x: f64) -> f64 {
+    x.powf(GAMMA).clamp(0.0, 1.0)
 }
 
 fn format_color(color: &Color) -> String {
-    let r = (clamp(color.r()) * 255.999) as u8;
-    let g = (clamp(color.g()) * 255.999) as u8;
-    let b = (clamp(color.b()) * 255.999) as u8;
+    let r = (map(color.r()) * 255.999) as u8;
+    let g = (map(color.g()) * 255.999) as u8;
+    let b = (map(color.b()) * 255.999) as u8;
 
     format!("{r} {g} {b}\n")
 }
