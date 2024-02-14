@@ -1,6 +1,8 @@
+pub mod list;
 pub mod sphere;
 
 pub use sphere::Sphere;
+pub use list::ObjectList;
 
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
