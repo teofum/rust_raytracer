@@ -97,7 +97,7 @@ impl Camera {
 
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
             ray.origin = hit.pos();
-            ray.dir = Vec3::random_on_hemisphere(&hit.normal());
+            ray.dir = hit.normal() + Vec3::random_unit();
             return self.ray_color(ray, object, depth - 1) * 0.5;
         }
 
