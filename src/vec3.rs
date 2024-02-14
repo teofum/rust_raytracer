@@ -43,7 +43,8 @@ impl Vec3 {
     pub fn random_on_hemisphere(normal: &Vec3) -> Self {
         let v = Vec3::random_unit();
 
-        if v.dot(normal) > 0.0 { // Vector is in the same hemisphere as normal
+        if v.dot(normal) > 0.0 {
+            // Vector is in the same hemisphere as normal
             v
         } else {
             -v
@@ -106,6 +107,11 @@ impl Vec3 {
 
     pub fn lerp(self, other: Vec3, t: f64) -> Vec3 {
         self * (1.0 - t) + other * t
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let eps = 1e-8;
+        (self.0.abs() < eps) && (self.1.abs() < eps) && (self.2.abs() < eps)
     }
 }
 

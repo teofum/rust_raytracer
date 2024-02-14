@@ -20,8 +20,14 @@ impl LambertianDiffuse {
 
 impl Material for LambertianDiffuse {
     fn scatter(&self, ray: &mut Ray, hit: &HitRecord) -> Option<Color> {
+        let scatter_dir = hit.normal() + Vec3::random_unit();
+
         ray.origin = hit.pos();
-        ray.dir = hit.normal() + Vec3::random_unit();
+        ray.dir = if scatter_dir.near_zero() {
+            hit.normal()
+        } else {
+            scatter_dir
+        };
 
         Some(self.albedo)
     }
