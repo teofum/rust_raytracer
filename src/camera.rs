@@ -1,5 +1,8 @@
+use crate::buffer::Buffer;
+use crate::interval::Interval;
+use crate::object::Hit;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
+use crate::vec3::{Color, Point3, Vec3};
 
 pub struct Camera {
     image_width: usize,
@@ -49,13 +52,28 @@ impl Camera {
 
     // Getters
 
-    pub fn image_size(&self) -> (usize, usize) {
-        (self.image_width, self.image_height)
+    pub fn create_buffer(&self) -> Buffer {
+        Buffer::new(self.image_width, self.image_height)
     }
 
-    // Ray caster
+    // Rendering
 
-    pub fn get_ray(&self, pixel_x: usize, pixel_y: usize) -> Ray {
+    pub fn render(&self, world: &dyn Hit, buf: &mut Buffer) {
+        for y in 0..self.image_height {
+            print!("Rendering... [line {}/{}]\r", y + 1, self.image_height);
+    
+            for x in 0..self.image_width {
+                let ray = self.get_ray(x, y);
+                let color = self.ray_color(&ray, world);
+    
+                buf.set_pixel(x, y, color);
+            }
+        }
+    }
+
+    // Rendering helpers
+
+    fn get_ray(&self, pixel_x: usize, pixel_y: usize) -> Ray {
         let pixel_center = self.first_pixel
             + (self.pixel_delta.0 * pixel_x as f64)
             + (self.pixel_delta.1 * pixel_y as f64);
@@ -63,5 +81,16 @@ impl Camera {
         let ray_direction = pixel_center - self.camera_center;
 
         Ray::new(self.camera_center, ray_direction)
+    }
+
+    fn ray_color(&self, ray: &Ray, object: &dyn Hit) -> Color {
+        if let Some(hit) = object.test(&ray, Interval(0.0, f64::INFINITY)) {
+            return (Vec3(1.0, 1.0, 1.0) + hit.normal()) * 0.5;
+        }
+    
+        let unit_dir = ray.direction().to_unit();
+        let t = 0.5 * (unit_dir.y() + 1.0);
+    
+        Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
     }
 }
