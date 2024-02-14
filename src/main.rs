@@ -3,6 +3,7 @@ use std::io;
 
 use rust_raytracer::buffer::Buffer;
 use rust_raytracer::camera::Camera;
+use rust_raytracer::object::Sphere;
 use rust_raytracer::ppm;
 use rust_raytracer::ray::Ray;
 use rust_raytracer::vec3::{Color, Vec3};
@@ -26,6 +27,12 @@ fn main() -> io::Result<()> {
     let camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, VIEWPORT_HEIGHT, FOCAL_LENGTH);
     let (image_width, image_height) = camera.image_size();
 
+    // Set up objects
+    let sphere = Sphere {
+        center: Vec3(0.0, 0.0, -1.0),
+        radius: 0.5,
+    };
+
     // Output
     let mut buf = Buffer::new(image_width, image_height);
 
@@ -35,7 +42,7 @@ fn main() -> io::Result<()> {
 
         for x in 0..image_width {
             let ray = camera.get_ray(x, y);
-            let color = ray_color(&ray);
+            let color = ray_color(&ray, &sphere);
 
             buf.set_pixel(x, y, color);
         }
@@ -51,7 +58,11 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn ray_color(ray: &Ray) -> Color {
+fn ray_color(ray: &Ray, sphere: &Sphere) -> Color {
+    if sphere.test_hit(&ray) {
+        return Vec3(1.0, 0.0, 0.0);
+    }
+
     let unit_dir = ray.direction().to_unit();
     let t = 0.5 * (unit_dir.y() + 1.0);
 
