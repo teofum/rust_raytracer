@@ -11,15 +11,15 @@ impl Sphere {
 
         // Test for ray-sphere intersection using quadratic formula
         let a = ray.direction().length_squared();
-        let b = ray.direction().dot(&center_diff) * 2.0;
+        let half_b = ray.direction().dot(&center_diff);
         let c = center_diff.length_squared() - self.radius * self.radius;
 
-        let discriminant = b * b - 4.0 * a * c;
+        let discriminant = half_b * half_b - a * c;
 
         if discriminant < 0.0 {
             -1.0
         } else {
-            (-b - discriminant.sqrt()) / (2.0 * a)
+            (-half_b - discriminant.sqrt()) / a
         }
     }
 }
