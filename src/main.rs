@@ -31,6 +31,8 @@ fn main() -> io::Result<()> {
 
     // Draw to the buffer
     for y in 0..image_height {
+        print!("Rendering... [line {}/{image_height}]\r", y + 1);
+
         for x in 0..image_width {
             let ray = camera.get_ray(x, y);
             let color = ray_color(&ray);
@@ -39,8 +41,12 @@ fn main() -> io::Result<()> {
         }
     }
 
+    println!("Done! Writing output to file...");
+
     let mut file = File::create("out.ppm")?;
     ppm::write_to_file(&mut file, &buf)?;
+
+    println!("Done! Goodbye :)");
 
     Ok(())
 }
