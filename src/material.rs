@@ -3,8 +3,10 @@ use crate::ray::Ray;
 use crate::vec3::Color;
 
 pub mod lambertian;
+pub mod metal;
 
 pub use lambertian::LambertianDiffuse;
+pub use metal::Metal;
 
 pub trait Material {
     /// Scatter a ray according to material properties.

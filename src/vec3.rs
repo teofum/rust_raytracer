@@ -113,6 +113,10 @@ impl Vec3 {
         let eps = 1e-8;
         (self.0.abs() < eps) && (self.1.abs() < eps) && (self.2.abs() < eps)
     }
+
+    pub fn reflect(self, normal: Vec3) -> Vec3 {
+        self - normal * (2.0 * self.dot(&normal))
+    }
 }
 
 // Operators (copy)
