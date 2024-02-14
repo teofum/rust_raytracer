@@ -11,11 +11,11 @@ pub struct Sphere {
 
 impl Hit for Sphere {
     fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
-        let center_diff = ray.origin() - self.center;
+        let center_diff = ray.origin - self.center;
 
         // Test for ray-sphere intersection using quadratic formula
-        let a = ray.direction().length_squared();
-        let half_b = ray.direction().dot(&center_diff);
+        let a = ray.dir.length_squared();
+        let half_b = ray.dir.dot(&center_diff);
         let c = center_diff.length_squared() - self.radius * self.radius;
 
         let discriminant = half_b * half_b - a * c;

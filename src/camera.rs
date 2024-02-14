@@ -7,7 +7,8 @@ use crate::ray::Ray;
 use crate::vec3::{Color, Point3, Vec3};
 
 const VIEWPORT_HEIGHT: f64 = 24.0 / 1000.0;
-const SAMPLES_PER_PIXEL: u32 = 10;
+const SAMPLES_PER_PIXEL: u32 = 100; // Number of random samples per pixel
+const MAX_DEPTH: u32 = 10; // Max ray bounces
 
 pub struct Camera {
     image_width: usize,
@@ -66,8 +67,8 @@ impl Camera {
                 let mut color = Vec3::origin();
 
                 for _ in 0..SAMPLES_PER_PIXEL {
-                    let ray = self.get_ray(x, y);
-                    color += self.ray_color(&ray, world);
+                    let mut ray = self.get_ray(x, y);
+                    color += self.ray_color(&mut ray, world, MAX_DEPTH);
                 }
                 color /= SAMPLES_PER_PIXEL as f64;
 
@@ -89,12 +90,18 @@ impl Camera {
         Ray::new(self.camera_center, ray_direction)
     }
 
-    fn ray_color(&self, ray: &Ray, object: &dyn Hit) -> Color {
-        if let Some(hit) = object.test(&ray, Interval(0.0, f64::INFINITY)) {
-            return (Vec3(1.0, 1.0, 1.0) + hit.normal()) * 0.5;
+    fn ray_color(&self, ray: &mut Ray, object: &dyn Hit, depth: u32) -> Color {
+        if depth <= 0 {
+            return Vec3::origin();
         }
 
-        let unit_dir = ray.direction().to_unit();
+        if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
+            ray.origin = hit.pos();
+            ray.dir = Vec3::random_on_hemisphere(&hit.normal());
+            return self.ray_color(ray, object, depth - 1) * 0.5;
+        }
+
+        let unit_dir = ray.dir.to_unit();
         let t = 0.5 * (unit_dir.y() + 1.0);
 
         Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
