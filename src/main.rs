@@ -3,7 +3,7 @@ use std::io;
 
 use rust_raytracer::buffer::Buffer;
 use rust_raytracer::camera::Camera;
-use rust_raytracer::object::Sphere;
+use rust_raytracer::object::{Hit, Sphere};
 use rust_raytracer::ppm;
 use rust_raytracer::ray::Ray;
 use rust_raytracer::vec3::{Color, Vec3};
@@ -59,12 +59,8 @@ fn main() -> io::Result<()> {
 }
 
 fn ray_color(ray: &Ray, sphere: &Sphere) -> Color {
-    let t = sphere.test_hit(&ray);
-    if t > 0.0 {
-        let hit = ray.at(t);
-        let normal = (hit - sphere.center).to_unit();
-
-        return (Vec3(1.0, 1.0, 1.0) + normal) * 0.5;
+    if let Some(hit) = sphere.test(&ray, 0.0, 1000.0) {
+        return (Vec3(1.0, 1.0, 1.0) + hit.normal) * 0.5;
     }
 
     let unit_dir = ray.direction().to_unit();
