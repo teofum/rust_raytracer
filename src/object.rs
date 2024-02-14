@@ -1,23 +1,31 @@
 pub mod list;
 pub mod sphere;
 
-pub use sphere::Sphere;
 pub use list::ObjectList;
+pub use sphere::Sphere;
 
 use crate::interval::Interval;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     hit_pos: Point3,
     normal: Vec3,
     t: f64,
     front_face: bool,
+    material: &'a dyn Material,
 }
 
-impl HitRecord {
+impl<'a> HitRecord<'a> {
     /// Note: outward_normal must have unit length
-    pub fn new(ray: &Ray, hit_pos: Point3, t: f64, outward_normal: Vec3) -> Self {
+    pub fn new(
+        ray: &Ray,
+        hit_pos: Point3,
+        t: f64,
+        outward_normal: Vec3,
+        material: &'a dyn Material,
+    ) -> Self {
         let front_face = ray.dir.dot(&outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
@@ -30,6 +38,7 @@ impl HitRecord {
             normal,
             t,
             front_face,
+            material,
         }
     }
 
@@ -47,6 +56,10 @@ impl HitRecord {
 
     pub fn front_face(&self) -> bool {
         self.front_face
+    }
+
+    pub fn material(&self) -> &'a dyn Material {
+        self.material
     }
 }
 

@@ -5,3 +5,4 @@ pub mod camera;
 pub mod buffer;
 pub mod object;
 pub mod interval;
+pub mod material;

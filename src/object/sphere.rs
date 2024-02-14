@@ -1,12 +1,15 @@
-use crate::interval::Interval;
+use std::rc::Rc;
+
 use crate::ray::Ray;
 use crate::vec3::Point3;
+use crate::{interval::Interval, material::Material};
 
 use super::{Hit, HitRecord};
 
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    pub material: Rc<dyn Material>,
 }
 
 impl Hit for Sphere {
@@ -40,6 +43,7 @@ impl Hit for Sphere {
             hit_pos,
             root,
             (hit_pos - self.center) / self.radius,
+            Rc::as_ref(&self.material),
         ))
     }
 }

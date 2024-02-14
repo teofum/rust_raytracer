@@ -96,9 +96,11 @@ impl Camera {
         }
 
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
-            ray.origin = hit.pos();
-            ray.dir = hit.normal() + Vec3::random_unit();
-            return self.ray_color(ray, object, depth - 1) * 0.5;
+            if let Some(att) = hit.material().scatter(ray, &hit) {
+                return self.ray_color(ray, object, depth - 1) * att;
+            }
+
+            return Vec3::origin(); // Ray was absorbed by material
         }
 
         let unit_dir = ray.dir.to_unit();
