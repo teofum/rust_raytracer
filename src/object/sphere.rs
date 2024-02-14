@@ -33,10 +33,11 @@ impl Hit for Sphere {
         }
 
         let hit_pos = ray.at(root);
-        Some(HitRecord {
+        Some(HitRecord::new(
+            ray,
             hit_pos,
-            t: root,
-            normal: (hit_pos - self.center) / self.radius,
-        })
+            root,
+            (hit_pos - self.center) / self.radius,
+        ))
     }
 }

@@ -60,7 +60,7 @@ fn main() -> io::Result<()> {
 
 fn ray_color(ray: &Ray, sphere: &Sphere) -> Color {
     if let Some(hit) = sphere.test(&ray, 0.0, 1000.0) {
-        return (Vec3(1.0, 1.0, 1.0) + hit.normal) * 0.5;
+        return (Vec3(1.0, 1.0, 1.0) + hit.normal()) * 0.5;
     }
 
     let unit_dir = ray.direction().to_unit();
