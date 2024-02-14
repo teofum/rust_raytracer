@@ -1,4 +1,6 @@
-use crate::{ray::Ray, vec3::Point3};
+use crate::interval::Interval;
+use crate::ray::Ray;
+use crate::vec3::Point3;
 
 use super::{Hit, HitRecord};
 
@@ -8,7 +10,7 @@ pub struct Sphere {
 }
 
 impl Hit for Sphere {
-    fn test(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
         let center_diff = ray.origin() - self.center;
 
         // Test for ray-sphere intersection using quadratic formula
@@ -25,9 +27,9 @@ impl Hit for Sphere {
         let d_sqrt = discriminant.sqrt();
 
         let mut root = (-half_b - d_sqrt) / a;
-        if root <= t_min || t_max <= root {
+        if root <= t.min() || t.max() <= root {
             root = (-half_b - d_sqrt) / a;
-            if root <= t_min || t_max <= root {
+            if root <= t.min() || t.max() <= root {
                 return None;
             }
         }

@@ -4,6 +4,7 @@ pub mod sphere;
 pub use sphere::Sphere;
 pub use list::ObjectList;
 
+use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -50,5 +51,5 @@ impl HitRecord {
 }
 
 pub trait Hit {
-    fn test(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord>;
 }

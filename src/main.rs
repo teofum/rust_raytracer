@@ -3,6 +3,7 @@ use std::io;
 
 use rust_raytracer::buffer::Buffer;
 use rust_raytracer::camera::Camera;
+use rust_raytracer::interval::Interval;
 use rust_raytracer::object::{Hit, ObjectList, Sphere};
 use rust_raytracer::ppm;
 use rust_raytracer::ray::Ray;
@@ -68,7 +69,7 @@ fn main() -> io::Result<()> {
 }
 
 fn ray_color(ray: &Ray, object: &dyn Hit) -> Color {
-    if let Some(hit) = object.test(&ray, 0.0, f64::INFINITY) {
+    if let Some(hit) = object.test(&ray, Interval(0.0, f64::INFINITY)) {
         return (Vec3(1.0, 1.0, 1.0) + hit.normal()) * 0.5;
     }
 

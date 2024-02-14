@@ -1,3 +1,4 @@
+use crate::interval::Interval;
 use crate::ray::Ray;
 
 use super::{Hit, HitRecord};
@@ -27,12 +28,12 @@ impl ObjectList {
 }
 
 impl Hit for ObjectList {
-    fn test(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
         let mut closest_hit: Option<HitRecord> = None;
-        let mut closest_t = t_max;
+        let mut closest_t = t.max();
 
         for object in &self.objects[..] {
-            if let Some(hit) = object.test(ray, t_min, closest_t) {
+            if let Some(hit) = object.test(ray, Interval(t.min(), closest_t)) {
                 closest_t = hit.t;
                 closest_hit = Some(hit);
             }
