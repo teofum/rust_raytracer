@@ -4,6 +4,8 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec3::{Color, Point3, Vec3};
 
+const VIEWPORT_HEIGHT: f64 = 24.0 / 1000.0;
+
 pub struct Camera {
     image_width: usize,
     image_height: usize,
@@ -17,17 +19,16 @@ impl Camera {
     pub fn new(
         image_width: usize,
         aspect_ratio: f64,
-        viewport_height: f64,
         focal_length: f64,
     ) -> Self {
         let image_height = usize::max(1, (image_width as f64 / aspect_ratio) as usize);
 
         // Final aspect ratio, accounting for image height rounding
         let real_aspect_ratio = image_width as f64 / image_height as f64;
-        let viewport_width = viewport_height * real_aspect_ratio;
+        let viewport_width = VIEWPORT_HEIGHT * real_aspect_ratio;
 
         let viewport_u = Vec3(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3(0.0, -viewport_height, 0.0);
+        let viewport_v = Vec3(0.0, -VIEWPORT_HEIGHT, 0.0);
 
         let pixel_delta = (
             viewport_u / image_width as f64,
