@@ -46,5 +46,8 @@ fn main() -> io::Result<()> {
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    Vec3(0.5, 0.5, 0.5) + ray.direction() * 0.5
+    let unit_dir = ray.direction().to_unit();
+    let t = 0.5 * (unit_dir.y() + 1.0);
+
+    Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
 }

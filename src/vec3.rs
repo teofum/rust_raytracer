@@ -67,6 +67,10 @@ impl Vec3 {
     pub fn to_unit(self) -> Vec3 {
         self / self.length()
     }
+
+    pub fn lerp(self, other: Vec3, t: f64) -> Vec3 {
+        self * (1.0 - t) + other * t
+    }
 }
 
 // Operators (copy)
