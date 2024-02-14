@@ -46,5 +46,5 @@ fn main() -> io::Result<()> {
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    ray.direction().clone()
+    Vec3(0.5, 0.5, 0.5) + ray.direction() * 0.5
 }
