@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io;
 
+use rust_raytracer::buffer::Buffer;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::ppm;
 use rust_raytracer::ray::Ray;
@@ -26,9 +27,10 @@ fn main() -> io::Result<()> {
     let (image_width, image_height) = camera.image_size();
 
     // Output
+    let buf = Buffer::new(image_width as usize, image_height as usize);
 
     let mut file = File::create("out.ppm")?;
-    ppm::write_to_file(&mut file, image_width, image_height)?;
+    ppm::write_to_file(&mut file, &buf)?;
 
     Ok(())
 }
