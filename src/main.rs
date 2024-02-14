@@ -59,8 +59,12 @@ fn main() -> io::Result<()> {
 }
 
 fn ray_color(ray: &Ray, sphere: &Sphere) -> Color {
-    if sphere.test_hit(&ray) {
-        return Vec3(1.0, 0.0, 0.0);
+    let t = sphere.test_hit(&ray);
+    if t > 0.0 {
+        let hit = ray.at(t);
+        let normal = (hit - sphere.center).to_unit();
+
+        return (Vec3(1.0, 1.0, 1.0) + normal) * 0.5;
     }
 
     let unit_dir = ray.direction().to_unit();

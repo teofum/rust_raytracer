@@ -6,7 +6,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn test_hit(&self, ray: &Ray) -> bool {
+    pub fn test_hit(&self, ray: &Ray) -> f64 {
         let center_diff = ray.origin() - self.center;
 
         // Test for ray-sphere intersection using quadratic formula
@@ -16,6 +16,10 @@ impl Sphere {
 
         let discriminant = b * b - 4.0 * a * c;
 
-        discriminant >= 0.0
+        if discriminant < 0.0 {
+            -1.0
+        } else {
+            (-b - discriminant.sqrt()) / (2.0 * a)
+        }
     }
 }
