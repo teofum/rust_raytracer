@@ -13,7 +13,7 @@ impl Ray {
     ///
     /// `origin` is the origin point of the ray.
     /// 
-    /// `direction` is the direction vector of the ray. It must be a unit vector.
+    /// `direction` is the direction vector of the ray.
     pub fn new(origin: Point3, direction: Vec3) -> Self {
         Ray {
             origin,
