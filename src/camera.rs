@@ -2,8 +2,8 @@ use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 pub struct Camera {
-    image_width: u32,
-    image_height: u32,
+    image_width: usize,
+    image_height: usize,
 
     camera_center: Point3,
     pixel_delta: (Vec3, Vec3),
@@ -12,12 +12,12 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(
-        image_width: u32,
+        image_width: usize,
         aspect_ratio: f64,
         viewport_height: f64,
         focal_length: f64,
     ) -> Self {
-        let image_height = u32::max(1, (image_width as f64 / aspect_ratio) as u32);
+        let image_height = usize::max(1, (image_width as f64 / aspect_ratio) as usize);
 
         // Final aspect ratio, accounting for image height rounding
         let real_aspect_ratio = image_width as f64 / image_height as f64;
@@ -49,15 +49,16 @@ impl Camera {
 
     // Getters
 
-    pub fn image_size(&self) -> (u32, u32) {
+    pub fn image_size(&self) -> (usize, usize) {
         (self.image_width, self.image_height)
     }
 
     // Ray caster
 
-    pub fn get_ray(&self, pixel_x: u32, pixel_y: u32) -> Ray {
-        let pixel_center =
-            self.first_pixel + (self.pixel_delta.0 * pixel_x as f64) + (self.pixel_delta.1 * pixel_y as f64);
+    pub fn get_ray(&self, pixel_x: usize, pixel_y: usize) -> Ray {
+        let pixel_center = self.first_pixel
+            + (self.pixel_delta.0 * pixel_x as f64)
+            + (self.pixel_delta.1 * pixel_y as f64);
 
         let ray_direction = pixel_center - self.camera_center;
 

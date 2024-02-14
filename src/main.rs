@@ -13,7 +13,7 @@ use rust_raytracer::vec3::{Color, Vec3};
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 
 /// Output image width, in pixels. Height is determined by width and aspect ratio.
-const OUTPUT_WIDTH: u32 = 600;
+const OUTPUT_WIDTH: usize = 600;
 
 /// Internal viewport height. Arbitrary value without units.
 const VIEWPORT_HEIGHT: f64 = 2.0;
@@ -27,7 +27,17 @@ fn main() -> io::Result<()> {
     let (image_width, image_height) = camera.image_size();
 
     // Output
-    let buf = Buffer::new(image_width as usize, image_height as usize);
+    let mut buf = Buffer::new(image_width, image_height);
+
+    // Draw to the buffer
+    for y in 0..image_height {
+        for x in 0..image_width {
+            let ray = camera.get_ray(x, y);
+            let color = ray_color(&ray);
+
+            buf.set_pixel(x, y, color);
+        }
+    }
 
     let mut file = File::create("out.ppm")?;
     ppm::write_to_file(&mut file, &buf)?;
@@ -35,6 +45,6 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn ray_color(r: &Ray) -> Color {
-    Vec3::origin()
+fn ray_color(ray: &Ray) -> Color {
+    ray.direction().clone()
 }
