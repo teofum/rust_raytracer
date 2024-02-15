@@ -18,53 +18,54 @@ const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const OUTPUT_WIDTH: usize = 600;
 
 /// Camera focal length, in millimetres for 35mm-equivalent FOV
-const FOCAL_LENGTH: f64 = 24.0;
+const FOCAL_LENGTH: f64 = 135.0;
 
 fn main() -> io::Result<()> {
     // Set up camera
-    let camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
+    let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
+    camera.move_and_look_at(Vec3(-2.0, 2.0, 2.0), Vec3::origin());
 
-    let mat_default: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.75, 0.25, 0.25)));
     let mat_ground: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
-    let mat_metal: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.8, 0.8), 0.2));
+    let mat_diffuse: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.1, 0.2, 0.5)));
+    let mat_metal: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.1));
     let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
 
     // Set up objects
     let sphere = Sphere {
-        center: Vec3(-0.6, 0.0, -2.0),
+        center: Vec3(0.0, 0.0, 0.0),
         radius: 0.5,
-        material: Rc::clone(&mat_default),
+        material: Rc::clone(&mat_diffuse),
     };
 
-    let sphere2 = Sphere {
-        center: Vec3(0.6, 0.0, -4.0),
+    let sphere_metal = Sphere {
+        center: Vec3(1.0, 0.0, 0.0),
         radius: 0.5,
         material: Rc::clone(&mat_metal),
     };
 
-    let sphere3 = Sphere {
-        center: Vec3(0.9, -0.2, -2.5),
-        radius: 0.3,
+    let sphere_glass = Sphere {
+        center: Vec3(-1.0, 0.0, 0.0),
+        radius: 0.5,
         material: Rc::clone(&mat_glass),
     };
 
-    let sphere3_inner = Sphere {
-        center: Vec3(0.9, -0.2, -2.5),
-        radius: -0.28,
+    let sphere_glass_inner = Sphere {
+        center: Vec3(-1.0, 0.0, 0.0),
+        radius: -0.4,
         material: Rc::clone(&mat_glass),
     };
 
     let ground = Sphere {
-        center: Vec3(0.0, -100.5, -3.0),
+        center: Vec3(0.0, -100.5, 0.0),
         radius: 100.0,
         material: Rc::clone(&mat_ground),
     };
 
     let mut world = ObjectList::new();
     world.add(Box::new(sphere));
-    world.add(Box::new(sphere2));
-    world.add(Box::new(sphere3));
-    world.add(Box::new(sphere3_inner));
+    world.add(Box::new(sphere_metal));
+    world.add(Box::new(sphere_glass));
+    world.add(Box::new(sphere_glass_inner));
     world.add(Box::new(ground));
 
     // Output

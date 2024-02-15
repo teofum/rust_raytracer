@@ -6,7 +6,6 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec3::{Color, Point3, Vec3};
 
-const REAL_FOCAL_LENGTH: f64 = 1.0;
 const SAMPLES_PER_PIXEL: u32 = 100; // Number of random samples per pixel
 const MAX_DEPTH: u32 = 10; // Max ray bounces
 
@@ -16,11 +15,11 @@ pub struct Camera {
     focal_length: f64,
     position: Point3,
     look_at: Point3,
+    v_up: Vec3,
 
     image_height: usize,
     pixel_delta: (Vec3, Vec3),
     first_pixel: Point3,
-    camera_center: Point3,
     basis: [Point3; 3],
 }
 
@@ -32,9 +31,9 @@ impl Camera {
             focal_length,
             position: Vec3::origin(),
             look_at: Vec3(0.0, 0.0, -1.0),
+            v_up: Vec3(0.0, 1.0, 0.0),
 
             image_height: 0,
-            camera_center: Vec3::origin(),
             basis: [Vec3::origin(); 3],
             pixel_delta: (Vec3::origin(), Vec3::origin()),
             first_pixel: Vec3::origin(),
@@ -48,27 +47,34 @@ impl Camera {
     fn init(&mut self) {
         self.image_height = usize::max(1, (self.image_width as f64 / self.aspect_ratio) as usize);
 
+        let direction = self.position - self.look_at;
+        let real_focal_length = direction.length();
+
         // Relative size of the viewport to get 35mm (36x24mm frame) equivalent FOV
-        let h = 24.0 / self.focal_length;
+        let h = real_focal_length * 24.0 / self.focal_length;
 
         // Final aspect ratio, accounting for image height rounding
         let real_aspect_ratio = self.image_width as f64 / self.image_height as f64;
-        let viewport_height = REAL_FOCAL_LENGTH * h;
+        let viewport_height = real_focal_length * h;
         let viewport_width = viewport_height * real_aspect_ratio;
 
-        let viewport_u = Vec3(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3(0.0, -viewport_height, 0.0);
+        // Calculate the unit basis for the camera coordinate frame
+        let w = direction.to_unit();
+        let u = self.v_up.cross(&w);
+        let v = w.cross(&u);
+        self.basis = [u, v, w];
 
-        self.camera_center = self.position;
+        // Calculate viewport vectors
+        let viewport_u = u * viewport_width;
+        let viewport_v = -v * viewport_height;
+
         self.pixel_delta = (
             viewport_u / self.image_width as f64,
             viewport_v / self.image_height as f64,
         );
 
-        let viewport_upper_left = self.camera_center
-            - Vec3(0.0, 0.0, REAL_FOCAL_LENGTH)
-            - viewport_u / 2.0
-            - viewport_v / 2.0;
+        let viewport_upper_left =
+            self.position - w * real_focal_length - viewport_u / 2.0 - viewport_v / 2.0;
 
         // Top-left pixel, shifted half a pixel from the top left corner of the viewport
         self.first_pixel = viewport_upper_left + (self.pixel_delta.0 + self.pixel_delta.1) * 0.5;
@@ -92,8 +98,14 @@ impl Camera {
         self.init();
     }
 
-    pub fn look_at(&mut self, p: Point3) {
-        self.look_at = p;
+    pub fn look_at(&mut self, target: Point3) {
+        self.look_at = target;
+        self.init();
+    }
+
+    pub fn move_and_look_at(&mut self, pos: Point3, target: Point3) {
+        self.position = pos;
+        self.look_at = target;
         self.init();
     }
 
