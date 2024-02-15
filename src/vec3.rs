@@ -117,6 +117,16 @@ impl Vec3 {
     pub fn reflect(self, normal: Vec3) -> Vec3 {
         self - normal * (2.0 * self.dot(&normal))
     }
+
+    /// Note: assumes the vector being refracted is a unit vector
+    pub fn refract(self, normal: Vec3, ior_ratio: f64) -> Vec3 {
+        let cos_theta = f64::min(1.0, (-self).dot(&normal));
+
+        let refracted_perp = (self + (normal * cos_theta)) * ior_ratio;
+        let refracted_parallel = normal * -(1.0 - refracted_perp.length_squared()).sqrt();
+
+        refracted_perp + refracted_parallel
+    }
 }
 
 // Operators (copy)

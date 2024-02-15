@@ -4,6 +4,7 @@ use crate::vec3::Color;
 
 pub mod lambertian;
 pub mod metal;
+pub mod dielectric;
 
 pub use lambertian::LambertianDiffuse;
 pub use metal::Metal;

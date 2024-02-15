@@ -3,6 +3,7 @@ use std::io;
 use std::rc::Rc;
 
 use rust_raytracer::camera::Camera;
+use rust_raytracer::material::dielectric::Dielectric;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::{ObjectList, Sphere};
 use rust_raytracer::ppm;
@@ -26,7 +27,7 @@ fn main() -> io::Result<()> {
     let mat_default: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.75, 0.25, 0.25)));
     let mat_ground: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
     let mat_metal: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.8, 0.8), 0.2));
-    let mat_metal2: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.7));
+    let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
 
     // Set up objects
     let sphere = Sphere {
@@ -44,7 +45,13 @@ fn main() -> io::Result<()> {
     let sphere3 = Sphere {
         center: Vec3(0.9, -0.2, -2.5),
         radius: 0.3,
-        material: Rc::clone(&mat_metal2),
+        material: Rc::clone(&mat_glass),
+    };
+
+    let sphere3_inner = Sphere {
+        center: Vec3(0.9, -0.2, -2.5),
+        radius: -0.28,
+        material: Rc::clone(&mat_glass),
     };
 
     let ground = Sphere {
@@ -57,6 +64,7 @@ fn main() -> io::Result<()> {
     world.add(Box::new(sphere));
     world.add(Box::new(sphere2));
     world.add(Box::new(sphere3));
+    world.add(Box::new(sphere3_inner));
     world.add(Box::new(ground));
 
     // Output
