@@ -22,7 +22,7 @@ const FOCAL_LENGTH: f64 = 24.0;
 
 fn main() -> io::Result<()> {
     // Set up camera
-    let camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH / 1000.0);
+    let camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
 
     let mat_default: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.75, 0.25, 0.25)));
     let mat_ground: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
