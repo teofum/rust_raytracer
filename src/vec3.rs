@@ -17,18 +17,11 @@ impl Vec3 {
         Vec3(0.0, 0.0, 0.0)
     }
 
-    /// TODO: This is BAD! Replace with a generation method that doesn't involve
-    /// potentially discarding a bunch of random vectors
     pub fn random_in_unit_disk(rng: &mut XorShiftRng) -> Self {
-        loop {
-            let x = rng.gen_range(-1.0..=1.0);
-            let y = rng.gen_range(-1.0..=1.0);
+        let x = rng.sample(StandardNormal);
+        let y = rng.sample(StandardNormal);
 
-            let v = Vec3(x, y, 0.0);
-            if v.length_squared() < 1.0 {
-                return v;
-            }
-        }
+        Vec3(x, y, 0.0).to_unit()
     }
 
     pub fn random_unit(rng: &mut XorShiftRng) -> Self {
