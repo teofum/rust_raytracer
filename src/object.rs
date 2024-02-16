@@ -1,8 +1,10 @@
 pub mod list;
 pub mod sphere;
+pub mod plane;
 
 pub use list::ObjectList;
 pub use sphere::Sphere;
+
 
 use crate::interval::Interval;
 use crate::material::Material;

@@ -6,6 +6,7 @@ use std::time::Instant;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::dielectric::Dielectric;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
+use rust_raytracer::object::plane::Plane;
 use rust_raytracer::object::{ObjectList, Sphere};
 use rust_raytracer::ppm;
 use rust_raytracer::vec3::Vec3;
@@ -19,7 +20,7 @@ const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const OUTPUT_WIDTH: usize = 600;
 
 /// Camera focal length, in millimetres for 35mm-equivalent FOV
-const FOCAL_LENGTH: f64 = 100.0;
+const FOCAL_LENGTH: f64 = 70.0;
 
 fn main() -> io::Result<()> {
     let time = Instant::now();
@@ -59,11 +60,17 @@ fn main() -> io::Result<()> {
         material: Arc::clone(&mat_glass),
     };
 
-    let ground = Sphere {
-        center: Vec3(0.0, -100.5, -1.0),
-        radius: 100.0,
-        material: Arc::clone(&mat_ground),
-    };
+    let ground = Plane::new(
+        Vec3(0.0, -0.5, -1.0),
+        (Vec3(4.0, 0.0, 0.0), Vec3(0.0, 0.0, 3.0)),
+        Arc::clone(&mat_ground),
+    );
+
+    let wall = Plane::new(
+        Vec3(0.0, 1.0, -2.5),
+        (Vec3(4.0, 0.0, 0.0), Vec3(0.0, 3.0, 0.0)),
+        Arc::clone(&mat_metal),
+    );
 
     let mut world = ObjectList::new();
     world.add(Box::new(sphere));
@@ -71,6 +78,7 @@ fn main() -> io::Result<()> {
     world.add(Box::new(sphere_glass));
     world.add(Box::new(sphere_glass_inner));
     world.add(Box::new(ground));
+    world.add(Box::new(wall));
 
     let world = Arc::new(world);
 

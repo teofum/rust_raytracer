@@ -1,8 +1,9 @@
-pub mod ppm;
-pub mod vec3;
-pub mod ray;
-pub mod camera;
 pub mod buffer;
-pub mod object;
+pub mod camera;
 pub mod interval;
+pub mod mat3;
 pub mod material;
+pub mod object;
+pub mod ppm;
+pub mod ray;
+pub mod vec3;

@@ -3,7 +3,7 @@ use rand_distr::StandardNormal;
 use rand_xorshift::XorShiftRng;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
 // Type aliases
