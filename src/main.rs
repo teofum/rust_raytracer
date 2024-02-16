@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::rc::Rc;
+use std::time::Instant;
 
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::dielectric::Dielectric;
@@ -21,6 +22,8 @@ const OUTPUT_WIDTH: usize = 600;
 const FOCAL_LENGTH: f64 = 100.0;
 
 fn main() -> io::Result<()> {
+    let time = Instant::now();
+
     // Set up camera
     let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
     camera.move_and_look_at(Vec3(-2.0, 2.0, 1.0), Vec3(0.0, 0.0, -1.0));
@@ -69,16 +72,21 @@ fn main() -> io::Result<()> {
     world.add(Box::new(sphere_glass_inner));
     world.add(Box::new(ground));
 
+    let elapsed = time.elapsed();
+    println!("Ready: {:.2?}", elapsed);
+    
     // Output
     let mut buf = camera.create_buffer();
     camera.render(&world, &mut buf);
-
-    println!("Done! Writing output to file...");
-
+    
+    let elapsed = time.elapsed();
+    println!("Done: {:.2?}. Writing output to file...", elapsed);
+    
     let mut file = File::create("out.ppm")?;
     ppm::write_to_file(&mut file, &buf)?;
-
-    println!("Done! Goodbye :)");
+    
+    let elapsed = time.elapsed();
+    println!("Done! Took {:.2?}. Goodbye :)", elapsed);
 
     Ok(())
 }
