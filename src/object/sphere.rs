@@ -31,7 +31,7 @@ impl Hit for Sphere {
 
         let mut root = (-half_b - d_sqrt) / a;
         if root <= t.min() || t.max() <= root {
-            root = (-half_b - d_sqrt) / a;
+            root = (-half_b + d_sqrt) / a;
             if root <= t.min() || t.max() <= root {
                 return None;
             }

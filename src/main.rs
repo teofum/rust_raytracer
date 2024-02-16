@@ -34,7 +34,7 @@ fn main() -> io::Result<()> {
     let mat_ground: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
     let mat_diffuse: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.1, 0.2, 0.5)));
     let mat_metal: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.1));
-    let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.3));
+    let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
 
     // Set up objects
     let sphere = Sphere {

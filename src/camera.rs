@@ -7,8 +7,8 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec3::{Color, Point3, Vec3};
 
-const SAMPLES_PER_PIXEL: u32 = 100; // Number of random samples per pixel
-const MAX_DEPTH: u32 = 10; // Max ray bounces
+const SAMPLES_PER_PIXEL: u32 = 500; // Number of random samples per pixel
+const MAX_DEPTH: u32 = 20; // Max ray bounces
 
 pub struct Camera {
     image_width: usize,
