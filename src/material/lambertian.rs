@@ -1,3 +1,5 @@
+use rand_xorshift::XorShiftRng;
+
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
@@ -19,8 +21,8 @@ impl LambertianDiffuse {
 }
 
 impl Material for LambertianDiffuse {
-    fn scatter(&self, ray: &mut Ray, hit: &HitRecord) -> Option<Color> {
-        let scatter_dir = hit.normal() + Vec3::random_unit();
+    fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color> {
+        let scatter_dir = hit.normal() + Vec3::random_unit(rng);
 
         ray.origin = hit.pos();
         ray.dir = if scatter_dir.near_zero() {

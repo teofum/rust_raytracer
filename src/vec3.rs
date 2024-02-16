@@ -1,4 +1,6 @@
 use rand::Rng;
+use rand_distr::StandardNormal;
+use rand_xorshift::XorShiftRng;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -15,21 +17,9 @@ impl Vec3 {
         Vec3(0.0, 0.0, 0.0)
     }
 
-    fn random() -> Self {
-        let mut rng = rand::thread_rng();
-
-        let x = rng.gen_range(-1.0..=1.0);
-        let y = rng.gen_range(-1.0..=1.0);
-        let z = rng.gen_range(-1.0..=1.0);
-
-        Vec3(x, y, z)
-    }
-
     /// TODO: This is BAD! Replace with a generation method that doesn't involve
     /// potentially discarding a bunch of random vectors
-    pub fn random_in_unit_disk() -> Self {
-        let mut rng = rand::thread_rng();
-
+    pub fn random_in_unit_disk(rng: &mut XorShiftRng) -> Self {
         loop {
             let x = rng.gen_range(-1.0..=1.0);
             let y = rng.gen_range(-1.0..=1.0);
@@ -41,30 +31,12 @@ impl Vec3 {
         }
     }
 
-    /// TODO: This is BAD! Replace with a generation method that doesn't involve
-    /// potentially discarding a bunch of random vectors
-    fn random_in_unit_sphere() -> Self {
-        loop {
-            let v = Vec3::random();
-            if v.length_squared() < 1.0 {
-                return v;
-            }
-        }
-    }
+    pub fn random_unit(rng: &mut XorShiftRng) -> Self {
+        let x = rng.sample(StandardNormal);
+        let y = rng.sample(StandardNormal);
+        let z = rng.sample(StandardNormal);
 
-    pub fn random_unit() -> Self {
-        Vec3::random_in_unit_sphere().to_unit()
-    }
-
-    pub fn random_on_hemisphere(normal: &Vec3) -> Self {
-        let v = Vec3::random_unit();
-
-        if v.dot(normal) > 0.0 {
-            // Vector is in the same hemisphere as normal
-            v
-        } else {
-            -v
-        }
+        Vec3(x, y, z).to_unit()
     }
 
     // Getters

@@ -1,4 +1,5 @@
 use rand::Rng;
+use rand_xorshift::XorShiftRng;
 
 use crate::buffer::Buffer;
 use crate::interval::Interval;
@@ -140,7 +141,7 @@ impl Camera {
 
     // Rendering
 
-    pub fn render(&self, world: &dyn Hit, buf: &mut Buffer) {
+    pub fn render(&self, world: &dyn Hit, buf: &mut Buffer, rng: &mut XorShiftRng) {
         for y in 0..self.image_height {
             print!("Rendering... [line {}/{}]\r", y + 1, self.image_height);
 
@@ -148,8 +149,8 @@ impl Camera {
                 let mut color = Vec3::origin();
 
                 for _ in 0..SAMPLES_PER_PIXEL {
-                    let mut ray = self.get_ray(x, y);
-                    color += self.ray_color(&mut ray, world, MAX_DEPTH);
+                    let mut ray = self.get_ray(x, y, rng);
+                    color += self.ray_color(&mut ray, world, MAX_DEPTH, rng);
                 }
                 color /= SAMPLES_PER_PIXEL as f64;
 
@@ -160,14 +161,14 @@ impl Camera {
 
     // Rendering helpers
 
-    fn get_ray(&self, pixel_x: usize, pixel_y: usize) -> Ray {
+    fn get_ray(&self, pixel_x: usize, pixel_y: usize, rng: &mut XorShiftRng) -> Ray {
         let pixel_center = self.first_pixel
             + (self.pixel_delta.0 * pixel_x as f64)
             + (self.pixel_delta.1 * pixel_y as f64);
-        let pixel_sample = pixel_center + self.pixel_sample_square();
+        let pixel_sample = pixel_center + self.pixel_sample_square(rng);
 
         let ray_origin = match self.aperture_radius {
-            Some(_) => self.defocus_disk_sample(),
+            Some(_) => self.defocus_disk_sample(rng),
             None => self.position,
         };
         let ray_direction = pixel_sample - ray_origin;
@@ -175,14 +176,20 @@ impl Camera {
         Ray::new(ray_origin, ray_direction)
     }
 
-    fn ray_color(&self, ray: &mut Ray, object: &dyn Hit, depth: u32) -> Color {
+    fn ray_color(
+        &self,
+        ray: &mut Ray,
+        object: &dyn Hit,
+        depth: u32,
+        rng: &mut XorShiftRng,
+    ) -> Color {
         if depth <= 0 {
             return Vec3::origin();
         }
 
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
-            if let Some(att) = hit.material().scatter(ray, &hit) {
-                return self.ray_color(ray, object, depth - 1) * att;
+            if let Some(att) = hit.material().scatter(ray, &hit, rng) {
+                return self.ray_color(ray, object, depth - 1, rng) * att;
             }
 
             return Vec3::origin(); // Ray was absorbed by material
@@ -194,8 +201,7 @@ impl Camera {
         Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
     }
 
-    fn pixel_sample_square(&self) -> Vec3 {
-        let mut rng = rand::thread_rng();
+    fn pixel_sample_square(&self, rng: &mut XorShiftRng) -> Vec3 {
         let x = rng.gen_range(0.0..1.0) - 0.5;
         let y = rng.gen_range(0.0..1.0) - 0.5;
 
@@ -204,8 +210,8 @@ impl Camera {
 
     /// # Panics
     /// Panics if aperture_radius is `None`. Caller should make sure aperture radius is set.
-    fn defocus_disk_sample(&self) -> Vec3 {
-        let v = Vec3::random_in_unit_disk();
+    fn defocus_disk_sample(&self, rng: &mut XorShiftRng) -> Vec3 {
+        let v = Vec3::random_in_unit_disk(rng);
         self.position + (self.basis[0] * v.0 + self.basis[1] * v.1) * self.aperture_radius.unwrap()
     }
 }

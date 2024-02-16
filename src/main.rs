@@ -3,6 +3,8 @@ use std::io;
 use std::rc::Rc;
 use std::time::Instant;
 
+use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::dielectric::Dielectric;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
@@ -74,17 +76,20 @@ fn main() -> io::Result<()> {
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);
-    
+
+    // Set up RNG
+    let mut rng = XorShiftRng::from_rng(rand::thread_rng()).expect("Failed to init RNG");
+
     // Output
     let mut buf = camera.create_buffer();
-    camera.render(&world, &mut buf);
-    
+    camera.render(&world, &mut buf, &mut rng);
+
     let elapsed = time.elapsed();
     println!("Done: {:.2?}. Writing output to file...", elapsed);
-    
+
     let mut file = File::create("out.ppm")?;
     ppm::write_to_file(&mut file, &buf)?;
-    
+
     let elapsed = time.elapsed();
     println!("Done! Took {:.2?}. Goodbye :)", elapsed);
 

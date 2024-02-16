@@ -1,4 +1,5 @@
 use rand::Rng;
+use rand_xorshift::XorShiftRng;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
@@ -23,7 +24,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray: &mut Ray, hit: &HitRecord) -> Option<Color> {
+    fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color> {
         let ior_ratio = if hit.front_face() {
             1.0 / self.ior
         } else {
@@ -36,7 +37,7 @@ impl Material for Dielectric {
 
         let tir = ior_ratio * sin_theta > 1.0; // Total Internal Reflection
         let reflected =
-            tir || reflectance(cos_theta, ior_ratio) > rand::thread_rng().gen_range(0.0..1.0);
+            tir || reflectance(cos_theta, ior_ratio) > rng.gen_range(0.0..1.0);
 
         let scatter_dir = if reflected {
             unit_dir.reflect(hit.normal())
