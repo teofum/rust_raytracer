@@ -13,6 +13,8 @@ pub struct Camera {
     image_width: usize,
     aspect_ratio: f64,
     focal_length: f64,
+    f_number: Option<f64>,
+    focus_distance: Option<f64>,
     position: Point3,
     look_at: Point3,
     v_up: Vec3,
@@ -21,6 +23,7 @@ pub struct Camera {
     pixel_delta: (Vec3, Vec3),
     first_pixel: Point3,
     basis: [Point3; 3],
+    aperture_radius: Option<f64>,
 }
 
 impl Camera {
@@ -29,6 +32,8 @@ impl Camera {
             image_width,
             aspect_ratio,
             focal_length,
+            f_number: None,
+            focus_distance: None,
             position: Vec3::origin(),
             look_at: Vec3(0.0, 0.0, -1.0),
             v_up: Vec3(0.0, 1.0, 0.0),
@@ -37,6 +42,7 @@ impl Camera {
             basis: [Vec3::origin(); 3],
             pixel_delta: (Vec3::origin(), Vec3::origin()),
             first_pixel: Vec3::origin(),
+            aperture_radius: None,
         };
 
         camera.init();
@@ -48,14 +54,14 @@ impl Camera {
         self.image_height = usize::max(1, (self.image_width as f64 / self.aspect_ratio) as usize);
 
         let direction = self.position - self.look_at;
-        let real_focal_length = direction.length();
+        let focus_dist = self.focus_distance.unwrap_or_else(|| direction.length());
 
         // Relative size of the viewport to get 35mm (36x24mm frame) equivalent FOV
-        let h = real_focal_length * 24.0 / self.focal_length;
+        let h = focus_dist * 24.0 / self.focal_length;
 
         // Final aspect ratio, accounting for image height rounding
         let real_aspect_ratio = self.image_width as f64 / self.image_height as f64;
-        let viewport_height = real_focal_length * h;
+        let viewport_height = focus_dist * h;
         let viewport_width = viewport_height * real_aspect_ratio;
 
         // Calculate the unit basis for the camera coordinate frame
@@ -73,11 +79,21 @@ impl Camera {
             viewport_v / self.image_height as f64,
         );
 
+        // Make the image plane match the focus plane, makes the math a lot easier
+        // Not how a real camera works, but we're not constrained by the laws of physics!
         let viewport_upper_left =
-            self.position - w * real_focal_length - viewport_u / 2.0 - viewport_v / 2.0;
+            self.position - w * focus_dist - viewport_u / 2.0 - viewport_v / 2.0;
 
         // Top-left pixel, shifted half a pixel from the top left corner of the viewport
         self.first_pixel = viewport_upper_left + (self.pixel_delta.0 + self.pixel_delta.1) * 0.5;
+
+        // Calculate aperture radius from f-number
+        // f = (focal length) / (aperture radius)
+        self.aperture_radius = if let Some(f) = self.f_number {
+            Some((self.focal_length / 1000.0) / f)
+        } else {
+            None
+        };
     }
 
     // Getters
@@ -91,6 +107,19 @@ impl Camera {
     pub fn set_focal_length(&mut self, f: f64) {
         self.focal_length = f;
         self.init();
+    }
+
+    /// Set `None` to disable depth-of-field effect
+    pub fn set_f_number(&mut self, f: Option<f64>) {
+        self.f_number = f;
+        self.init();
+    }
+
+    /// Set `None` to AF (place focus at the look_at point)
+    ///
+    /// This setting has no effect if depth-of-field is disabled.
+    pub fn focus(&mut self, d: Option<f64>) {
+        self.focus_distance = d;
     }
 
     pub fn set_position(&mut self, pos: Point3) {
@@ -137,9 +166,13 @@ impl Camera {
             + (self.pixel_delta.1 * pixel_y as f64);
         let pixel_sample = pixel_center + self.pixel_sample_square();
 
-        let ray_direction = pixel_sample - self.position;
+        let ray_origin = match self.aperture_radius {
+            Some(_) => self.defocus_disk_sample(),
+            None => self.position,
+        };
+        let ray_direction = pixel_sample - ray_origin;
 
-        Ray::new(self.position, ray_direction)
+        Ray::new(ray_origin, ray_direction)
     }
 
     fn ray_color(&self, ray: &mut Ray, object: &dyn Hit, depth: u32) -> Color {
@@ -167,5 +200,12 @@ impl Camera {
         let y = rng.gen_range(0.0..1.0) - 0.5;
 
         self.pixel_delta.0 * x + self.pixel_delta.1 * y
+    }
+
+    /// # Panics
+    /// Panics if aperture_radius is `None`. Caller should make sure aperture radius is set.
+    fn defocus_disk_sample(&self) -> Vec3 {
+        let v = Vec3::random_in_unit_disk();
+        self.position + (self.basis[0] * v.0 + self.basis[1] * v.1) * self.aperture_radius.unwrap()
     }
 }

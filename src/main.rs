@@ -18,45 +18,46 @@ const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const OUTPUT_WIDTH: usize = 600;
 
 /// Camera focal length, in millimetres for 35mm-equivalent FOV
-const FOCAL_LENGTH: f64 = 135.0;
+const FOCAL_LENGTH: f64 = 100.0;
 
 fn main() -> io::Result<()> {
     // Set up camera
     let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-    camera.move_and_look_at(Vec3(-2.0, 2.0, 2.0), Vec3::origin());
+    camera.move_and_look_at(Vec3(-2.0, 2.0, 1.0), Vec3(0.0, 0.0, -1.0));
+    camera.set_f_number(Some(2.0));
 
     let mat_ground: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
     let mat_diffuse: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.1, 0.2, 0.5)));
     let mat_metal: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.1));
-    let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
+    let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.3));
 
     // Set up objects
     let sphere = Sphere {
-        center: Vec3(0.0, 0.0, 0.0),
+        center: Vec3(0.0, 0.0, -1.0),
         radius: 0.5,
         material: Rc::clone(&mat_diffuse),
     };
 
     let sphere_metal = Sphere {
-        center: Vec3(1.0, 0.0, 0.0),
+        center: Vec3(1.0, 0.0, -1.0),
         radius: 0.5,
         material: Rc::clone(&mat_metal),
     };
 
     let sphere_glass = Sphere {
-        center: Vec3(-1.0, 0.0, 0.0),
+        center: Vec3(-1.0, 0.0, -1.0),
         radius: 0.5,
         material: Rc::clone(&mat_glass),
     };
 
     let sphere_glass_inner = Sphere {
-        center: Vec3(-1.0, 0.0, 0.0),
+        center: Vec3(-1.0, 0.0, -1.0),
         radius: -0.4,
         material: Rc::clone(&mat_glass),
     };
 
     let ground = Sphere {
-        center: Vec3(0.0, -100.5, 0.0),
+        center: Vec3(0.0, -100.5, -1.0),
         radius: 100.0,
         material: Rc::clone(&mat_ground),
     };

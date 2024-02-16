@@ -27,6 +27,22 @@ impl Vec3 {
 
     /// TODO: This is BAD! Replace with a generation method that doesn't involve
     /// potentially discarding a bunch of random vectors
+    pub fn random_in_unit_disk() -> Self {
+        let mut rng = rand::thread_rng();
+
+        loop {
+            let x = rng.gen_range(-1.0..=1.0);
+            let y = rng.gen_range(-1.0..=1.0);
+
+            let v = Vec3(x, y, 0.0);
+            if v.length_squared() < 1.0 {
+                return v;
+            }
+        }
+    }
+
+    /// TODO: This is BAD! Replace with a generation method that doesn't involve
+    /// potentially discarding a bunch of random vectors
     fn random_in_unit_sphere() -> Self {
         loop {
             let v = Vec3::random();
