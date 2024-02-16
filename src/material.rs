@@ -11,7 +11,7 @@ pub mod metal;
 pub use lambertian::LambertianDiffuse;
 pub use metal::Metal;
 
-pub trait Material {
+pub trait Material: Send + Sync {
     /// Scatter a ray according to material properties.
     ///
     /// Mutates the original ray, and returns an attenuation value or `None`

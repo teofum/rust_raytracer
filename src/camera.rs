@@ -1,4 +1,8 @@
-use rand::Rng;
+use std::sync::Arc;
+use std::thread;
+use std::time::Instant;
+
+use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 
 use crate::buffer::Buffer;
@@ -9,6 +13,9 @@ use crate::vec3::{Color, Point3, Vec3};
 
 const SAMPLES_PER_PIXEL: u32 = 500; // Number of random samples per pixel
 const MAX_DEPTH: u32 = 20; // Max ray bounces
+
+const THREAD_COUNT: u32 = 10; // Number of threads to spawn
+const SAMPLES_PER_THREAD: u32 = SAMPLES_PER_PIXEL / THREAD_COUNT;
 
 pub struct Camera {
     image_width: usize,
@@ -141,20 +148,64 @@ impl Camera {
 
     // Rendering
 
-    pub fn render(&self, world: &dyn Hit, buf: &mut Buffer, rng: &mut XorShiftRng) {
-        for y in 0..self.image_height {
-            print!("Rendering... [line {}/{}]\r", y + 1, self.image_height);
+    pub fn render(self, world: Arc<dyn Hit>, buf: &mut Buffer) {
+        let mut threads = Vec::new();
 
-            for x in 0..self.image_width {
-                let mut color = Vec3::origin();
+        let self_ref = Arc::new(self);
 
-                for _ in 0..SAMPLES_PER_PIXEL {
-                    let mut ray = self.get_ray(x, y, rng);
-                    color += self.ray_color(&mut ray, world, MAX_DEPTH, rng);
+        for tid in 0..THREAD_COUNT {
+            let mut thread_buf = self_ref.create_buffer();
+            let thread_world = Arc::clone(&world);
+            let thread_self_ref = Arc::clone(&self_ref);
+
+            let thread = thread::spawn(move || {
+                let time = Instant::now();
+
+                let mut thread_rng =
+                    XorShiftRng::from_rng(rand::thread_rng()).expect("Failed to init RNG");
+                let image_height = thread_self_ref.image_height;
+                let image_width = thread_self_ref.image_width;
+
+                for y in 0..image_height {
+                    // print!("Rendering... [line {}/{}]\r", y + 1, self.image_height);
+
+                    for x in 0..image_width {
+                        let mut color = Vec3::origin();
+
+                        for _ in 0..SAMPLES_PER_THREAD {
+                            let mut ray = thread_self_ref.get_ray(x, y, &mut thread_rng);
+                            color += thread_self_ref.ray_color(
+                                &mut ray,
+                                &thread_world,
+                                MAX_DEPTH,
+                                &mut thread_rng,
+                            );
+                        }
+                        color /= SAMPLES_PER_PIXEL as f64;
+
+                        thread_buf.set_pixel(x, y, color);
+                    }
                 }
-                color /= SAMPLES_PER_PIXEL as f64;
 
-                buf.set_pixel(x, y, color);
+                let elapsed = time.elapsed();
+                println!("Thread {tid} finished in {:.2?}", elapsed);
+                thread_buf
+            });
+
+            threads.push(thread);
+        }
+
+        for thread in threads {
+            let thread_buf = thread.join().expect("Thread failed!");
+
+            // Add thread buffer to main buffer
+            for y in 0..self_ref.image_height {
+                for x in 0..self_ref.image_width {
+                    let thread_color = thread_buf.get_pixel(x, y);
+                    let local_color = buf.get_pixel(x, y);
+
+                    buf.set_pixel(x, y, local_color + thread_color);
+                }
             }
         }
     }
@@ -179,7 +230,7 @@ impl Camera {
     fn ray_color(
         &self,
         ray: &mut Ray,
-        object: &dyn Hit,
+        object: &Arc<dyn Hit>,
         depth: u32,
         rng: &mut XorShiftRng,
     ) -> Color {

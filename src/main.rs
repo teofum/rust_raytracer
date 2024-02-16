@@ -1,10 +1,8 @@
 use std::fs::File;
 use std::io;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::time::Instant;
 
-use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::dielectric::Dielectric;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
@@ -31,40 +29,40 @@ fn main() -> io::Result<()> {
     camera.move_and_look_at(Vec3(-2.0, 2.0, 1.0), Vec3(0.0, 0.0, -1.0));
     camera.set_f_number(Some(2.0));
 
-    let mat_ground: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
-    let mat_diffuse: Rc<dyn Material> = Rc::new(LambertianDiffuse::new(Vec3(0.1, 0.2, 0.5)));
-    let mat_metal: Rc<dyn Material> = Rc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.1));
-    let mat_glass: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
+    let mat_ground: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
+    let mat_diffuse: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Vec3(0.1, 0.2, 0.5)));
+    let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.1));
+    let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
     // Set up objects
     let sphere = Sphere {
         center: Vec3(0.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::clone(&mat_diffuse),
+        material: Arc::clone(&mat_diffuse),
     };
 
     let sphere_metal = Sphere {
         center: Vec3(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::clone(&mat_metal),
+        material: Arc::clone(&mat_metal),
     };
 
     let sphere_glass = Sphere {
         center: Vec3(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::clone(&mat_glass),
+        material: Arc::clone(&mat_glass),
     };
 
     let sphere_glass_inner = Sphere {
         center: Vec3(-1.0, 0.0, -1.0),
         radius: -0.4,
-        material: Rc::clone(&mat_glass),
+        material: Arc::clone(&mat_glass),
     };
 
     let ground = Sphere {
         center: Vec3(0.0, -100.5, -1.0),
         radius: 100.0,
-        material: Rc::clone(&mat_ground),
+        material: Arc::clone(&mat_ground),
     };
 
     let mut world = ObjectList::new();
@@ -74,15 +72,14 @@ fn main() -> io::Result<()> {
     world.add(Box::new(sphere_glass_inner));
     world.add(Box::new(ground));
 
+    let world = Arc::new(world);
+
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);
 
-    // Set up RNG
-    let mut rng = XorShiftRng::from_rng(rand::thread_rng()).expect("Failed to init RNG");
-
     // Output
     let mut buf = camera.create_buffer();
-    camera.render(&world, &mut buf, &mut rng);
+    camera.render(world, &mut buf);
 
     let elapsed = time.elapsed();
     println!("Done: {:.2?}. Writing output to file...", elapsed);
