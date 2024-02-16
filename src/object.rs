@@ -1,10 +1,11 @@
 pub mod list;
 pub mod sphere;
 pub mod plane;
+pub mod mesh;
 
 pub use list::ObjectList;
 pub use sphere::Sphere;
-
+pub use plane::Plane;
 
 use crate::interval::Interval;
 use crate::material::Material;

@@ -32,7 +32,7 @@ impl Hit for ObjectList {
         let mut closest_hit: Option<HitRecord> = None;
         let mut closest_t = t.max();
 
-        for object in &self.objects[..] {
+        for object in &self.objects {
             if let Some(hit) = object.test(ray, Interval(t.min(), closest_t)) {
                 closest_t = hit.t;
                 closest_hit = Some(hit);

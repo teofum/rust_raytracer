@@ -45,7 +45,7 @@ impl Hit for Plane {
     fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
         let dot_ray_normal = self.normal.dot(&ray.dir);
 
-        if dot_ray_normal.abs() < 0.0001 {
+        if dot_ray_normal.abs() < f64::EPSILON {
             return None;
         }
 

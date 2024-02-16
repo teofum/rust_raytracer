@@ -8,6 +8,7 @@ pub mod dielectric;
 pub mod lambertian;
 pub mod metal;
 
+pub use dielectric::Dielectric;
 pub use lambertian::LambertianDiffuse;
 pub use metal::Metal;
 
