@@ -1,7 +1,7 @@
 use rand::Rng;
 use rand_distr::StandardNormal;
 use rand_xorshift::XorShiftRng;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3(pub f64, pub f64, pub f64);
@@ -107,6 +107,32 @@ impl Vec3 {
         let refracted_parallel = normal * -(1.0 - refracted_perp.length_squared()).sqrt();
 
         refracted_perp + refracted_parallel
+    }
+}
+
+// Index operators
+
+impl Index<usize> for Vec3 {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.0,
+            1 => &self.1,
+            2 => &self.2,
+            _ => panic!("Index out of bounds for Vec3"),
+        }
+    }
+}
+
+impl IndexMut<usize> for Vec3 {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.0,
+            1 => &mut self.1,
+            2 => &mut self.2,
+            _ => panic!("Index out of bounds for Vec3"),
+        }
     }
 }
 

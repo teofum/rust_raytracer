@@ -24,6 +24,8 @@ pub struct TriangleMesh {
 
     transformed_vertices: Vec<Point3>,
     triangles: Vec<Triangle>,
+
+    bounding_box: (Point3, Point3),
 }
 
 impl TriangleMesh {
@@ -34,7 +36,7 @@ impl TriangleMesh {
         triangles: Vec<Triangle>,
         material: Arc<dyn Material>,
     ) -> Self {
-        TriangleMesh {
+        let mut mesh = TriangleMesh {
             transformed_vertices: vertices.to_vec(),
             vertices,
             vertex_uvs,
@@ -43,7 +45,11 @@ impl TriangleMesh {
             triangles,
             material,
             flat_shading: false,
-        }
+            bounding_box: (Vec3::origin(), Vec3::origin()),
+        };
+
+        mesh.calculate_bounding_box();
+        mesh
     }
 
     pub fn set_position(&mut self, pos: Point3) {
@@ -56,8 +62,89 @@ impl TriangleMesh {
         for (i, vert) in self.vertices.iter().enumerate() {
             self.transformed_vertices[i] = *vert + self.position;
         }
+        self.calculate_bounding_box();
     }
 
+    fn calculate_bounding_box(&mut self) {
+        let mut bounds_min = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
+        let mut bounds_max = -bounds_min;
+
+        for vertex_pos in &self.transformed_vertices {
+            for i in 0..3 {
+                if vertex_pos[i] < bounds_min[i] {
+                    bounds_min[i] = vertex_pos[i];
+                }
+                if vertex_pos[i] > bounds_max[i] {
+                    bounds_max[i] = vertex_pos[i];
+                }
+            }
+        }
+
+        self.bounding_box = (bounds_min, bounds_max);
+    }
+
+    // Fast ray-box intersection by Andrew Woo
+    // from Graphics Gems, 1990
+    fn test_bounds(&self, ray: &Ray, t_int: &Interval) -> bool {
+        let (b_min, b_max) = self.bounding_box;
+
+        let mut inside = true; // Ray origin inside bounds
+        let mut quadrant: [i8; 3] = [0; 3];
+        let mut candidate_plane = Vec3::origin();
+        let mut max_t = Vec3::origin();
+
+        for i in 0..3 {
+            if ray.origin[i] < b_min[i] {
+                quadrant[i] = -1;
+                candidate_plane[i] = b_min[i];
+                inside = false;
+            } else if ray.origin[i] > b_max[i] {
+                quadrant[i] = 1;
+                candidate_plane[i] = b_max[i];
+                inside = false;
+            } else {
+                quadrant[i] = 0;
+            }
+        }
+
+        if inside {
+            return true;
+        }
+
+        // Calculate t distance to candidate planes
+        for i in 0..3 {
+            max_t[i] = if quadrant[i] != 0 && ray.dir[i] != 0.0 {
+                (candidate_plane[i] - ray.origin[i]) / ray.dir[i]
+            } else {
+                -1.0
+            }
+        }
+
+        // Use the largest max_t to pick a plane to intersect
+        let mut plane_idx = 0;
+        for i in 1..3 {
+            if max_t[i] > max_t[plane_idx] {
+                plane_idx = i;
+            }
+        }
+
+        if max_t[plane_idx] <= t_int.0 || max_t[plane_idx] >= t_int.1 {
+            return false;
+        }
+
+        for i in 0..3 {
+            if i != plane_idx {
+                let hit_coord = ray.origin[i] + max_t[plane_idx] * ray.dir[i];
+                if hit_coord < b_min[i] || hit_coord > b_max[i] {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    // Möller–Trumbore intersection
     fn test_tri(&self, triangle: &Triangle, ray: &Ray, t_int: Interval) -> Option<HitRecord> {
         let [v0, v1, v2] = [
             self.transformed_vertices[triangle.vert_indices[0]],
@@ -128,7 +215,9 @@ impl TriangleMesh {
 
 impl Hit for TriangleMesh {
     fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
-        //TODO bounding box test
+        if !self.test_bounds(ray, &t) {
+            return None;
+        }
 
         let mut closest_hit: Option<HitRecord> = None;
         let mut closest_t = t.max();
