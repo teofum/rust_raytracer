@@ -1,6 +1,7 @@
 pub mod buffer;
 pub mod camera;
 pub mod interval;
+pub mod loaders;
 pub mod mat3;
 pub mod material;
 pub mod object;

@@ -7,36 +7,38 @@ use crate::{interval::Interval, material::Material};
 use super::{Hit, HitRecord};
 
 #[derive(Clone, Copy)]
-pub struct Vertex {
-    pub position: Point3,
-    pub normal: Vec3,
-}
-
-#[derive(Clone, Copy)]
 pub struct Triangle {
     pub vert_indices: [usize; 3],
+    pub normal_indices: [usize; 3],
+    pub uv_indices: Option<[usize; 3]>,
 }
 
 pub struct TriangleMesh {
     pub material: Arc<dyn Material>,
     pub flat_shading: bool,
 
-    vertices: Vec<Vertex>,
+    vertices: Vec<Point3>,
+    vertex_uvs: Vec<Point3>,
+    vertex_normals: Vec<Vec3>,
     position: Point3,
 
-    transformed_vertices: Vec<Vertex>,
+    transformed_vertices: Vec<Point3>,
     triangles: Vec<Triangle>,
 }
 
 impl TriangleMesh {
     pub fn new(
-        vertices: Vec<Vertex>,
+        vertices: Vec<Point3>,
+        vertex_uvs: Vec<Point3>,
+        vertex_normals: Vec<Vec3>,
         triangles: Vec<Triangle>,
         material: Arc<dyn Material>,
     ) -> Self {
         TriangleMesh {
             transformed_vertices: vertices.to_vec(),
             vertices,
+            vertex_uvs,
+            vertex_normals,
             position: Vec3::origin(),
             triangles,
             material,
@@ -52,21 +54,20 @@ impl TriangleMesh {
 
     fn update_transformed(&mut self) {
         for (i, vert) in self.vertices.iter().enumerate() {
-            self.transformed_vertices[i].position = vert.position + self.position;
+            self.transformed_vertices[i] = *vert + self.position;
         }
     }
 
     fn test_tri(&self, triangle: &Triangle, ray: &Ray, t_int: Interval) -> Option<HitRecord> {
-        let vertices = [
-            &self.transformed_vertices[triangle.vert_indices[0]],
-            &self.transformed_vertices[triangle.vert_indices[1]],
-            &self.transformed_vertices[triangle.vert_indices[2]],
+        let [v0, v1, v2] = [
+            self.transformed_vertices[triangle.vert_indices[0]],
+            self.transformed_vertices[triangle.vert_indices[1]],
+            self.transformed_vertices[triangle.vert_indices[2]],
         ];
 
         // Calculate the plane the triangle lies on
-        let v0 = vertices[0].position;
-        let edge1 = vertices[1].position - v0;
-        let edge2 = vertices[2].position - v0;
+        let edge1 = v1 - v0;
+        let edge2 = v2 - v0;
 
         // Compute the barycentric coordinates t, u, v using Cramer's Rule
         let ray_x_edge2 = Vec3::cross(&ray.dir, &edge2);
@@ -104,7 +105,14 @@ impl TriangleMesh {
                 Vec3::cross(&edge1, &edge2).to_unit()
             } else {
                 let w = 1.0 - u - v;
-                vertices[0].normal * w + vertices[1].normal * u + vertices[2].normal * t
+
+                let [n0, n1, n2] = [
+                    self.vertex_normals[triangle.normal_indices[0]],
+                    self.vertex_normals[triangle.normal_indices[1]],
+                    self.vertex_normals[triangle.normal_indices[2]],
+                ];
+
+                n0 * w + n1 * u + n2 * v
             };
 
             Some(HitRecord::new(
