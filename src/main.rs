@@ -6,8 +6,7 @@ use std::time::Instant;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
-use rust_raytracer::object::mesh::{Triangle, TriangleMesh};
-use rust_raytracer::object::{ObjectList, Plane, Sphere};
+use rust_raytracer::object::{ObjectList, Plane};
 use rust_raytracer::ppm;
 use rust_raytracer::vec3::Vec3;
 
@@ -34,10 +33,10 @@ fn main() -> io::Result<()> {
     let mat_ground: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Vec3(0.7, 0.8, 0.0)));
     let mat_diffuse: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Vec3(0.1, 0.2, 0.5)));
     let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.05));
-    // let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
+    let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
     // Set up objects
-    let mesh_file = File::open("monkey_low.obj")?;
+    let mesh_file = File::open("monkey.obj")?;
     let mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_diffuse))?;
 
     let floor = Plane::new(
