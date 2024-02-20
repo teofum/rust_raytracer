@@ -1,9 +1,7 @@
+use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::vec3::{Point3, Vec3};
 
-use super::{
-    aabb::{self, AxisAlignedBoundingBox},
-    Triangle,
-};
+use super::Triangle;
 
 const MAX_TRIS_PER_LEAF: usize = 50;
 

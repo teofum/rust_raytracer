@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
@@ -7,8 +8,6 @@ use crate::vec3::{Point3, Vec3};
 
 use super::{Hit, HitRecord};
 
-mod aabb;
-use aabb::AxisAlignedBoundingBox;
 mod octree;
 use octree::{OctreeNode, OctreeNodeData};
 
@@ -31,7 +30,7 @@ pub struct TriangleMesh {
     transformed_vertices: Vec<Point3>,
     triangles: Vec<Triangle>,
 
-    bounding_box: AxisAlignedBoundingBox,
+    bounds: AxisAlignedBoundingBox,
     octree: OctreeNode,
 }
 
@@ -43,8 +42,8 @@ impl TriangleMesh {
         triangles: Vec<Triangle>,
         material: Arc<dyn Material>,
     ) -> Self {
-        let bounding_box = aabb::get_bounding_box(&vertices);
-        let octree = OctreeNode::new(&vertices, &triangles, None, bounding_box);
+        let bounds = aabb::get_bounding_box(&vertices);
+        let octree = OctreeNode::new(&vertices, &triangles, None, bounds);
 
         TriangleMesh {
             transformed_vertices: vertices.to_vec(),
@@ -55,7 +54,7 @@ impl TriangleMesh {
             triangles,
             material,
             flat_shading: false,
-            bounding_box,
+            bounds,
             octree,
         }
     }
@@ -74,7 +73,7 @@ impl TriangleMesh {
     }
 
     fn calculate_bounding_box(&mut self) {
-        self.bounding_box = aabb::get_bounding_box(&self.transformed_vertices);
+        self.bounds = aabb::get_bounding_box(&self.transformed_vertices);
     }
 
     // Möller–Trumbore intersection
@@ -183,5 +182,9 @@ impl TriangleMesh {
 impl Hit for TriangleMesh {
     fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
         self.test_octree_node(&self.octree, ray, t)
+    }
+
+    fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
+        self.bounds
     }
 }

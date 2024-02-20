@@ -4,6 +4,27 @@ use crate::vec3::{Point3, Vec3};
 
 pub type AxisAlignedBoundingBox = (Point3, Point3);
 
+// Expand bounding boxes slightly to handle grazing rays
+const EPSILON_VEC: Vec3 = Vec3(0.001, 0.001, 0.001);
+
+pub fn combine_bounds(bounds: &[AxisAlignedBoundingBox]) -> AxisAlignedBoundingBox {
+    let mut bounds_min = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
+    let mut bounds_max = -bounds_min;
+
+    for bounding_box in bounds {
+        for i in 0..3 {
+            if bounding_box.0[i] < bounds_min[i] {
+                bounds_min[i] = bounding_box.0[i];
+            }
+            if bounding_box.1[i] > bounds_max[i] {
+                bounds_max[i] = bounding_box.1[i];
+            }
+        }
+    }
+
+    (bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC)
+}
+
 pub fn get_bounding_box(vertices: &[Point3]) -> AxisAlignedBoundingBox {
     let mut bounds_min = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
     let mut bounds_max = -bounds_min;
@@ -19,7 +40,7 @@ pub fn get_bounding_box(vertices: &[Point3]) -> AxisAlignedBoundingBox {
         }
     }
 
-    (bounds_min, bounds_max)
+    (bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC)
 }
 
 // Fast ray-box intersection by Andrew Woo

@@ -7,6 +7,7 @@ pub use list::ObjectList;
 pub use sphere::Sphere;
 pub use plane::Plane;
 
+use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
@@ -68,4 +69,6 @@ impl<'a> HitRecord<'a> {
 
 pub trait Hit: Send + Sync {
     fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord>;
+
+    fn get_bounding_box(&self) -> AxisAlignedBoundingBox;
 }

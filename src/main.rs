@@ -41,13 +41,13 @@ fn main() -> io::Result<()> {
 
     let floor = Plane::new(
         Vec3(0.0, -1.0, 0.0),
-        (Vec3(4.0, 0.0, 0.0), Vec3(0.0, 0.0, -4.0)),
+        (Vec3(2.0, 0.0, 0.0), Vec3(0.0, 0.0, -2.0)),
         Arc::clone(&mat_ground),
     );
 
     let wall = Plane::new(
         Vec3(2.0, 0.5, 0.0),
-        (Vec3(0.0, 3.0, 0.0), Vec3(0.0, 0.0, -4.0)),
+        (Vec3(0.0, 1.5, 0.0), Vec3(0.0, 0.0, -2.0)),
         Arc::clone(&mat_metal),
     );
 

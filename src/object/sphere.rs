@@ -1,15 +1,33 @@
 use std::sync::Arc;
 
+use crate::aabb::AxisAlignedBoundingBox;
+use crate::interval::Interval;
+use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::Point3;
-use crate::{interval::Interval, material::Material};
+use crate::vec3::{Point3, Vec3};
 
 use super::{Hit, HitRecord};
 
 pub struct Sphere {
-    pub center: Point3,
-    pub radius: f64,
     pub material: Arc<dyn Material>,
+    
+    center: Point3,
+    radius: f64,
+    bounds: AxisAlignedBoundingBox,
+}
+
+impl Sphere {
+    pub fn new(center: Point3, radius: f64, material: Arc<dyn Material>) -> Self {
+        let radius_vec = Vec3(radius, radius, radius);
+        let bounds = (center - radius_vec, center + radius_vec);
+
+        Sphere {
+            center,
+            radius,
+            bounds,
+            material,
+        }
+    }
 }
 
 impl Hit for Sphere {
@@ -45,5 +63,9 @@ impl Hit for Sphere {
             (hit_pos - self.center) / self.radius,
             Arc::as_ref(&self.material),
         ))
+    }
+
+    fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
+        self.bounds
     }
 }

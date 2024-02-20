@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::aabb::{get_bounding_box, AxisAlignedBoundingBox};
 use crate::mat3::Mat3;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
@@ -8,22 +9,23 @@ use crate::{interval::Interval, material::Material};
 use super::{Hit, HitRecord};
 
 pub struct Plane {
-    pub center: Point3,
     pub material: Arc<dyn Material>,
     
+    center: Point3,
     size_half: (f64, f64),
     normal: Vec3,
     inverse_basis: Mat3,
+    bounds: AxisAlignedBoundingBox,
 }
 
 impl Plane {
-    pub fn new(center: Point3, uv: (Vec3, Vec3), material: Arc<dyn Material>) -> Self {
-        if Vec3::dot(&uv.0, &uv.1) != 0.0 {
+    pub fn new(center: Point3, (u, v): (Vec3, Vec3), material: Arc<dyn Material>) -> Self {
+        if Vec3::dot(&u, &v) != 0.0 {
             panic!("The UV vectors must be orthogonal!");
         }
 
-        let u_unit = uv.0.to_unit();
-        let v_unit = uv.1.to_unit();
+        let u_unit = u.to_unit();
+        let v_unit = v.to_unit();
         let normal = Vec3::cross(&u_unit, &v_unit);
 
         // Since u_unit, v_unit and normal are orthonormal vectors, basis is an
@@ -31,12 +33,22 @@ impl Plane {
         let basis = Mat3::from_columns(u_unit, v_unit, normal);
         let inverse_basis = basis.transposed();
 
+        let corners = [
+            center + u + v,
+            center + u - v,
+            center - u + v,
+            center - u - v,
+        ];
+
+        let bounds = get_bounding_box(&corners);
+
         Plane {
             center,
-            size_half: (uv.0.length().abs() * 0.5, uv.1.length().abs() * 0.5),
+            size_half: (u.length().abs(), v.length().abs()),
             material,
             normal,
             inverse_basis,
+            bounds,
         }
     }
 }
@@ -67,5 +79,9 @@ impl Hit for Plane {
             self.normal,
             Arc::as_ref(&self.material),
         ))
+    }
+
+    fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
+        self.bounds
     }
 }
