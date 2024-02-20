@@ -17,7 +17,7 @@ impl ConstantColorTexture {
 }
 
 impl Texture for ConstantColorTexture {
-    fn sample(&self, _: f64, _: f64, _: &Point3) -> Color {
+    fn sample(&self, _: (f64, f64), _: &Point3) -> Color {
         self.color
     }
 }

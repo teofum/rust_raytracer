@@ -25,15 +25,15 @@ impl CheckerboardTexture {
 }
 
 impl Texture for CheckerboardTexture {
-    fn sample(&self, u: f64, v: f64, p: &Point3) -> Color {
+    fn sample(&self, (u, v): (f64, f64), p: &Point3) -> Color {
         let iu = (u * 2.0 / self.scale) as u32;
         let iv = (v * 2.0 / self.scale) as u32;
 
         let is_even = (iu + iv) % 2 == 0;
         if is_even {
-            self.even_squares.sample(u, v, p)
+            self.even_squares.sample((u, v), p)
         } else {
-            self.odd_squares.sample(u, v, p)
+            self.odd_squares.sample((u, v), p)
         }
     }
 }
@@ -59,16 +59,16 @@ impl CheckerboardSolidTexture {
 }
 
 impl Texture for CheckerboardSolidTexture {
-    fn sample(&self, u: f64, v: f64, p: &Point3) -> Color {
-        let ix = (p.x() / self.scale) as u32;
-        let iy = (p.y() / self.scale) as u32;
-        let iz = (p.z() / self.scale) as u32;
+    fn sample(&self, uv: (f64, f64), p: &Point3) -> Color {
+        let ix = (p.x() / self.scale).floor() as i32;
+        let iy = (p.y() / self.scale).floor() as i32;
+        let iz = (p.z() / self.scale).floor() as i32;
 
         let is_even = (ix + iy + iz) % 2 == 0;
         if is_even {
-            self.even_volumes.sample(u, v, p)
+            self.even_volumes.sample(uv, p)
         } else {
-            self.odd_volumes.sample(u, v, p)
+            self.odd_volumes.sample(uv, p)
         }
     }
 }

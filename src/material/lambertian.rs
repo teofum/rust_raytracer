@@ -1,22 +1,21 @@
+use std::sync::Arc;
+
 use rand_xorshift::XorShiftRng;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
+use crate::texture::Texture;
 use crate::vec3::{Color, Vec3};
 
 use super::Material;
 
 pub struct LambertianDiffuse {
-    albedo: Color,
+    albedo: Arc<dyn Texture>,
 }
 
 impl LambertianDiffuse {
-    pub fn new(albedo: Color) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
         LambertianDiffuse { albedo }
-    }
-
-    pub fn albedo(&self) -> Color {
-        self.albedo
     }
 }
 
@@ -31,6 +30,6 @@ impl Material for LambertianDiffuse {
             scatter_dir
         };
 
-        Some(self.albedo)
+        Some(self.albedo.sample(hit.uv(), &hit.pos()))
     }
 }

@@ -73,8 +73,8 @@ impl Hit for Plane {
         }
 
         let uv = (
-            hit_on_plane.x() / self.size_half.0 * 2.0 + 0.5,
-            hit_on_plane.y() / self.size_half.1 * 2.0 + 0.5,
+            hit_on_plane.x() / (self.size_half.0 * 2.0) + 0.5,
+            hit_on_plane.y() / (self.size_half.1 * 2.0) + 0.5,
         );
 
         Some(HitRecord::new(

@@ -18,8 +18,7 @@ pub struct HitRecord<'a> {
     hit_pos: Point3,
     normal: Vec3,
     t: f64,
-    u: f64,
-    v: f64,
+    uv: (f64, f64),
     front_face: bool,
     material: &'a dyn Material,
 }
@@ -30,7 +29,7 @@ impl<'a> HitRecord<'a> {
         ray: &Ray,
         hit_pos: Point3,
         t: f64,
-        (u, v): (f64, f64),
+        uv: (f64, f64),
         outward_normal: Vec3,
         material: &'a dyn Material,
     ) -> Self {
@@ -45,8 +44,7 @@ impl<'a> HitRecord<'a> {
             hit_pos,
             normal,
             t,
-            u,
-            v,
+            uv,
             front_face,
             material,
         }
@@ -62,6 +60,10 @@ impl<'a> HitRecord<'a> {
 
     pub fn t(&self) -> f64 {
         self.t
+    }
+
+    pub fn uv(&self) -> (f64, f64) {
+        self.uv
     }
 
     pub fn front_face(&self) -> bool {

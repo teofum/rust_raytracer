@@ -11,6 +11,7 @@ use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::bvh::BoundingVolumeHierarchyNode;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
 use rust_raytracer::ppm;
+use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
 use rust_raytracer::vec3::Vec3;
 
 // Config variables
@@ -34,14 +35,20 @@ fn main() -> io::Result<()> {
     camera.focus(Some(10.0));
 
     // Set up materials
-    let mat_ground: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Vec3(0.5, 0.5, 0.5)));
+    let mat_ground: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
+        CheckerboardTexture::new(
+            Arc::new(ConstantColorTexture::from_values(0.2, 0.3, 0.1)),
+            Arc::new(ConstantColorTexture::from_values(0.9, 0.9, 0.9)),
+            0.02,
+        ),
+    )));
     let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.05));
     let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
     // Set up objects
     let floor = Plane::new(
         Vec3(0.0, 0.0, 0.0),
-        (Vec3(50.0, 0.0, 0.0), Vec3(0.0, 0.0, -50.0)),
+        (Vec3(20.0, 0.0, 0.0), Vec3(0.0, 0.0, -20.0)),
         Arc::clone(&mat_ground),
     );
 
@@ -70,7 +77,9 @@ fn main() -> io::Result<()> {
 
             if mat_type < 0.95 {
                 let albedo = Vec3::random(&mut rng) * Vec3::random(&mut rng);
-                let material: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(albedo));
+                let material: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
+                    ConstantColorTexture::new(albedo),
+                )));
 
                 let sphere = Sphere::new(center, 0.2, material);
                 random_spheres.push(Box::new(sphere));

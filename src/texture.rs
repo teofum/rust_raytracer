@@ -4,8 +4,8 @@ pub mod constant_color;
 pub use constant_color::ConstantColorTexture;
 
 pub mod checkerboard;
-pub use checkerboard::CheckerboardTexture;
+pub use checkerboard::{CheckerboardSolidTexture, CheckerboardTexture};
 
-pub trait Texture {
-    fn sample(&self, u: f64, v: f64, p: &Point3) -> Color;
+pub trait Texture: Send + Sync {
+    fn sample(&self, uv: (f64, f64), p: &Point3) -> Color;
 }
