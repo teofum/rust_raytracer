@@ -128,13 +128,12 @@ impl TriangleMesh {
             None
         } else {
             let hit_pos = ray.at(t);
+            let w = 1.0 - u - v;
 
             // Calculate normals
             let normal = if self.flat_shading {
                 Vec3::cross(&edge1, &edge2).to_unit()
             } else {
-                let w = 1.0 - u - v;
-
                 let [n0, n1, n2] = [
                     self.vertex_normals[triangle.normal_indices[0]],
                     self.vertex_normals[triangle.normal_indices[1]],
@@ -144,10 +143,24 @@ impl TriangleMesh {
                 n0 * w + n1 * u + n2 * v
             };
 
+            let tex_coords = match triangle.uv_indices {
+                Some(uv_i) => {
+                    let [uv0, uv1, uv2] = [
+                        self.vertex_uvs[uv_i[0]],
+                        self.vertex_uvs[uv_i[1]],
+                        self.vertex_uvs[uv_i[2]],
+                    ];
+
+                    uv0 * w + uv1 * u + uv2 * v
+                }
+                None => Vec3::origin(),
+            };
+
             Some(HitRecord::new(
                 ray,
                 hit_pos,
                 t,
+                (tex_coords.x(), tex_coords.y()),
                 normal,
                 Arc::as_ref(&self.material),
             ))

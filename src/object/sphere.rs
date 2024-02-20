@@ -60,6 +60,7 @@ impl Hit for Sphere {
             ray,
             hit_pos,
             root,
+            (0.0, 0.0),
             (hit_pos - self.center) / self.radius,
             Arc::as_ref(&self.material),
         ))

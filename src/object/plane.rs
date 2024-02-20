@@ -10,7 +10,7 @@ use super::{Hit, HitRecord};
 
 pub struct Plane {
     pub material: Arc<dyn Material>,
-    
+
     center: Point3,
     size_half: (f64, f64),
     normal: Vec3,
@@ -72,10 +72,16 @@ impl Hit for Plane {
             return None;
         }
 
+        let uv = (
+            hit_on_plane.x() / self.size_half.0 * 2.0 + 0.5,
+            hit_on_plane.y() / self.size_half.1 * 2.0 + 0.5,
+        );
+
         Some(HitRecord::new(
             ray,
             hit_pos,
             hit_t,
+            uv,
             self.normal,
             Arc::as_ref(&self.material),
         ))
