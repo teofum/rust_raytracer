@@ -6,13 +6,13 @@ use rust_raytracer::ppm;
 
 mod scene;
 use scene::TestScene1;
+use scene::TestScene2;
 
 use crate::scene::Scene;
 
 fn main() -> io::Result<()> {
     let time = Instant::now();
-
-    let (camera, world) = TestScene1::init()?;
+    let (camera, world) = TestScene2::init()?;
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);

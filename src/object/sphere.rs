@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::sync::Arc;
 
 use crate::aabb::AxisAlignedBoundingBox;
@@ -10,7 +11,7 @@ use super::{Hit, HitRecord};
 
 pub struct Sphere {
     pub material: Arc<dyn Material>,
-    
+
     center: Point3,
     radius: f64,
     bounds: AxisAlignedBoundingBox,
@@ -56,12 +57,19 @@ impl Hit for Sphere {
         }
 
         let hit_pos = ray.at(root);
+        let normal = (hit_pos - self.center) / self.radius;
+
+        // Get UV coordinates
+        let theta = f64::acos(-normal.y());
+        let phi = f64::atan2(-normal.z(), normal.x()) + PI;
+        let uv = (phi / (2.0 * PI), theta / PI);
+
         Some(HitRecord::new(
             ray,
             hit_pos,
             root,
-            (0.0, 0.0),
-            (hit_pos - self.center) / self.radius,
+            uv,
+            normal,
             Arc::as_ref(&self.material),
         ))
     }
