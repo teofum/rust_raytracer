@@ -74,6 +74,16 @@ impl TriangleMesh {
 
     fn calculate_bounding_box(&mut self) {
         self.bounds = aabb::get_bounding_box(&self.transformed_vertices);
+        self.rebuild_octree();
+    }
+
+    fn rebuild_octree(&mut self) {
+        self.octree = OctreeNode::new(
+            &self.transformed_vertices,
+            &self.triangles,
+            None,
+            self.bounds,
+        );
     }
 
     // Möller–Trumbore intersection

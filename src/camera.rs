@@ -11,7 +11,7 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec3::{Color, Point3, Vec3};
 
-const SAMPLES_PER_PIXEL: u32 = 100; // Number of random samples per pixel
+const SAMPLES_PER_PIXEL: u32 = 500; // Number of random samples per pixel
 const MAX_DEPTH: u32 = 20; // Max ray bounces
 
 const THREAD_COUNT: u32 = 10; // Number of threads to spawn
@@ -65,7 +65,7 @@ impl Camera {
         let focus_dist = self.focus_distance.unwrap_or_else(|| direction.length());
 
         // Relative size of the viewport to get 35mm (36x24mm frame) equivalent FOV
-        let h = focus_dist * 24.0 / self.focal_length;
+        let h = 24.0 / self.focal_length;
 
         // Final aspect ratio, accounting for image height rounding
         let real_aspect_ratio = self.image_width as f64 / self.image_height as f64;
@@ -128,6 +128,7 @@ impl Camera {
     /// This setting has no effect if depth-of-field is disabled.
     pub fn focus(&mut self, d: Option<f64>) {
         self.focus_distance = d;
+        self.init();
     }
 
     pub fn set_position(&mut self, pos: Point3) {

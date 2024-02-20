@@ -1,11 +1,9 @@
 use crate::aabb::{self, AxisAlignedBoundingBox};
+use crate::constants::INFINITY_VEC;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::Vec3;
 
 use super::{Hit, HitRecord};
-
-const INFINITY_VEC: Vec3 = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
 
 pub struct ObjectList {
     objects: Vec<Box<dyn Hit>>,

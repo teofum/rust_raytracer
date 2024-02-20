@@ -17,6 +17,14 @@ impl Vec3 {
         Vec3(0.0, 0.0, 0.0)
     }
 
+    pub fn random(rng: &mut XorShiftRng) -> Self {
+        let x = rng.gen_range(0.0..1.0);
+        let y = rng.gen_range(0.0..1.0);
+        let z = rng.gen_range(0.0..1.0);
+
+        Vec3(x, y, z)
+    }
+
     pub fn random_in_unit_disk(rng: &mut XorShiftRng) -> Self {
         let x = rng.sample(StandardNormal);
         let y = rng.sample(StandardNormal);

@@ -1,11 +1,12 @@
+pub mod bvh;
 pub mod list;
-pub mod sphere;
-pub mod plane;
 pub mod mesh;
+pub mod plane;
+pub mod sphere;
 
 pub use list::ObjectList;
-pub use sphere::Sphere;
 pub use plane::Plane;
+pub use sphere::Sphere;
 
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
