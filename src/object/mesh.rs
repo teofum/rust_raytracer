@@ -1,28 +1,22 @@
 use std::sync::Arc;
 
+use crate::interval::Interval;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-use crate::{interval::Interval, material::Material};
 
 use super::{Hit, HitRecord};
 
-const MAX_TRIS_PER_LEAF: usize = 50;
+mod aabb;
+use aabb::AxisAlignedBoundingBox;
+mod octree;
+use octree::{OctreeNode, OctreeNodeData};
 
 #[derive(Clone, Copy)]
 pub struct Triangle {
     pub vert_indices: [usize; 3],
     pub normal_indices: [usize; 3],
     pub uv_indices: Option<[usize; 3]>,
-}
-
-enum OctreeNodeData {
-    Leaf(Vec<usize>),
-    Branch([Box<OctreeNode>; 8]),
-}
-
-struct OctreeNode {
-    pub data: OctreeNodeData,
-    pub bounding_box: (Point3, Point3),
 }
 
 pub struct TriangleMesh {
@@ -37,187 +31,11 @@ pub struct TriangleMesh {
     transformed_vertices: Vec<Point3>,
     triangles: Vec<Triangle>,
 
-    bounding_box: (Point3, Point3),
+    bounding_box: AxisAlignedBoundingBox,
     octree: OctreeNode,
 }
 
 impl TriangleMesh {
-    fn get_bounding_box(vertices: &[Point3]) -> (Point3, Point3) {
-        let mut bounds_min = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
-        let mut bounds_max = -bounds_min;
-
-        for vertex_pos in vertices {
-            for i in 0..3 {
-                if vertex_pos[i] < bounds_min[i] {
-                    bounds_min[i] = vertex_pos[i];
-                }
-                if vertex_pos[i] > bounds_max[i] {
-                    bounds_max[i] = vertex_pos[i];
-                }
-            }
-        }
-
-        (bounds_min, bounds_max)
-    }
-
-    fn make_octree_node(
-        vertices: &Vec<Point3>,
-        triangles: &Vec<Triangle>,
-        filter: Option<&Vec<usize>>,
-        (b_min, b_max): (Point3, Point3),
-    ) -> OctreeNode {
-        let triangle_idx_pairs: Vec<_> = triangles
-            .iter()
-            .enumerate()
-            .filter(|(i, _)| match filter {
-                None => true,
-                Some(filter) => filter.contains(i),
-            })
-            .collect();
-
-        if triangle_idx_pairs.len() <= MAX_TRIS_PER_LEAF {
-            let indices: Vec<_> = triangle_idx_pairs.into_iter().map(|(i, _)| i).collect();
-            OctreeNode {
-                data: OctreeNodeData::Leaf(indices),
-                bounding_box: (b_min, b_max),
-            }
-        } else {
-            let midpoint = (b_min + b_max) / 2.0;
-
-            let mut index_lists: [Vec<usize>; 8] = [
-                Vec::new(), // -x -y -z
-                Vec::new(), // -x -y +z
-                Vec::new(), // -x +y -z
-                Vec::new(), // -x +y +z
-                Vec::new(), // +x -y -z
-                Vec::new(), // +x -y +z
-                Vec::new(), // +x +y -z
-                Vec::new(), // +x +y +z
-            ];
-
-            for (index, triangle) in triangle_idx_pairs {
-                // Get triangle bounds
-                let triangle_vertices = [
-                    vertices[triangle.vert_indices[0]],
-                    vertices[triangle.vert_indices[1]],
-                    vertices[triangle.vert_indices[2]],
-                ];
-
-                let (t_min, t_max) = Self::get_bounding_box(&triangle_vertices);
-
-                let mut in_lists = [true; 8];
-                if t_min.x() > midpoint.x() {
-                    in_lists[0] = false;
-                    in_lists[1] = false;
-                    in_lists[2] = false;
-                    in_lists[3] = false;
-                }
-                if t_max.x() < midpoint.x() {
-                    in_lists[4] = false;
-                    in_lists[5] = false;
-                    in_lists[6] = false;
-                    in_lists[7] = false;
-                }
-                if t_min.y() > midpoint.y() {
-                    in_lists[0] = false;
-                    in_lists[1] = false;
-                    in_lists[4] = false;
-                    in_lists[5] = false;
-                }
-                if t_max.y() < midpoint.y() {
-                    in_lists[2] = false;
-                    in_lists[3] = false;
-                    in_lists[6] = false;
-                    in_lists[7] = false;
-                }
-                if t_min.z() > midpoint.z() {
-                    in_lists[0] = false;
-                    in_lists[2] = false;
-                    in_lists[4] = false;
-                    in_lists[6] = false;
-                }
-                if t_max.z() < midpoint.z() {
-                    in_lists[1] = false;
-                    in_lists[3] = false;
-                    in_lists[5] = false;
-                    in_lists[7] = false;
-                }
-
-                for i in 0..8 {
-                    if in_lists[i] {
-                        index_lists[i].push(index);
-                    }
-                }
-            }
-
-            let min_x = b_min.x();
-            let min_y = b_min.y();
-            let min_z = b_min.z();
-            let max_x = b_max.x();
-            let max_y = b_max.y();
-            let max_z = b_max.z();
-            let mid_x = midpoint.x();
-            let mid_y = midpoint.y();
-            let mid_z = midpoint.z();
-
-            let data = OctreeNodeData::Branch([
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[0]),
-                    (b_min, midpoint),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[1]),
-                    (Vec3(min_x, min_y, mid_z), Vec3(mid_x, mid_y, max_z)),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[2]),
-                    (Vec3(min_x, mid_y, min_z), Vec3(mid_x, max_y, mid_z)),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[3]),
-                    (Vec3(min_x, mid_y, mid_z), Vec3(mid_x, max_y, max_z)),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[4]),
-                    (Vec3(mid_x, min_y, min_z), Vec3(max_x, mid_y, mid_z)),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[5]),
-                    (Vec3(mid_x, min_y, mid_z), Vec3(max_x, mid_y, max_z)),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[6]),
-                    (Vec3(mid_x, mid_y, min_z), Vec3(max_x, max_y, mid_z)),
-                )),
-                Box::new(Self::make_octree_node(
-                    vertices,
-                    triangles,
-                    Some(&index_lists[7]),
-                    (midpoint, b_max),
-                )),
-            ]);
-
-            OctreeNode {
-                data,
-                bounding_box: (b_min, b_max),
-            }
-        }
-    }
-
     pub fn new(
         vertices: Vec<Point3>,
         vertex_uvs: Vec<Point3>,
@@ -225,8 +43,8 @@ impl TriangleMesh {
         triangles: Vec<Triangle>,
         material: Arc<dyn Material>,
     ) -> Self {
-        let bounding_box = Self::get_bounding_box(&vertices);
-        let octree = Self::make_octree_node(&vertices, &triangles, None, bounding_box);
+        let bounding_box = aabb::get_bounding_box(&vertices);
+        let octree = OctreeNode::new(&vertices, &triangles, None, bounding_box);
 
         TriangleMesh {
             transformed_vertices: vertices.to_vec(),
@@ -256,66 +74,7 @@ impl TriangleMesh {
     }
 
     fn calculate_bounding_box(&mut self) {
-        self.bounding_box = Self::get_bounding_box(&self.transformed_vertices);
-    }
-
-    // Fast ray-box intersection by Andrew Woo
-    // from Graphics Gems, 1990
-    fn test_bounds((b_min, b_max): (Point3, Point3), ray: &Ray, t_int: &Interval) -> bool {
-        let mut inside = true; // Ray origin inside bounds
-        let mut quadrant: [i8; 3] = [0; 3];
-        let mut candidate_plane = Vec3::origin();
-        let mut max_t = Vec3::origin();
-
-        for i in 0..3 {
-            if ray.origin[i] < b_min[i] {
-                quadrant[i] = -1;
-                candidate_plane[i] = b_min[i];
-                inside = false;
-            } else if ray.origin[i] > b_max[i] {
-                quadrant[i] = 1;
-                candidate_plane[i] = b_max[i];
-                inside = false;
-            } else {
-                quadrant[i] = 0;
-            }
-        }
-
-        if inside {
-            return true;
-        }
-
-        // Calculate t distance to candidate planes
-        for i in 0..3 {
-            max_t[i] = if quadrant[i] != 0 && ray.dir[i] != 0.0 {
-                (candidate_plane[i] - ray.origin[i]) / ray.dir[i]
-            } else {
-                -1.0
-            }
-        }
-
-        // Use the largest max_t to pick a plane to intersect
-        let mut plane_idx = 0;
-        for i in 1..3 {
-            if max_t[i] > max_t[plane_idx] {
-                plane_idx = i;
-            }
-        }
-
-        if max_t[plane_idx] <= t_int.0 || max_t[plane_idx] >= t_int.1 {
-            return false;
-        }
-
-        for i in 0..3 {
-            if i != plane_idx {
-                let hit_coord = ray.origin[i] + max_t[plane_idx] * ray.dir[i];
-                if hit_coord < b_min[i] || hit_coord > b_max[i] {
-                    return false;
-                }
-            }
-        }
-
-        true
+        self.bounding_box = aabb::get_bounding_box(&self.transformed_vertices);
     }
 
     // Möller–Trumbore intersection
@@ -387,7 +146,7 @@ impl TriangleMesh {
     }
 
     fn test_octree_node(&self, node: &OctreeNode, ray: &Ray, t: Interval) -> Option<HitRecord> {
-        if !Self::test_bounds(node.bounding_box, ray, &t) {
+        if !aabb::test_bounding_box(node.bounding_box, ray, &t) {
             return None;
         }
 
