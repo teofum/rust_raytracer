@@ -19,7 +19,7 @@ use rust_raytracer::vec3::Vec3;
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 
 /// Output image width, in pixels. Height is determined by width and aspect ratio.
-const OUTPUT_WIDTH: usize = 1200;
+const OUTPUT_WIDTH: usize = 600;
 
 /// Camera focal length, in millimetres for 35mm-equivalent FOV
 const FOCAL_LENGTH: f64 = 70.0;
