@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{LambertianDiffuse, Material};
-use rust_raytracer::object::{Hit, ObjectList, Sphere};
-use rust_raytracer::texture::ImageTexture;
+use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
+use rust_raytracer::texture::{ConstantColorTexture, ImageTexture};
 use rust_raytracer::vec3::Vec3;
 
 use super::Scene;
@@ -25,13 +25,24 @@ impl Scene for TestScene2 {
 
         // Set up materials
         let tex_earth = ImageTexture::from_file("resource/earthmap.jpg")?;
-        let material: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(tex_earth)));
+        let mat_earth: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(tex_earth)));
+
+        let mat_floor: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
+            ConstantColorTexture::from_values(0.5, 0.5, 0.5),
+        )));
 
         // Set up objects
-        let earth = Box::new(Sphere::new(Vec3(0.0, 0.0, 0.0), 2.0, Arc::clone(&material)));
+        let earth = Box::new(Sphere::new(Vec3(0.0, 0.0, 0.0), 1.5, mat_earth));
+
+        let floor = Box::new(Plane::new(
+            Vec3(0.0, -1.5, 0.0),
+            (Vec3(-10.0, 0.0, 0.0), Vec3(0.0, 0.0, 10.0)),
+            mat_floor,
+        ));
 
         let mut world = ObjectList::new();
         world.add(earth);
+        world.add(floor);
 
         let world = Arc::new(world);
 
