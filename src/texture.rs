@@ -9,6 +9,9 @@ pub use constant_color::ConstantColorTexture;
 pub mod image;
 pub use image::ImageTexture;
 
+pub mod noise;
+pub use noise::NoiseSolidTexture;
+
 pub mod uv_debug;
 pub use uv_debug::UvDebugTexture;
 

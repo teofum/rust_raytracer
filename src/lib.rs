@@ -6,6 +6,7 @@ pub mod interval;
 pub mod loaders;
 pub mod mat3;
 pub mod material;
+pub mod noise;
 pub mod object;
 pub mod ppm;
 pub mod ray;

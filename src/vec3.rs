@@ -1,7 +1,9 @@
 use rand::Rng;
 use rand_distr::StandardNormal;
 use rand_xorshift::XorShiftRng;
-use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3(pub f64, pub f64, pub f64);
@@ -41,6 +43,10 @@ impl Vec3 {
     }
 
     // Getters
+
+    pub fn values(&self) -> (f64, f64, f64) {
+        (self.0, self.1, self.2)
+    }
 
     pub fn x(&self) -> f64 {
         self.0
@@ -115,6 +121,10 @@ impl Vec3 {
         let refracted_parallel = normal * -(1.0 - refracted_perp.length_squared()).sqrt();
 
         refracted_perp + refracted_parallel
+    }
+
+    pub fn map_components(self, f: fn(x: f64) -> f64) -> Vec3 {
+        Vec3(f(self.0), f(self.1), f(self.2))
     }
 }
 

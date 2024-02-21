@@ -5,14 +5,14 @@ use std::time::Instant;
 use rust_raytracer::ppm;
 
 mod scene;
-use scene::TestScene1;
-use scene::TestScene2;
-
-use crate::scene::Scene;
+use scene::EarthScene;
+use scene::GoldenMonkeyScene;
+use scene::PerlinScene;
+use scene::Scene;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let (camera, world) = TestScene2::init()?;
+    let (camera, world) = PerlinScene::init()?;
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);

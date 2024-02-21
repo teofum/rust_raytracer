@@ -19,9 +19,9 @@ const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const OUTPUT_WIDTH: usize = 600;
 const FOCAL_LENGTH: f64 = 70.0;
 
-pub struct TestScene1;
+pub struct GoldenMonkeyScene;
 
-impl Scene for TestScene1 {
+impl Scene for GoldenMonkeyScene {
     fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
