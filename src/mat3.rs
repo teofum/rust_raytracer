@@ -5,7 +5,7 @@ use std::ops::{
 use crate::vec3::Vec3;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
-pub struct Mat3([f64; 9]);
+pub struct Mat3(pub [f64; 9]);
 
 impl Mat3 {
     // Constructors

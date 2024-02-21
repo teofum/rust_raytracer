@@ -4,6 +4,7 @@ use std::time::Instant;
 use rust_raytracer::output::Writer;
 
 mod scene;
+use rust_raytracer::tonemapping;
 use scene::EarthScene;
 use scene::GoldenMonkeyScene;
 use scene::LightTestScene;
@@ -14,7 +15,7 @@ const OUT_FILENAME: &'static str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let (camera, world) = LightTestScene::init()?;
+    let (camera, world) = GoldenMonkeyScene::init()?;
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);
@@ -26,7 +27,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let elapsed = time.elapsed();
     println!("Done: {:.2?}. Writing output to file...", elapsed);
 
-    let writer = Writer::new(buf);
+    let mut writer = Writer::new(buf);
+    writer.tonemap = tonemapping::tonemap_aces;
     writer.save(OUT_FILENAME)?;
 
     let elapsed = time.elapsed();

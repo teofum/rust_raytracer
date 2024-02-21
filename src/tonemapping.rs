@@ -1,5 +1,7 @@
 use crate::vec3::Color;
 
+pub mod aces;
+pub use aces::tonemap_aces;
 pub mod clamp;
 pub use clamp::tonemap_clamp;
 

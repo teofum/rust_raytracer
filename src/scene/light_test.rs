@@ -34,10 +34,10 @@ impl Scene for LightTestScene {
             ))));
         let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.05));
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
-            ConstantColorTexture::from_values(4.0, 1.0, 4.0),
+            ConstantColorTexture::from_values(7.0, 1.0, 7.0),
         )));
         let mat_light_2: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
-            ConstantColorTexture::from_values(1.0, 3.0, 4.0),
+            ConstantColorTexture::from_values(1.0, 6.0, 8.0),
         )));
 
         // Set up objects
