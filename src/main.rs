@@ -1,5 +1,5 @@
+use std::error::Error;
 use std::fs::File;
-use std::io;
 use std::time::Instant;
 
 use rust_raytracer::ppm;
@@ -10,7 +10,7 @@ use scene::TestScene2;
 
 use crate::scene::Scene;
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
     let (camera, world) = TestScene2::init()?;
 

@@ -1,5 +1,5 @@
+use std::error::Error;
 use std::fs::File;
-use std::io;
 use std::sync::Arc;
 
 use rand::{Rng, SeedableRng};
@@ -22,7 +22,7 @@ const FOCAL_LENGTH: f64 = 70.0;
 pub struct TestScene1;
 
 impl Scene for TestScene1 {
-    fn init() -> io::Result<(Camera, Arc<dyn Hit>)> {
+    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec3(5.0, 2.0, 9.0), Vec3(0.0, 0.5, 0.0));

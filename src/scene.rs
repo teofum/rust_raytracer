@@ -1,4 +1,4 @@
-use std::io;
+use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
@@ -10,5 +10,5 @@ mod test_scene_2;
 pub use test_scene_2::TestScene2;
 
 pub trait Scene {
-    fn init() -> io::Result<(Camera, Arc<dyn Hit>)>;
+    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>>;
 }
