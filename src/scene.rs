@@ -4,6 +4,8 @@ use std::sync::Arc;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::object::Hit;
 
+mod cornell_box;
+pub use cornell_box::CornellBoxScene;
 mod earth;
 pub use earth::EarthScene;
 mod golden_monkey;

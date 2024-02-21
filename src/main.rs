@@ -5,6 +5,7 @@ use rust_raytracer::output::Writer;
 
 mod scene;
 use rust_raytracer::tonemapping;
+use scene::CornellBoxScene;
 use scene::EarthScene;
 use scene::GoldenMonkeyScene;
 use scene::LightTestScene;
@@ -15,7 +16,7 @@ const OUT_FILENAME: &'static str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let (camera, world) = GoldenMonkeyScene::init()?;
+    let (camera, world) = CornellBoxScene::init()?;
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);
