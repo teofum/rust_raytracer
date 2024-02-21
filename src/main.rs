@@ -1,8 +1,7 @@
 use std::error::Error;
-use std::fs::File;
 use std::time::Instant;
 
-use rust_raytracer::ppm;
+use rust_raytracer::output::Writer;
 
 mod scene;
 use scene::EarthScene;
@@ -10,6 +9,8 @@ use scene::GoldenMonkeyScene;
 use scene::LightTestScene;
 use scene::PerlinScene;
 use scene::Scene;
+
+const OUT_FILENAME: &'static str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
@@ -25,8 +26,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let elapsed = time.elapsed();
     println!("Done: {:.2?}. Writing output to file...", elapsed);
 
-    let mut file = File::create("out.ppm")?;
-    ppm::write_to_file(&mut file, &buf)?;
+    let writer = Writer::new(buf);
+    writer.save(OUT_FILENAME)?;
 
     let elapsed = time.elapsed();
     println!("Done! Took {:.2?}. Goodbye :)", elapsed);
