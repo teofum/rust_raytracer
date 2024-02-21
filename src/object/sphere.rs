@@ -60,7 +60,7 @@ impl Hit for Sphere {
         let normal = (hit_pos - self.center) / self.radius;
 
         // Get UV coordinates
-        let theta = f64::acos(-normal.y());
+        let theta = f64::acos(normal.y());
         let phi = f64::atan2(-normal.z(), normal.x()) + PI;
         let uv = (phi / (2.0 * PI), theta / PI);
 
