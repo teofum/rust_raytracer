@@ -244,11 +244,13 @@ impl Camera {
         }
 
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
+            let emitted = hit.material().emit(&hit);
+
             if let Some(att) = hit.material().scatter(ray, &hit, rng) {
-                return self.ray_color(ray, object, depth - 1, rng) * att;
+                return emitted + self.ray_color(ray, object, depth - 1, rng) * att;
             }
 
-            return Vec3::origin(); // Ray was absorbed by material
+            return emitted; // Ray was absorbed by material
         }
 
         (self.background_color)(ray)

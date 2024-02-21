@@ -7,12 +7,13 @@ use rust_raytracer::ppm;
 mod scene;
 use scene::EarthScene;
 use scene::GoldenMonkeyScene;
+use scene::LightTestScene;
 use scene::PerlinScene;
 use scene::Scene;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let (camera, world) = PerlinScene::init()?;
+    let (camera, world) = LightTestScene::init()?;
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);

@@ -5,10 +5,12 @@ use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
 
 pub mod dielectric;
+pub mod emissive;
 pub mod lambertian;
 pub mod metal;
 
 pub use dielectric::Dielectric;
+pub use emissive::Emissive;
 pub use lambertian::LambertianDiffuse;
 pub use metal::Metal;
 
