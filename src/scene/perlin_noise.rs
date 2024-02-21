@@ -26,7 +26,13 @@ impl Scene for PerlinScene {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec3(13.0, 1.0, 4.0), Vec3::origin());
-        // camera.set_f_number(Some(4.0));
+        camera.set_f_number(Some(4.0));
+        camera.background_color = |ray| {
+            let unit_dir = ray.dir.to_unit();
+            let t = 0.5 * (unit_dir.y() + 1.0);
+
+            Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
+        };
 
         // Set up materials
         let mut rng = XorShiftRng::from_rng(rand::thread_rng()).unwrap();

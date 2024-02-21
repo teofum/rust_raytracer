@@ -28,6 +28,12 @@ impl Scene for GoldenMonkeyScene {
         camera.move_and_look_at(Vec3(5.0, 2.0, 9.0), Vec3(0.0, 0.5, 0.0));
         camera.set_f_number(Some(2.8));
         camera.focus(Some(10.0));
+        camera.background_color = |ray| {
+            let unit_dir = ray.dir.to_unit();
+            let t = 0.5 * (unit_dir.y() + 1.0);
+
+            Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
+        };
 
         // Set up materials
         let mat_ground: Arc<dyn Material> =

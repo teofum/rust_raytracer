@@ -21,7 +21,12 @@ impl Scene for EarthScene {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec3(13.0, 2.0, 3.0), Vec3::origin());
-        // camera.set_f_number(Some(2.8));
+        camera.background_color = |ray| {
+            let unit_dir = ray.dir.to_unit();
+            let t = 0.5 * (unit_dir.y() + 1.0);
+
+            Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
+        };
 
         // Set up materials
         let tex_earth = ImageTexture::from_file("resource/earthmap.jpg")?;

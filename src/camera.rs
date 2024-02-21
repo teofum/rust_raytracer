@@ -18,6 +18,8 @@ const THREAD_COUNT: u32 = 10; // Number of threads to spawn
 const SAMPLES_PER_THREAD: u32 = SAMPLES_PER_PIXEL / THREAD_COUNT;
 
 pub struct Camera {
+    pub background_color: fn(ray: &Ray) -> Color,
+
     image_width: usize,
     aspect_ratio: f64,
     focal_length: f64,
@@ -37,6 +39,8 @@ pub struct Camera {
 impl Camera {
     pub fn new(image_width: usize, aspect_ratio: f64, focal_length: f64) -> Self {
         let mut camera = Camera {
+            background_color: |_| Vec3::origin(),
+
             image_width,
             aspect_ratio,
             focal_length,
@@ -247,10 +251,7 @@ impl Camera {
             return Vec3::origin(); // Ray was absorbed by material
         }
 
-        let unit_dir = ray.dir.to_unit();
-        let t = 0.5 * (unit_dir.y() + 1.0);
-
-        Vec3::lerp(Vec3(1.0, 1.0, 1.0), Vec3(0.5, 0.7, 1.0), t)
+        (self.background_color)(ray)
     }
 
     fn pixel_sample_square(&self, rng: &mut XorShiftRng) -> Vec3 {

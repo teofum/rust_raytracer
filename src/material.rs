@@ -2,7 +2,7 @@ use rand_xorshift::XorShiftRng;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::vec3::Color;
+use crate::vec3::{Color, Vec3};
 
 pub mod dielectric;
 pub mod lambertian;
@@ -18,4 +18,8 @@ pub trait Material: Send + Sync {
     /// Mutates the original ray, and returns an attenuation value or `None`
     /// if the ray is absorbed.
     fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color>;
+
+    fn emit(&self, _: &HitRecord) -> Color {
+        Vec3::origin()
+    }
 }
