@@ -34,11 +34,15 @@ impl Scene for LightTestScene {
             ))));
         let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.05));
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
-            ConstantColorTexture::from_values(4.0, 4.0, 4.0),
+            ConstantColorTexture::from_values(4.0, 1.0, 4.0),
+        )));
+        let mat_light_2: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
+            ConstantColorTexture::from_values(1.0, 3.0, 4.0),
         )));
 
         // Set up objects
         let sphere = Sphere::new(Vec3(-1.0, 0.0, 1.0), 0.5, mat_light);
+        let sphere_2 = Sphere::new(Vec3(2.0, 0.5, -1.2), 0.4, mat_light_2);
 
         let floor = Plane::new(
             Vec3(0.0, -1.0, 0.0),
@@ -52,6 +56,7 @@ impl Scene for LightTestScene {
 
         let mut world = ObjectList::new();
         world.add(Box::new(sphere));
+        world.add(Box::new(sphere_2));
         world.add(Box::new(floor));
         world.add(Box::new(mesh));
 
