@@ -11,11 +11,15 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec4::{Color, Point4, Vec4};
 
-const SAMPLES_PER_PIXEL: u32 = 50; // Number of random samples per pixel
-const MAX_DEPTH: u32 = 20; // Max ray bounces
+const SQRT_SAMPLES_PER_THREAD: usize = 10;
 
-const THREAD_COUNT: u32 = 10; // Number of threads to spawn
-const SAMPLES_PER_THREAD: u32 = SAMPLES_PER_PIXEL / THREAD_COUNT;
+/// Inverse Square Root of Samples Per Thread
+const ISRSPT: f64 = 1.0 / SQRT_SAMPLES_PER_THREAD as f64;
+const THREAD_COUNT: usize = 10; // Number of threads to spawn
+const MAX_DEPTH: usize = 20; // Max ray bounces
+
+const SAMPLES_PER_THREAD: usize = SQRT_SAMPLES_PER_THREAD * SQRT_SAMPLES_PER_THREAD;
+const SAMPLES_PER_PIXEL: usize = SAMPLES_PER_THREAD * THREAD_COUNT; // Total number of random samples per pixel
 
 pub struct Camera {
     pub background_color: fn(ray: &Ray) -> Color,
@@ -177,14 +181,17 @@ impl Camera {
                     for x in 0..image_width {
                         let mut color = Vec4::vec(0.0, 0.0, 0.0);
 
-                        for _ in 0..SAMPLES_PER_THREAD {
-                            let mut ray = thread_self_ref.get_ray(x, y, &mut thread_rng);
-                            color += thread_self_ref.ray_color(
-                                &mut ray,
-                                &thread_world,
-                                MAX_DEPTH,
-                                &mut thread_rng,
-                            );
+                        for sy in 0..SQRT_SAMPLES_PER_THREAD {
+                            for sx in 0..SQRT_SAMPLES_PER_THREAD {
+                                let mut ray =
+                                    thread_self_ref.get_ray(x, y, sx, sy, &mut thread_rng);
+                                color += thread_self_ref.ray_color(
+                                    &mut ray,
+                                    &thread_world,
+                                    MAX_DEPTH,
+                                    &mut thread_rng,
+                                );
+                            }
                         }
                         color /= SAMPLES_PER_PIXEL as f64;
 
@@ -217,11 +224,18 @@ impl Camera {
 
     // Rendering helpers
 
-    fn get_ray(&self, pixel_x: usize, pixel_y: usize, rng: &mut XorShiftRng) -> Ray {
+    fn get_ray(
+        &self,
+        pixel_x: usize,
+        pixel_y: usize,
+        sample_x: usize,
+        sample_y: usize,
+        rng: &mut XorShiftRng,
+    ) -> Ray {
         let pixel_center = self.first_pixel
             + (self.pixel_delta.0 * pixel_x as f64)
             + (self.pixel_delta.1 * pixel_y as f64);
-        let pixel_sample = pixel_center + self.pixel_sample_square(rng);
+        let pixel_sample = pixel_center + self.pixel_sample_square(sample_x, sample_y, rng);
 
         let ray_origin = match self.aperture_radius {
             Some(_) => self.defocus_disk_sample(rng),
@@ -236,7 +250,7 @@ impl Camera {
         &self,
         ray: &mut Ray,
         object: &Arc<dyn Hit>,
-        depth: u32,
+        depth: usize,
         rng: &mut XorShiftRng,
     ) -> Color {
         if depth <= 0 {
@@ -256,9 +270,9 @@ impl Camera {
         (self.background_color)(ray)
     }
 
-    fn pixel_sample_square(&self, rng: &mut XorShiftRng) -> Vec4 {
-        let x = rng.gen_range(0.0..1.0) - 0.5;
-        let y = rng.gen_range(0.0..1.0) - 0.5;
+    fn pixel_sample_square(&self, sample_x: usize, sample_y: usize, rng: &mut XorShiftRng) -> Vec4 {
+        let x = (sample_x as f64 + rng.gen_range(0.0..1.0)) * ISRSPT - 0.5;
+        let y = (sample_y as f64 + rng.gen_range(0.0..1.0)) * ISRSPT - 0.5;
 
         self.pixel_delta.0 * x + self.pixel_delta.1 * y
     }

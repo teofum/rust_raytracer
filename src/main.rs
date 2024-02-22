@@ -17,7 +17,15 @@ const OUT_FILENAME: &'static str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let (camera, world) = CornellSmokeScene::init()?;
+    let scene = 4;
+    let (camera, world) = match scene {
+        1 => EarthScene::init()?,
+        2 => PerlinScene::init()?,
+        3 => LightTestScene::init()?,
+        4 => CornellBoxScene::init()?,
+        5 => CornellSmokeScene::init()?,
+        _ => GoldenMonkeyScene::init()?,
+    };
 
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);

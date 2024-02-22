@@ -66,7 +66,7 @@ impl Scene for CornellBoxScene {
 
         let light = Plane::new(
             Vec4::point(0.0, 27.49, 0.0),
-            (Vec4::vec(13.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -10.5)),
+            (Vec4::vec(6.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -5.25)),
             Arc::clone(&mat_light),
         );
 
