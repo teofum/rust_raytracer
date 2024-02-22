@@ -25,9 +25,6 @@ pub struct TriangleMesh {
     vertices: Vec<Point4>,
     vertex_uvs: Vec<Point4>,
     vertex_normals: Vec<Vec4>,
-    position: Point4,
-
-    transformed_vertices: Vec<Point4>,
     triangles: Vec<Triangle>,
 
     bounds: AxisAlignedBoundingBox,
@@ -46,11 +43,9 @@ impl TriangleMesh {
         let octree = OctreeNode::new(&vertices, &triangles, None, bounds);
 
         TriangleMesh {
-            transformed_vertices: vertices.to_vec(),
             vertices,
             vertex_uvs,
             vertex_normals,
-            position: Vec4::point(0.0, 0.0, 0.0),
             triangles,
             material,
             flat_shading: false,
@@ -59,39 +54,12 @@ impl TriangleMesh {
         }
     }
 
-    pub fn set_position(&mut self, pos: Point4) {
-        self.position = pos;
-
-        self.update_transformed();
-    }
-
-    fn update_transformed(&mut self) {
-        for (i, vert) in self.vertices.iter().enumerate() {
-            self.transformed_vertices[i] = *vert + self.position;
-        }
-        self.calculate_bounding_box();
-    }
-
-    fn calculate_bounding_box(&mut self) {
-        self.bounds = aabb::get_bounding_box(&self.transformed_vertices);
-        self.rebuild_octree();
-    }
-
-    fn rebuild_octree(&mut self) {
-        self.octree = OctreeNode::new(
-            &self.transformed_vertices,
-            &self.triangles,
-            None,
-            self.bounds,
-        );
-    }
-
     // Möller–Trumbore intersection
     fn test_tri(&self, triangle: &Triangle, ray: &Ray, t_int: Interval) -> Option<HitRecord> {
         let [v0, v1, v2] = [
-            self.transformed_vertices[triangle.vert_indices[0]],
-            self.transformed_vertices[triangle.vert_indices[1]],
-            self.transformed_vertices[triangle.vert_indices[2]],
+            self.vertices[triangle.vert_indices[0]],
+            self.vertices[triangle.vert_indices[1]],
+            self.vertices[triangle.vert_indices[2]],
         ];
 
         // Calculate the plane the triangle lies on

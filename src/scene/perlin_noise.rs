@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::f64::consts::PI;
 use std::fs::File;
 use std::sync::Arc;
 
@@ -6,8 +7,10 @@ use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
+use rust_raytracer::mat4::Mat4;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::noise::PerlinNoise3D;
+use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
 use rust_raytracer::texture::NoiseSolidTexture;
 use rust_raytracer::vec4::Vec4;
@@ -31,7 +34,7 @@ impl Scene for PerlinScene {
             let unit_dir = ray.dir.to_unit();
             let t = 0.5 * (unit_dir.y() + 1.0);
 
-            Vec4::lerp(Vec4::vec(5.0, 5.0, 5.0), Vec4::vec(1.0, 1.4, 2.0), t)
+            Vec4::lerp(Vec4::vec(3.0, 3.0, 3.0), Vec4::vec(1.0, 1.4, 2.0), t)
         };
 
         // Set up materials
@@ -55,8 +58,9 @@ impl Scene for PerlinScene {
         );
 
         let mesh_file = File::open("monkey.obj")?;
-        let mut mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_marble))?;
-        mesh.set_position(Vec4::point(0.0, 0.0, -1.5));
+        let mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_marble))?;
+        let mesh_transform = Mat4::translation(0.0, 0.3, -2.0) * Mat4::rotate_y(PI / 4.0) * Mat4::scale(1.5, 1.5, 1.5);
+        let mesh = Transform::new(Box::new(mesh), mesh_transform);
 
         let mut world = ObjectList::new();
         world.add(Box::new(sphere));

@@ -41,6 +41,60 @@ impl Mat4 {
         ])
     }
 
+    pub fn translation(x: f64, y: f64, z: f64) -> Self {
+        Mat4([
+            1.0, 0.0, 0.0, x, //
+            0.0, 1.0, 0.0, y, //
+            0.0, 0.0, 1.0, z, //
+            0.0, 0.0, 0.0, 1.0,
+        ])
+    }
+
+    pub fn scale(x: f64, y: f64, z: f64) -> Self {
+        Mat4([
+            x, 0.0, 0.0, 0.0, //
+            0.0, y, 0.0, 0.0, //
+            0.0, 0.0, z, 0.0, //
+            0.0, 0.0, 0.0, 1.0,
+        ])
+    }
+
+    pub fn rotate_x(theta: f64) -> Self {
+        let sin_t = theta.sin();
+        let cos_t = theta.cos();
+
+        Mat4([
+            1.0, 0.0, 0.0, 0.0, //
+            0.0, cos_t, -sin_t, 0.0, //
+            0.0, sin_t, cos_t, 0.0, //
+            0.0, 0.0, 0.0, 1.0,
+        ])
+    }
+
+    pub fn rotate_y(theta: f64) -> Self {
+        let sin_t = theta.sin();
+        let cos_t = theta.cos();
+
+        Mat4([
+            cos_t, 0.0, sin_t, 0.0, //
+            0.0, 1.0, 0.0, 0.0, //
+            -sin_t, 0.0, cos_t, 0.0, //
+            0.0, 0.0, 0.0, 1.0,
+        ])
+    }
+
+    pub fn rotate_z(theta: f64) -> Self {
+        let sin_t = theta.sin();
+        let cos_t = theta.cos();
+
+        Mat4([
+            cos_t, -sin_t, 0.0, 0.0, //
+            sin_t, cos_t, 0.0, 0.0, //
+            0.0, 0.0, 1.0, 0.0, //
+            0.0, 0.0, 0.0, 1.0,
+        ])
+    }
+
     // Getters
 
     pub fn row(&self, index: usize) -> Vec4 {
@@ -125,13 +179,13 @@ impl Mul for Mat4 {
 
     fn mul(self, rhs: Self) -> Self::Output {
         let mut values = [0.0; 16];
-        let rhs_cols = [rhs.column(0), rhs.column(1), rhs.column(2)];
+        let rhs_cols = [rhs.column(0), rhs.column(1), rhs.column(2), rhs.column(3)];
 
         for i in 0..4 {
             let row = self.row(i);
             for j in 0..4 {
                 let col = rhs_cols[j];
-                values[i * 4 + j] = row[0] * col[0] + row[1] * col[1] + row[2] * col[2];
+                values[i * 4 + j] = row[0] * col[0] + row[1] * col[1] + row[2] * col[2] + row[3] * col[3];
             }
         }
 
@@ -202,13 +256,13 @@ impl SubAssign for Mat4 {
 impl MulAssign for Mat4 {
     fn mul_assign(&mut self, rhs: Self) {
         let mut values = [0.0; 16];
-        let rhs_cols = [rhs.column(0), rhs.column(1), rhs.column(2)];
+        let rhs_cols = [rhs.column(0), rhs.column(1), rhs.column(2), rhs.column(3)];
 
         for i in 0..4 {
             let row = self.row(i);
             for j in 0..4 {
                 let col = rhs_cols[j];
-                values[i * 4 + j] = row[0] * col[0] + row[1] * col[1] + row[2] * col[2];
+                values[i * 4 + j] = row[0] * col[0] + row[1] * col[1] + row[2] * col[2] + row[3] * col[3];
             }
         }
 

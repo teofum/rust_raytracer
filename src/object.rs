@@ -3,7 +3,9 @@ pub mod list;
 pub mod mesh;
 pub mod plane;
 pub mod sphere;
+pub mod transform;
 
+pub use bvh::BoundingVolumeHierarchyNode;
 pub use list::ObjectList;
 pub use plane::Plane;
 pub use sphere::Sphere;
