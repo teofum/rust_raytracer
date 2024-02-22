@@ -5,9 +5,9 @@ use rand_xorshift::XorShiftRng;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::texture::Texture;
-use crate::vec4::{Color, Vec4};
+use crate::vec4::Vec4;
 
-use super::Material;
+use super::{Material, ScatterResult};
 
 pub struct LambertianDiffuse {
     albedo: Arc<dyn Texture>,
@@ -20,16 +20,19 @@ impl LambertianDiffuse {
 }
 
 impl Material for LambertianDiffuse {
-    fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color> {
+    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
         let scatter_dir = hit.normal() + Vec4::random_unit(rng);
 
-        ray.origin = hit.pos();
-        ray.dir = if scatter_dir.near_zero() {
+        let scatter_dir = if scatter_dir.near_zero() {
             hit.normal()
         } else {
             scatter_dir
         };
 
-        Some(self.albedo.sample(hit.uv(), &hit.pos()))
+        let scattered = Ray::new(hit.pos(), scatter_dir);
+        Some(ScatterResult {
+            attenuation: self.albedo.sample(hit.uv(), &hit.pos()),
+            scattered,
+        })
     }
 }

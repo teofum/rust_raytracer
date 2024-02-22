@@ -7,7 +7,7 @@ use crate::ray::Ray;
 use crate::texture::Texture;
 use crate::vec4::Color;
 
-use super::Material;
+use super::{Material, ScatterResult};
 
 pub struct Emissive {
     emission_map: Arc<dyn Texture>,
@@ -20,7 +20,7 @@ impl Emissive {
 }
 
 impl Material for Emissive {
-    fn scatter(&self, _: &mut Ray, _: &HitRecord, _: &mut XorShiftRng) -> Option<Color> {
+    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut XorShiftRng) -> Option<ScatterResult> {
         None
     }
 

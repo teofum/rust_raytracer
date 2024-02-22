@@ -11,7 +11,7 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec4::{Color, Point4, Vec4};
 
-const SQRT_SAMPLES_PER_THREAD: usize = 10;
+const SQRT_SAMPLES_PER_THREAD: usize = 4;
 
 /// Inverse Square Root of Samples Per Thread
 const ISRSPT: f64 = 1.0 / SQRT_SAMPLES_PER_THREAD as f64;
@@ -248,7 +248,7 @@ impl Camera {
 
     fn ray_color(
         &self,
-        ray: &mut Ray,
+        ray: &Ray,
         object: &Arc<dyn Hit>,
         depth: usize,
         rng: &mut XorShiftRng,
@@ -260,8 +260,9 @@ impl Camera {
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY), rng) {
             let emitted = hit.material().emit(&hit);
 
-            if let Some(att) = hit.material().scatter(ray, &hit, rng) {
-                return emitted + self.ray_color(ray, object, depth - 1, rng) * att;
+            if let Some(res) = hit.material().scatter(ray, &hit, rng) {
+                let from_scatter = self.ray_color(&res.scattered, object, depth - 1, rng);
+                return emitted + from_scatter * res.attenuation;
             }
 
             return emitted; // Ray was absorbed by material

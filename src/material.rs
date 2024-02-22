@@ -16,12 +16,16 @@ pub use isotropic::Isotropic;
 pub use lambertian::LambertianDiffuse;
 pub use metal::Metal;
 
+pub struct ScatterResult {
+    pub attenuation: Color,
+    pub scattered: Ray,
+}
+
 pub trait Material: Send + Sync {
     /// Scatter a ray according to material properties.
     ///
-    /// Mutates the original ray, and returns an attenuation value or `None`
-    /// if the ray is absorbed.
-    fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color>;
+    /// Returns `None` if the ray is absorbed.
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult>;
 
     fn emit(&self, _: &HitRecord) -> Color {
         Vec4::vec(0.0, 0.0, 0.0)

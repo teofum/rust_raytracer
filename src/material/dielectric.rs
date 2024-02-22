@@ -3,9 +3,9 @@ use rand_xorshift::XorShiftRng;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::vec4::{Color, Vec4};
+use crate::vec4::Vec4;
 
-use super::Material;
+use super::{Material, ScatterResult};
 
 pub struct Dielectric {
     ior: f64,
@@ -24,7 +24,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color> {
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
         let ior_ratio = if hit.front_face() {
             1.0 / self.ior
         } else {
@@ -36,8 +36,7 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let tir = ior_ratio * sin_theta > 1.0; // Total Internal Reflection
-        let reflected =
-            tir || reflectance(cos_theta, ior_ratio) > rng.gen_range(0.0..1.0);
+        let reflected = tir || reflectance(cos_theta, ior_ratio) > rng.gen_range(0.0..1.0);
 
         let scatter_dir = if reflected {
             unit_dir.reflect(hit.normal())
@@ -45,9 +44,11 @@ impl Material for Dielectric {
             unit_dir.refract(hit.normal(), ior_ratio)
         };
 
-        ray.origin = hit.pos();
-        ray.dir = scatter_dir;
-        Some(Vec4::vec(1.0, 1.0, 1.0))
+        let scattered = Ray::new(hit.pos(), scatter_dir);
+        Some(ScatterResult {
+            attenuation: Vec4::vec(1.0, 1.0, 1.0),
+            scattered,
+        })
     }
 }
 

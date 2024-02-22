@@ -4,7 +4,7 @@ use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::vec4::{Color, Vec4};
 
-use super::Material;
+use super::{Material, ScatterResult};
 
 pub struct Metal {
     albedo: Color,
@@ -28,15 +28,16 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color> {
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
         let reflected = ray.dir.reflect(hit.normal());
         let scatter_dir = reflected + Vec4::random_unit(rng) * self.roughness * reflected.length();
 
-        ray.origin = hit.pos();
-        ray.dir = scatter_dir;
-
         if scatter_dir.dot(&hit.normal()) > 0.0 {
-            Some(self.albedo)
+            let scattered = Ray::new(hit.pos(), scatter_dir);
+            Some(ScatterResult {
+                attenuation: self.albedo,
+                scattered,
+            })
         } else {
             None // Absorb ray if it would be scattered inside the surface
         }
