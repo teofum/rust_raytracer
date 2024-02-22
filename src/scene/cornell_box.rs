@@ -2,9 +2,12 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
+use rust_raytracer::mat4::Mat4;
 use rust_raytracer::material::{Emissive, LambertianDiffuse, Material};
-use rust_raytracer::object::{Hit, ObjectList, Plane};
+use rust_raytracer::object::transform::Transform;
+use rust_raytracer::object::{make_box, Hit, ObjectList, Plane};
 use rust_raytracer::texture::ConstantColorTexture;
+use rust_raytracer::utils::deg_to_rad;
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -62,10 +65,39 @@ impl Scene for CornellBoxScene {
             (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(0.0, 0.0, 27.5)),
             Arc::clone(&mat_red),
         );
+
         let light = Plane::new(
             Vec4::point(0.0, 27.49, 0.0),
             (Vec4::vec(6.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -5.25)),
             Arc::clone(&mat_light),
+        );
+
+        let box1 = make_box(
+            Vec4::point(0.0, 0.0, 0.0),
+            Vec4::vec(16.5, 16.5, 16.5),
+            Arc::clone(&mat_white),
+        );
+        let box1 = Transform::new(
+            Box::new(box1),
+            Mat4::rotate_y(deg_to_rad(-15.0)),
+        );
+        let box1 = Transform::new(
+            Box::new(box1),
+            Mat4::translation(27.5 - 21.25, 8.25 - 27.5, 27.5 - 14.75),
+        );
+
+        let box2 = make_box(
+            Vec4::point(0.0, 0.0, 0.0),
+            Vec4::vec(16.5, 33.0, 16.5),
+            Arc::clone(&mat_white),
+        );
+        let box2 = Transform::new(
+            Box::new(box2),
+            Mat4::rotate_y(deg_to_rad(18.0)),
+        );
+        let box2 = Transform::new(
+            Box::new(box2),
+            Mat4::translation(27.5 - 34.75, 16.5 - 27.5, 27.5 - 37.75),
         );
 
         let mut world = ObjectList::new();
@@ -75,6 +107,8 @@ impl Scene for CornellBoxScene {
         world.add(Box::new(left_wall));
         world.add(Box::new(right_wall));
         world.add(Box::new(light));
+        world.add(Box::new(box1));
+        world.add(Box::new(box2));
 
         let world = Arc::new(world);
 

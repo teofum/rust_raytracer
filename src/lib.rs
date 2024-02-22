@@ -13,4 +13,5 @@ pub mod ppm;
 pub mod ray;
 pub mod texture;
 pub mod tonemapping;
+pub mod utils;
 pub mod vec4;

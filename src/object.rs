@@ -1,3 +1,4 @@
+pub mod obj_box;
 pub mod bvh;
 pub mod list;
 pub mod mesh;
@@ -9,6 +10,7 @@ pub use bvh::BoundingVolumeHierarchyNode;
 pub use list::ObjectList;
 pub use plane::Plane;
 pub use sphere::Sphere;
+pub use obj_box::make_box;
 
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;

@@ -98,6 +98,7 @@ impl Hit for Transform {
 
         // Test for hit in object space
         if let Some(mut hit) = self.object.test(&ray_obj, t) {
+            // Transform position and normal to world space
             hit.hit_pos = self.transform * hit.hit_pos;
             hit.normal = self.transform * hit.normal;
 
