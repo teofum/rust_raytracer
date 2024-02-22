@@ -2,3 +2,4 @@
 *.ppm
 out.png
 flamegraph.svg
+.DS_Store
