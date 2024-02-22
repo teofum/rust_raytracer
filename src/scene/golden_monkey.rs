@@ -6,7 +6,6 @@ use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
-use rust_raytracer::mat4::Mat4;
 use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::bvh::BoundingVolumeHierarchyNode;
 use rust_raytracer::object::transform::Transform;
@@ -56,8 +55,8 @@ impl Scene for GoldenMonkeyScene {
 
         let mesh_file = File::open("monkey.obj")?;
         let mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_metal))?;
-        let mesh_transform = Mat4::translation(0.0, 1.0, 0.0);
-        let mesh = Transform::new(Box::new(mesh), mesh_transform);
+        let mut mesh = Transform::new(Box::new(mesh));
+        mesh.translate(0.0, 1.0, 0.0);
 
         // Random spheres
         let mut rng = XorShiftRng::from_rng(rand::thread_rng()).unwrap();

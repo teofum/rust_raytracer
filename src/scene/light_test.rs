@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
-use rust_raytracer::mat4::Mat4;
 use rust_raytracer::material::{Emissive, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
@@ -54,8 +53,8 @@ impl Scene for LightTestScene {
 
         let mesh_file = File::open("monkey.obj")?;
         let mesh = load_mesh_from_file(&mesh_file, mat_metal)?;
-        let mesh_transform = Mat4::translation(0.0, 0.0, -1.5);
-        let mesh = Transform::new(Box::new(mesh), mesh_transform);
+        let mut mesh = Transform::new(Box::new(mesh));
+        mesh.translate(0.0, 0.0, -1.5);
 
         let mut world = ObjectList::new();
         world.add(Box::new(sphere));

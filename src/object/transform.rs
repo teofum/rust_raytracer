@@ -16,22 +16,75 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(object: Box<dyn Hit>, transform: Mat4) -> Self {
-        let inv_transform = Self::inverse_transform(transform);
-        let bounds = Self::get_bounds(object.get_bounding_box(), transform);
+    pub fn new(object: Box<dyn Hit>) -> Self {
+        let transform = Mat4::identity();
+        let inv_transform = Mat4::identity();
 
         Transform {
+            bounds: object.get_bounding_box(),
             object,
             transform,
             inv_transform,
-            bounds,
         }
     }
 
-    fn get_bounds(
-        (o_min, o_max): AxisAlignedBoundingBox,
-        transform: Mat4,
-    ) -> AxisAlignedBoundingBox {
+    pub fn translate(&mut self, x: f64, y: f64, z: f64) {
+        let translation = Mat4::translation(x, y, z);
+        let inv_translation = Mat4::translation(-x, -y, -z);
+
+        self.transform = translation * self.transform;
+        self.inv_transform = self.inv_transform * inv_translation;
+
+        self.update_bounds();
+    }
+
+    pub fn rotate_x(&mut self, theta: f64) {
+        let rotation = Mat4::rotate_x(theta);
+        let inv_rotation = Mat4::rotate_x(-theta);
+
+        self.transform = rotation * self.transform;
+        self.inv_transform = self.inv_transform * inv_rotation;
+
+        self.update_bounds();
+    }
+
+    pub fn rotate_y(&mut self, theta: f64) {
+        let rotation = Mat4::rotate_y(theta);
+        let inv_rotation = Mat4::rotate_y(-theta);
+
+        self.transform = rotation * self.transform;
+        self.inv_transform = self.inv_transform * inv_rotation;
+
+        self.update_bounds();
+    }
+
+    pub fn rotate_z(&mut self, theta: f64) {
+        let rotation = Mat4::rotate_z(theta);
+        let inv_rotation = Mat4::rotate_z(-theta);
+
+        self.transform = rotation * self.transform;
+        self.inv_transform = self.inv_transform * inv_rotation;
+
+        self.update_bounds();
+    }
+
+    pub fn scale(&mut self, x: f64, y: f64, z: f64) {
+        let scale = Mat4::scale(x, y, z);
+        let inv_scale = Mat4::scale(1.0 / x, 1.0 / y, 1.0 / z);
+
+        self.transform = scale * self.transform;
+        self.inv_transform = self.inv_transform * inv_scale;
+
+        self.update_bounds();
+    }
+
+    pub fn scale_uniform(&mut self, s: f64) {
+        self.scale(s, s, s);
+    }
+
+    fn update_bounds(&mut self) {
+        let (o_min, o_max) = self.object.get_bounding_box();
+
         let (sx, sy, sz) = (o_max - o_min).xyz();
         let mut corners = [
             o_min,
@@ -45,27 +98,10 @@ impl Transform {
         ];
 
         for i in 0..corners.len() {
-            corners[i] = transform * corners[i]
+            corners[i] = self.transform * corners[i]
         }
 
-        aabb::get_bounding_box(&corners)
-    }
-
-    /// Returns the inverse of a transform matrix.
-    pub fn inverse_transform(transform: Mat4) -> Mat4 {
-        let (mut u, mut v, mut w, mut t) = (
-            transform.column(0),
-            transform.column(1),
-            transform.column(2),
-            transform.column(3),
-        );
-
-        t[3] = 0.0;
-        u[3] = -Vec4::dot(&u, &t);
-        v[3] = -Vec4::dot(&v, &t);
-        w[3] = -Vec4::dot(&w, &t);
-
-        Mat4::from_rows(u, v, w, Vec4::point(0.0, 0.0, 0.0))
+        self.bounds = aabb::get_bounding_box(&corners);
     }
 }
 
@@ -81,7 +117,7 @@ impl Hit for Transform {
         if let Some(mut hit) = self.object.test(&ray_obj, t, rng) {
             // Transform position and normal to world space
             hit.hit_pos = self.transform * hit.hit_pos;
-            hit.normal = self.transform * hit.normal;
+            hit.normal = (self.transform * hit.normal).to_unit();
 
             Some(hit)
         } else {

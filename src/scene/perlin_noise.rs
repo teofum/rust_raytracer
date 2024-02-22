@@ -7,7 +7,6 @@ use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
-use rust_raytracer::mat4::Mat4;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::noise::PerlinNoise3D;
 use rust_raytracer::object::transform::Transform;
@@ -59,8 +58,10 @@ impl Scene for PerlinScene {
 
         let mesh_file = File::open("monkey.obj")?;
         let mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_marble))?;
-        let mesh_transform = Mat4::translation(0.0, 0.3, -2.0) * Mat4::rotate_y(PI / 4.0) * Mat4::scale(1.5, 1.5, 1.5);
-        let mesh = Transform::new(Box::new(mesh), mesh_transform);
+        let mut mesh = Transform::new(Box::new(mesh));
+        mesh.scale_uniform(1.5);
+        mesh.rotate_y(PI / 4.0);
+        mesh.translate(0.0, 0.45, -2.0);
 
         let mut world = ObjectList::new();
         world.add(Box::new(sphere));
