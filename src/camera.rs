@@ -243,7 +243,7 @@ impl Camera {
             return Vec4::vec(0.0, 0.0, 0.0);
         }
 
-        if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
+        if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY), rng) {
             let emitted = hit.material().emit(&hit);
 
             if let Some(att) = hit.material().scatter(ray, &hit, rng) {

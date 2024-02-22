@@ -1,6 +1,8 @@
 use std::f64::consts::PI;
 use std::sync::Arc;
 
+use rand_xorshift::XorShiftRng;
+
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
 use crate::material::Material;
@@ -32,7 +34,7 @@ impl Sphere {
 }
 
 impl Hit for Sphere {
-    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, _: &mut XorShiftRng) -> Option<HitRecord> {
         let center_diff = ray.origin - self.center;
 
         // Test for ray-sphere intersection using quadratic formula

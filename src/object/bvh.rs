@@ -65,7 +65,7 @@ impl BoundingVolumeHierarchyNode {
 }
 
 impl Hit for BoundingVolumeHierarchyNode {
-    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
         if !aabb::test_bounding_box(self.bounds, ray, &t) {
             return None;
         }
@@ -73,11 +73,11 @@ impl Hit for BoundingVolumeHierarchyNode {
         let mut closest_hit: Option<HitRecord> = None;
         let mut closest_t = t.max();
 
-        if let Some(hit) = self.children.0.test(ray, Interval(t.min(), closest_t)) {
+        if let Some(hit) = self.children.0.test(ray, Interval(t.min(), closest_t), rng) {
             closest_t = hit.t;
             closest_hit = Some(hit);
         }
-        if let Some(hit) = self.children.1.test(ray, Interval(t.min(), closest_t)) {
+        if let Some(hit) = self.children.1.test(ray, Interval(t.min(), closest_t), rng) {
             closest_hit = Some(hit);
         }
 

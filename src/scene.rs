@@ -6,6 +6,8 @@ use rust_raytracer::object::Hit;
 
 mod cornell_box;
 pub use cornell_box::CornellBoxScene;
+mod cornell_smoke;
+pub use cornell_smoke::CornellSmokeScene;
 mod earth;
 pub use earth::EarthScene;
 mod golden_monkey;

@@ -1,3 +1,5 @@
+use rand_xorshift::XorShiftRng;
+
 use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::constants::INFINITY;
 use crate::interval::Interval;
@@ -37,16 +39,12 @@ impl ObjectList {
 }
 
 impl Hit for ObjectList {
-    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
-        if !aabb::test_bounding_box(self.bounds, ray, &t) {
-            return None;
-        }
-
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
         let mut closest_hit: Option<HitRecord> = None;
         let mut closest_t = t.max();
 
         for object in &self.objects {
-            if let Some(hit) = object.test(ray, Interval(t.min(), closest_t)) {
+            if let Some(hit) = object.test(ray, Interval(t.min(), closest_t), rng) {
                 closest_t = hit.t;
                 closest_hit = Some(hit);
             }

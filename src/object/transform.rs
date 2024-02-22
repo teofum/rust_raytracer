@@ -1,3 +1,5 @@
+use rand_xorshift::XorShiftRng;
+
 use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::interval::Interval;
 use crate::mat4::Mat4;
@@ -68,7 +70,7 @@ impl Transform {
 }
 
 impl Hit for Transform {
-    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
         // Transform ray to object space
         let ray_obj = Ray {
             origin: self.inv_transform * ray.origin,
@@ -76,7 +78,7 @@ impl Hit for Transform {
         };
 
         // Test for hit in object space
-        if let Some(mut hit) = self.object.test(&ray_obj, t) {
+        if let Some(mut hit) = self.object.test(&ray_obj, t, rng) {
             // Transform position and normal to world space
             hit.hit_pos = self.transform * hit.hit_pos;
             hit.normal = self.transform * hit.normal;

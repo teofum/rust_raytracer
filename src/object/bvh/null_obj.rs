@@ -1,3 +1,5 @@
+use rand_xorshift::XorShiftRng;
+
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::constants::INFINITY;
 use crate::interval::Interval;
@@ -9,7 +11,7 @@ use crate::ray::Ray;
 pub struct NullObject();
 
 impl Hit for NullObject {
-    fn test(&self, _: &Ray, _: Interval) -> Option<HitRecord> {
+    fn test(&self, _: &Ray, _: Interval, _: &mut XorShiftRng) -> Option<HitRecord> {
         None
     }
 

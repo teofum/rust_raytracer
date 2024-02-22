@@ -1,22 +1,27 @@
-pub mod obj_box;
-pub mod bvh;
-pub mod list;
-pub mod mesh;
-pub mod plane;
-pub mod sphere;
-pub mod transform;
-
-pub use bvh::BoundingVolumeHierarchyNode;
-pub use list::ObjectList;
-pub use plane::Plane;
-pub use sphere::Sphere;
-pub use obj_box::make_box;
+use rand_xorshift::XorShiftRng;
 
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec4::{Point4, Vec4};
+
+pub mod bvh;
+pub mod list;
+pub mod mesh;
+pub mod obj_box;
+pub mod plane;
+pub mod sphere;
+pub mod transform;
+pub mod volume;
+
+pub use bvh::BoundingVolumeHierarchyNode;
+pub use list::ObjectList;
+pub use obj_box::make_box;
+pub use plane::Plane;
+pub use sphere::Sphere;
+pub use transform::Transform;
+pub use volume::Volume;
 
 pub struct HitRecord<'a> {
     hit_pos: Point4,
@@ -80,7 +85,7 @@ impl<'a> HitRecord<'a> {
 }
 
 pub trait Hit: Send + Sync {
-    fn test(&self, ray: &Ray, t: Interval) -> Option<HitRecord>;
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord>;
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox;
 }
