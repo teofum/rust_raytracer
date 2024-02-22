@@ -79,11 +79,8 @@ impl Scene for CornellBoxScene {
         );
         let box1 = Transform::new(
             Box::new(box1),
-            Mat4::rotate_y(deg_to_rad(-15.0)),
-        );
-        let box1 = Transform::new(
-            Box::new(box1),
-            Mat4::translation(27.5 - 21.25, 8.25 - 27.5, 27.5 - 14.75),
+            Mat4::translation(27.5 - 21.25, 8.25 - 27.5, 27.5 - 14.75)
+                * Mat4::rotate_y(deg_to_rad(-15.0)),
         );
 
         let box2 = make_box(
@@ -93,11 +90,8 @@ impl Scene for CornellBoxScene {
         );
         let box2 = Transform::new(
             Box::new(box2),
-            Mat4::rotate_y(deg_to_rad(18.0)),
-        );
-        let box2 = Transform::new(
-            Box::new(box2),
-            Mat4::translation(27.5 - 34.75, 16.5 - 27.5, 27.5 - 37.75),
+            Mat4::translation(27.5 - 34.75, 16.5 - 27.5, 27.5 - 37.75)
+                * Mat4::rotate_y(deg_to_rad(18.0)),
         );
 
         let mut world = ObjectList::new();

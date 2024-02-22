@@ -50,41 +50,20 @@ impl Transform {
     }
 
     /// Returns the inverse of a transform matrix.
-    ///
-    /// This does *not* compute the inverse 4x4 matrix: because of how transform
-    /// matrices for rotation, scale and translation are formed, we can get the
-    /// inverse by calculating the inverse for the top-left 3x3 part and negating
-    /// the translation column.
-    ///
-    /// # Panics
-    /// Panics if the matrix is not invertible (determinant is =0)
-    fn inverse_transform(transform: Mat4) -> Mat4 {
-        // Find the inverse of the 3x3 part using Cramer's Rule
-        let [a, b, c, tx, d, e, f, ty, g, h, i, tz, ..] = transform.0;
-        let aa = e * i - f * h;
-        let bb = f * g - d * i;
-        let cc = d * h - e * g;
+    pub fn inverse_transform(transform: Mat4) -> Mat4 {
+        let (mut u, mut v, mut w, mut t) = (
+            transform.column(0),
+            transform.column(1),
+            transform.column(2),
+            transform.column(3),
+        );
 
-        let det = a * aa + b * bb + c * cc;
-        assert!(det != 0.0, "Matrix is not invertible!");
-        let inv_det = 1.0 / det;
+        t[3] = 0.0;
+        u[3] = -Vec4::dot(&u, &t);
+        v[3] = -Vec4::dot(&v, &t);
+        w[3] = -Vec4::dot(&w, &t);
 
-        let aa = aa * inv_det;
-        let bb = bb * inv_det;
-        let cc = cc * inv_det;
-        let dd = (c * h - b * i) * inv_det;
-        let ee = (a * i - c * g) * inv_det;
-        let ff = (b * g - a * h) * inv_det;
-        let gg = (b * f - c * e) * inv_det;
-        let hh = (c * d - a * f) * inv_det;
-        let ii = (a * e - b * d) * inv_det;
-
-        Mat4::from_values([
-            aa, dd, gg, -tx, //
-            bb, ee, hh, -ty, //
-            cc, ff, ii, -tz, //
-            0.0, 0.0, 0.0, 1.0,
-        ])
+        Mat4::from_rows(u, v, w, Vec4::point(0.0, 0.0, 0.0))
     }
 }
 
