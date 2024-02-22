@@ -1,4 +1,4 @@
-use crate::vec3::Color;
+use crate::vec4::Color;
 
 pub mod aces;
 pub use aces::tonemap_aces;

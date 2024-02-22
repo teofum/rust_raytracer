@@ -1,14 +1,15 @@
+use crate::constants::INFINITY;
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
+use crate::vec4::{Point4, Vec4};
 
-pub type AxisAlignedBoundingBox = (Point3, Point3);
+pub type AxisAlignedBoundingBox = (Point4, Point4);
 
 // Expand bounding boxes slightly to handle grazing rays
-const EPSILON_VEC: Vec3 = Vec3(0.001, 0.001, 0.001);
+const EPSILON_VEC: Vec4 = Vec4(0.001, 0.001, 0.001, 0.0);
 
 pub fn combine_bounds(bounds: &[AxisAlignedBoundingBox]) -> AxisAlignedBoundingBox {
-    let mut bounds_min = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
+    let mut bounds_min = INFINITY;
     let mut bounds_max = -bounds_min;
 
     for bounding_box in bounds {
@@ -25,8 +26,8 @@ pub fn combine_bounds(bounds: &[AxisAlignedBoundingBox]) -> AxisAlignedBoundingB
     (bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC)
 }
 
-pub fn get_bounding_box(vertices: &[Point3]) -> AxisAlignedBoundingBox {
-    let mut bounds_min = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
+pub fn get_bounding_box(vertices: &[Point4]) -> AxisAlignedBoundingBox {
+    let mut bounds_min = INFINITY;
     let mut bounds_max = -bounds_min;
 
     for vertex_pos in vertices {
@@ -52,8 +53,8 @@ pub fn test_bounding_box(
 ) -> bool {
     let mut inside = true; // Ray origin inside bounds
     let mut quadrant: [i8; 3] = [0; 3];
-    let mut candidate_plane = Vec3::origin();
-    let mut max_t = Vec3::origin();
+    let mut candidate_plane = Vec4::point(0.0, 0.0, 0.0);
+    let mut max_t = Vec4::point(0.0, 0.0, 0.0);
 
     for i in 0..3 {
         if ray.origin[i] < b_min[i] {

@@ -1,5 +1,5 @@
 use crate::aabb::{self, AxisAlignedBoundingBox};
-use crate::vec3::{Point3, Vec3};
+use crate::vec4::{Point4, Vec4};
 
 use super::Triangle;
 
@@ -17,7 +17,7 @@ pub struct OctreeNode {
 
 impl OctreeNode {
     pub fn new(
-        vertices: &Vec<Point3>,
+        vertices: &Vec<Point4>,
         triangles: &Vec<Triangle>,
         filter: Option<&Vec<usize>>,
         (b_min, b_max): AxisAlignedBoundingBox,
@@ -127,37 +127,55 @@ impl OctreeNode {
                     vertices,
                     triangles,
                     Some(&index_lists[1]),
-                    (Vec3(min_x, min_y, mid_z), Vec3(mid_x, mid_y, max_z)),
+                    (
+                        Vec4::point(min_x, min_y, mid_z),
+                        Vec4::point(mid_x, mid_y, max_z),
+                    ),
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[2]),
-                    (Vec3(min_x, mid_y, min_z), Vec3(mid_x, max_y, mid_z)),
+                    (
+                        Vec4::point(min_x, mid_y, min_z),
+                        Vec4::point(mid_x, max_y, mid_z),
+                    ),
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[3]),
-                    (Vec3(min_x, mid_y, mid_z), Vec3(mid_x, max_y, max_z)),
+                    (
+                        Vec4::point(min_x, mid_y, mid_z),
+                        Vec4::point(mid_x, max_y, max_z),
+                    ),
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[4]),
-                    (Vec3(mid_x, min_y, min_z), Vec3(max_x, mid_y, mid_z)),
+                    (
+                        Vec4::point(mid_x, min_y, min_z),
+                        Vec4::point(max_x, mid_y, mid_z),
+                    ),
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[5]),
-                    (Vec3(mid_x, min_y, mid_z), Vec3(max_x, mid_y, max_z)),
+                    (
+                        Vec4::point(mid_x, min_y, mid_z),
+                        Vec4::point(max_x, mid_y, max_z),
+                    ),
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[6]),
-                    (Vec3(mid_x, mid_y, min_z), Vec3(max_x, max_y, mid_z)),
+                    (
+                        Vec4::point(mid_x, mid_y, min_z),
+                        Vec4::point(max_x, max_y, mid_z),
+                    ),
                 )),
                 Box::new(Self::new(
                     vertices,

@@ -9,7 +9,7 @@ use crate::buffer::Buffer;
 use crate::interval::Interval;
 use crate::object::Hit;
 use crate::ray::Ray;
-use crate::vec3::{Color, Point3, Vec3};
+use crate::vec4::{Color, Point4, Vec4};
 
 const SAMPLES_PER_PIXEL: u32 = 500; // Number of random samples per pixel
 const MAX_DEPTH: u32 = 20; // Max ray bounces
@@ -25,35 +25,35 @@ pub struct Camera {
     focal_length: f64,
     f_number: Option<f64>,
     focus_distance: Option<f64>,
-    position: Point3,
-    look_at: Point3,
-    v_up: Vec3,
+    position: Point4,
+    look_at: Point4,
+    v_up: Vec4,
 
     image_height: usize,
-    pixel_delta: (Vec3, Vec3),
-    first_pixel: Point3,
-    basis: [Point3; 3],
+    pixel_delta: (Vec4, Vec4),
+    first_pixel: Point4,
+    basis: [Point4; 3],
     aperture_radius: Option<f64>,
 }
 
 impl Camera {
     pub fn new(image_width: usize, aspect_ratio: f64, focal_length: f64) -> Self {
         let mut camera = Camera {
-            background_color: |_| Vec3::origin(),
+            background_color: |_| Vec4::vec(0.0, 0.0, 0.0),
 
             image_width,
             aspect_ratio,
             focal_length,
             f_number: None,
             focus_distance: None,
-            position: Vec3::origin(),
-            look_at: Vec3(0.0, 0.0, -1.0),
-            v_up: Vec3(0.0, 1.0, 0.0),
+            position: Vec4::point(0.0, 0.0, 0.0),
+            look_at: Vec4::point(0.0, 0.0, -1.0),
+            v_up: Vec4::vec(0.0, 1.0, 0.0),
 
             image_height: 0,
-            basis: [Vec3::origin(); 3],
-            pixel_delta: (Vec3::origin(), Vec3::origin()),
-            first_pixel: Vec3::origin(),
+            basis: [Vec4::vec(0.0, 0.0, 0.0); 3],
+            pixel_delta: (Vec4::vec(0.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, 0.0)),
+            first_pixel: Vec4::point(0.0, 0.0, 0.0),
             aperture_radius: None,
         };
 
@@ -135,17 +135,17 @@ impl Camera {
         self.init();
     }
 
-    pub fn set_position(&mut self, pos: Point3) {
+    pub fn set_position(&mut self, pos: Point4) {
         self.position = pos;
         self.init();
     }
 
-    pub fn look_at(&mut self, target: Point3) {
+    pub fn look_at(&mut self, target: Point4) {
         self.look_at = target;
         self.init();
     }
 
-    pub fn move_and_look_at(&mut self, pos: Point3, target: Point3) {
+    pub fn move_and_look_at(&mut self, pos: Point4, target: Point4) {
         self.position = pos;
         self.look_at = target;
         self.init();
@@ -175,7 +175,7 @@ impl Camera {
                     // print!("Rendering... [line {}/{}]\r", y + 1, self.image_height);
 
                     for x in 0..image_width {
-                        let mut color = Vec3::origin();
+                        let mut color = Vec4::vec(0.0, 0.0, 0.0);
 
                         for _ in 0..SAMPLES_PER_THREAD {
                             let mut ray = thread_self_ref.get_ray(x, y, &mut thread_rng);
@@ -240,7 +240,7 @@ impl Camera {
         rng: &mut XorShiftRng,
     ) -> Color {
         if depth <= 0 {
-            return Vec3::origin();
+            return Vec4::vec(0.0, 0.0, 0.0);
         }
 
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY)) {
@@ -256,7 +256,7 @@ impl Camera {
         (self.background_color)(ray)
     }
 
-    fn pixel_sample_square(&self, rng: &mut XorShiftRng) -> Vec3 {
+    fn pixel_sample_square(&self, rng: &mut XorShiftRng) -> Vec4 {
         let x = rng.gen_range(0.0..1.0) - 0.5;
         let y = rng.gen_range(0.0..1.0) - 0.5;
 
@@ -265,8 +265,9 @@ impl Camera {
 
     /// # Panics
     /// Panics if aperture_radius is `None`. Caller should make sure aperture radius is set.
-    fn defocus_disk_sample(&self, rng: &mut XorShiftRng) -> Vec3 {
-        let v = Vec3::random_in_unit_disk(rng);
-        self.position + (self.basis[0] * v.0 + self.basis[1] * v.1) * self.aperture_radius.unwrap()
+    fn defocus_disk_sample(&self, rng: &mut XorShiftRng) -> Vec4 {
+        let v = Vec4::random_in_unit_disk(rng);
+        self.position
+            + (self.basis[0] * v[0] + self.basis[1] * v[1]) * self.aperture_radius.unwrap()
     }
 }

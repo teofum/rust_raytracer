@@ -1,4 +1,4 @@
-use crate::vec3::{Color, Point3};
+use crate::vec4::{Color, Point4};
 
 pub mod checkerboard;
 pub use checkerboard::{CheckerboardSolidTexture, CheckerboardTexture};
@@ -16,5 +16,5 @@ pub mod uv_debug;
 pub use uv_debug::UvDebugTexture;
 
 pub trait Texture: Send + Sync {
-    fn sample(&self, uv: (f64, f64), p: &Point3) -> Color;
+    fn sample(&self, uv: (f64, f64), p: &Point4) -> Color;
 }

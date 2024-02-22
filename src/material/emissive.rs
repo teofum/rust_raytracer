@@ -5,7 +5,7 @@ use rand_xorshift::XorShiftRng;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::texture::Texture;
-use crate::vec3::Color;
+use crate::vec4::Color;
 
 use super::Material;
 

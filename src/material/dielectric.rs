@@ -3,7 +3,7 @@ use rand_xorshift::XorShiftRng;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::vec3::{Color, Vec3};
+use crate::vec4::{Color, Vec4};
 
 use super::Material;
 
@@ -47,7 +47,7 @@ impl Material for Dielectric {
 
         ray.origin = hit.pos();
         ray.dir = scatter_dir;
-        Some(Vec3(1.0, 1.0, 1.0))
+        Some(Vec4::vec(1.0, 1.0, 1.0))
     }
 }
 

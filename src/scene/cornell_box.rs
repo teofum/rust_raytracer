@@ -5,7 +5,7 @@ use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{Emissive, LambertianDiffuse, Material};
 use rust_raytracer::object::{Hit, ObjectList, Plane};
 use rust_raytracer::texture::ConstantColorTexture;
-use rust_raytracer::vec3::Vec3;
+use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
 
@@ -20,7 +20,7 @@ impl Scene for CornellBoxScene {
     fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec3(0.0, 0.0, 110.0), Vec3::origin());
+        camera.move_and_look_at(Vec4::point(0.0, 0.0, 110.0), Vec4::point(0.0, 0.0, 0.0));
 
         // Set up materials
         let mat_white: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
@@ -38,33 +38,33 @@ impl Scene for CornellBoxScene {
 
         // Set up objects
         let floor = Plane::new(
-            Vec3(0.0, -27.5, 0.0),
-            (Vec3(-27.5, 0.0, 0.0), Vec3(0.0, 0.0, 27.5)),
+            Vec4::point(0.0, -27.5, 0.0),
+            (Vec4::vec(-27.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, 27.5)),
             Arc::clone(&mat_white),
         );
         let ceiling = Plane::new(
-            Vec3(0.0, 27.5, 0.0),
-            (Vec3(27.5, 0.0, 0.0), Vec3(0.0, 0.0, -27.5)),
+            Vec4::point(0.0, 27.5, 0.0),
+            (Vec4::vec(27.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -27.5)),
             Arc::clone(&mat_white),
         );
         let back_wall = Plane::new(
-            Vec3(0.0, 0.0, -27.5),
-            (Vec3(0.0, 27.5, 0.0), Vec3(-27.5, 0.0, 0.0)),
+            Vec4::point(0.0, 0.0, -27.5),
+            (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(-27.5, 0.0, 0.0)),
             Arc::clone(&mat_white),
         );
         let left_wall = Plane::new(
-            Vec3(-27.5, 0.0, 0.0),
-            (Vec3(0.0, 27.5, 0.0), Vec3(0.0, 0.0, -27.5)),
+            Vec4::point(-27.5, 0.0, 0.0),
+            (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(0.0, 0.0, -27.5)),
             Arc::clone(&mat_green),
         );
         let right_wall = Plane::new(
-            Vec3(27.5, 0.0, 0.0),
-            (Vec3(0.0, 27.5, 0.0), Vec3(0.0, 0.0, 27.5)),
+            Vec4::point(27.5, 0.0, 0.0),
+            (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(0.0, 0.0, 27.5)),
             Arc::clone(&mat_red),
         );
         let light = Plane::new(
-            Vec3(0.0, 27.49, 0.0),
-            (Vec3(6.5, 0.0, 0.0), Vec3(0.0, 0.0, -5.25)),
+            Vec4::point(0.0, 27.49, 0.0),
+            (Vec4::vec(6.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -5.25)),
             Arc::clone(&mat_light),
         );
 

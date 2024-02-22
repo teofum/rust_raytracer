@@ -7,7 +7,7 @@ use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Emissive, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
 use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
-use rust_raytracer::vec3::Vec3;
+use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
 
@@ -22,7 +22,7 @@ impl Scene for LightTestScene {
     fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec3(10.0, 1.0, 6.0), Vec3::origin());
+        camera.move_and_look_at(Vec4::point(10.0, 1.0, 6.0), Vec4::point(0.0, 0.0, 0.0));
         camera.set_f_number(Some(4.0));
 
         // Set up materials
@@ -32,7 +32,7 @@ impl Scene for LightTestScene {
                 Arc::new(ConstantColorTexture::from_values(0.9, 0.9, 0.9)),
                 0.02,
             ))));
-        let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec3(0.8, 0.6, 0.2), 0.05));
+        let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec4::vec(0.8, 0.6, 0.2), 0.05));
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
             ConstantColorTexture::from_values(7.0, 1.0, 7.0),
         )));
@@ -41,18 +41,18 @@ impl Scene for LightTestScene {
         )));
 
         // Set up objects
-        let sphere = Sphere::new(Vec3(-1.0, 0.0, 1.0), 0.5, mat_light);
-        let sphere_2 = Sphere::new(Vec3(2.0, 0.5, -1.2), 0.4, mat_light_2);
+        let sphere = Sphere::new(Vec4::vec(-1.0, 0.0, 1.0), 0.5, mat_light);
+        let sphere_2 = Sphere::new(Vec4::vec(2.0, 0.5, -1.2), 0.4, mat_light_2);
 
         let floor = Plane::new(
-            Vec3(0.0, -1.0, 0.0),
-            (Vec3(-10.0, 0.0, 0.0), Vec3(0.0, 0.0, 10.0)),
+            Vec4::point(0.0, -1.0, 0.0),
+            (Vec4::vec(-10.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, 10.0)),
             mat_ground,
         );
 
         let mesh_file = File::open("monkey.obj")?;
         let mut mesh = load_mesh_from_file(&mesh_file, mat_metal)?;
-        mesh.set_position(Vec3(0.0, 0.0, -1.5));
+        mesh.set_position(Vec4::point(0.0, 0.0, -1.5));
 
         let mut world = ObjectList::new();
         world.add(Box::new(sphere));

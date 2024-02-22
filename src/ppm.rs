@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::buffer::Buffer;
-use crate::vec3::Color;
+use crate::vec4::Color;
 
 const GAMMA: f64 = 1.0 / 2.2;
 

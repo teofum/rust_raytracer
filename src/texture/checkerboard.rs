@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::vec3::{Color, Point3};
+use crate::vec4::{Color, Point4};
 
 use super::Texture;
 
@@ -25,7 +25,7 @@ impl CheckerboardTexture {
 }
 
 impl Texture for CheckerboardTexture {
-    fn sample(&self, (u, v): (f64, f64), p: &Point3) -> Color {
+    fn sample(&self, (u, v): (f64, f64), p: &Point4) -> Color {
         let iu = (u * 2.0 / self.scale) as u32;
         let iv = (v * 2.0 / self.scale) as u32;
 
@@ -59,7 +59,7 @@ impl CheckerboardSolidTexture {
 }
 
 impl Texture for CheckerboardSolidTexture {
-    fn sample(&self, uv: (f64, f64), p: &Point3) -> Color {
+    fn sample(&self, uv: (f64, f64), p: &Point4) -> Color {
         let ix = (p.x() / self.scale).floor() as i32;
         let iy = (p.y() / self.scale).floor() as i32;
         let iz = (p.z() / self.scale).floor() as i32;

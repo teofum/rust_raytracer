@@ -1,14 +1,14 @@
 use rand::Rng;
 use rand_xorshift::XorShiftRng;
 
-use crate::vec3::{Point3, Vec3};
+use crate::vec4::{Point4, Vec4};
 
 use super::Noise3D;
 
 const POINT_COUNT: usize = 256;
 
 pub struct PerlinNoise3D {
-    random_vec: [Vec3; POINT_COUNT],
+    random_vec: [Vec4; POINT_COUNT],
     perm_x: [usize; POINT_COUNT],
     perm_y: [usize; POINT_COUNT],
     perm_z: [usize; POINT_COUNT],
@@ -16,9 +16,9 @@ pub struct PerlinNoise3D {
 
 impl PerlinNoise3D {
     pub fn new(rng: &mut XorShiftRng) -> Self {
-        let mut random_vec = [Vec3::origin(); POINT_COUNT];
+        let mut random_vec = [Vec4::vec(0.0, 0.0, 0.0); POINT_COUNT];
         for i in 0..POINT_COUNT {
-            random_vec[i] = Vec3::random_unit(rng);
+            random_vec[i] = Vec4::random_unit(rng);
         }
 
         let perm_x = Self::gen_perm(rng);
@@ -50,20 +50,20 @@ impl PerlinNoise3D {
         }
     }
 
-    fn trilinear_interpolation(c: [Vec3; 8], uvw: Vec3) -> f64 {
+    fn trilinear_interpolation(c: [Vec4; 8], uvw: Vec4) -> f64 {
         let mut acc = 0.0;
-        let (u, v, w) = uvw.values();
-        let (uu, vv, ww) = uvw.map_components(|x| x * x * (3.0 - 2.0 * x)).values();
+        let (u, v, w) = uvw.xyz();
+        let (uu, vv, ww) = uvw.map_components(|x| x * x * (3.0 - 2.0 * x)).xyz();
 
         for i in 0..2 {
             for j in 0..2 {
                 for k in 0..2 {
                     let (fi, fj, fk) = (i as f64, j as f64, k as f64);
-                    let v_weight = Vec3(u - fi, v - fj, w - fk);
+                    let v_weight = Vec4::vec(u - fi, v - fj, w - fk);
                     acc += (fi * uu + (1.0 - fi) * (1.0 - uu))
                         * (fj * vv + (1.0 - fj) * (1.0 - vv))
                         * (fk * ww + (1.0 - fk) * (1.0 - ww))
-                        * Vec3::dot(&c[(i << 2) + (j << 1) + k], &v_weight);
+                        * Vec4::dot(&c[(i << 2) + (j << 1) + k], &v_weight);
                 }
             }
         }
@@ -75,13 +75,13 @@ impl PerlinNoise3D {
 impl Noise3D for PerlinNoise3D {
     type Output = f64;
 
-    fn sample(&self, p: &Point3) -> Self::Output {
+    fn sample(&self, p: &Point4) -> Self::Output {
         let uvw = p.map_components(|x| x - x.floor());
 
         let i = p.x().floor() as i32;
         let j = p.y().floor() as i32;
         let k = p.z().floor() as i32;
-        let mut c = [Vec3::origin(); 8];
+        let mut c = [Vec4::vec(0.0, 0.0, 0.0); 8];
 
         for di in 0..2 {
             for dj in 0..2 {
@@ -97,7 +97,7 @@ impl Noise3D for PerlinNoise3D {
         Self::trilinear_interpolation(c, uvw)
     }
 
-    fn sample_turbulence(&self, p: &Point3, samples: usize) -> Self::Output {
+    fn sample_turbulence(&self, p: &Point4, samples: usize) -> Self::Output {
         let mut acc = 0.0;
         let mut p = *p;
         let mut weight = 1.0;

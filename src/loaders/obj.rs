@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::vec3::{Point3, Vec3};
+use crate::vec4::{Point4, Vec4};
 use crate::{
     material::Material,
     object::mesh::{Triangle, TriangleMesh},
@@ -13,9 +13,9 @@ use crate::{
 pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Result<TriangleMesh> {
     let reader = BufReader::new(file);
 
-    let mut vertex_positions: Vec<Point3> = Vec::new();
-    let mut vertex_uvs: Vec<Point3> = Vec::new();
-    let mut vertex_normals: Vec<Vec3> = Vec::new();
+    let mut vertex_positions: Vec<Point4> = Vec::new();
+    let mut vertex_uvs: Vec<Point4> = Vec::new();
+    let mut vertex_normals: Vec<Vec4> = Vec::new();
 
     let mut triangles: Vec<Triangle> = Vec::new();
 
@@ -30,19 +30,19 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
                     let params: Vec<_> = params.map(|p| p.parse::<f64>().unwrap()).collect();
                     assert!(params.len() >= 3);
 
-                    vertex_positions.push(Vec3(params[0], params[1], params[2]));
+                    vertex_positions.push(Vec4::point(params[0], params[1], params[2]));
                 }
                 Some("vt") => {
                     let params: Vec<_> = params.map(|p| p.parse::<f64>().unwrap()).collect();
                     assert!(params.len() >= 2);
 
-                    vertex_uvs.push(Vec3(params[0], params[1], *params.get(2).unwrap_or(&0.0)));
+                    vertex_uvs.push(Vec4::vec(params[0], params[1], *params.get(2).unwrap_or(&0.0)));
                 }
                 Some("vn") => {
                     let params: Vec<_> = params.map(|p| p.parse::<f64>().unwrap()).collect();
                     assert!(params.len() >= 3);
 
-                    vertex_normals.push(Vec3(params[0], params[1], params[2]).to_unit());
+                    vertex_normals.push(Vec4::vec(params[0], params[1], params[2]).to_unit());
                 }
                 Some("f") => {
                     let params = params.map(|p| {

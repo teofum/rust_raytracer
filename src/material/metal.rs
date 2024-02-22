@@ -2,7 +2,7 @@ use rand_xorshift::XorShiftRng;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::vec3::{Color, Vec3};
+use crate::vec4::{Color, Vec4};
 
 use super::Material;
 
@@ -30,7 +30,7 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &mut Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<Color> {
         let reflected = ray.dir.reflect(hit.normal());
-        let scatter_dir = reflected + Vec3::random_unit(rng) * self.roughness * reflected.length();
+        let scatter_dir = reflected + Vec4::random_unit(rng) * self.roughness * reflected.length();
 
         ray.origin = hit.pos();
         ray.dir = scatter_dir;

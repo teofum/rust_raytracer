@@ -1,5 +1,5 @@
 use crate::aabb::{self, AxisAlignedBoundingBox};
-use crate::constants::INFINITY_VEC;
+use crate::constants::INFINITY;
 use crate::interval::Interval;
 use crate::ray::Ray;
 
@@ -14,7 +14,7 @@ impl ObjectList {
     pub fn new() -> Self {
         ObjectList {
             objects: Vec::new(),
-            bounds: (INFINITY_VEC, -INFINITY_VEC),
+            bounds: (INFINITY, -INFINITY),
         }
     }
 
@@ -27,7 +27,7 @@ impl ObjectList {
 
     pub fn clear(&mut self) {
         self.objects.clear();
-        self.bounds = (INFINITY_VEC, -INFINITY_VEC);
+        self.bounds = (INFINITY, -INFINITY);
     }
 
     pub fn add(&mut self, object: Box<dyn Hit>) {

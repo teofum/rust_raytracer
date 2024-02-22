@@ -1,11 +1,11 @@
-use crate::vec3::{Color, Point3, Vec3};
+use crate::vec4::{Color, Point4, Vec4};
 
 use super::Texture;
 
 pub struct UvDebugTexture;
 
 impl Texture for UvDebugTexture {
-    fn sample(&self, (u, v): (f64, f64), _: &Point3) -> Color {
-        Vec3(u, v, 0.5)
+    fn sample(&self, (u, v): (f64, f64), _: &Point4) -> Color {
+        Vec4::vec(u, v, 0.5)
     }
 }

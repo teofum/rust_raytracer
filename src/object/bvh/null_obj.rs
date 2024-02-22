@@ -1,5 +1,5 @@
 use crate::aabb::AxisAlignedBoundingBox;
-use crate::constants::INFINITY_VEC;
+use crate::constants::INFINITY;
 use crate::interval::Interval;
 use crate::object::{Hit, HitRecord};
 use crate::ray::Ray;
@@ -14,6 +14,6 @@ impl Hit for NullObject {
     }
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
-        (INFINITY_VEC, -INFINITY_VEC)
+        (INFINITY, -INFINITY)
     }
 }

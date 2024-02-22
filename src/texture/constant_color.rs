@@ -1,4 +1,4 @@
-use crate::vec3::{Color, Point3, Vec3};
+use crate::vec4::{Color, Point4, Vec4};
 
 use super::Texture;
 
@@ -12,12 +12,12 @@ impl ConstantColorTexture {
     }
 
     pub fn from_values(r: f64, g: f64, b: f64) -> Self {
-        Self::new(Vec3(r, g, b))
+        Self::new(Vec4::vec(r, g, b))
     }
 }
 
 impl Texture for ConstantColorTexture {
-    fn sample(&self, _: (f64, f64), _: &Point3) -> Color {
+    fn sample(&self, _: (f64, f64), _: &Point4) -> Color {
         self.color
     }
 }

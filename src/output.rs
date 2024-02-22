@@ -25,7 +25,7 @@ impl Writer {
             let color = self.buffer.get_pixel(x as usize, y as usize);
             let (r, g, b) = (self.tonemap)(color)
                 .map_components(|x| x.powf(GAMMA))
-                .values();
+                .xyz();
 
             let (r, g, b) = (
                 (r * 255.999) as u8,

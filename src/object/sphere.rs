@@ -5,21 +5,21 @@ use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
+use crate::vec4::{Point4, Vec4};
 
 use super::{Hit, HitRecord};
 
 pub struct Sphere {
     pub material: Arc<dyn Material>,
 
-    center: Point3,
+    center: Point4,
     radius: f64,
     bounds: AxisAlignedBoundingBox,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Arc<dyn Material>) -> Self {
-        let radius_vec = Vec3(radius, radius, radius);
+    pub fn new(center: Point4, radius: f64, material: Arc<dyn Material>) -> Self {
+        let radius_vec = Vec4::vec(radius, radius, radius);
         let bounds = (center - radius_vec, center + radius_vec);
 
         Sphere {

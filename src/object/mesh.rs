@@ -4,7 +4,7 @@ use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
+use crate::vec4::{Point4, Vec4};
 
 use super::{Hit, HitRecord};
 
@@ -22,12 +22,12 @@ pub struct TriangleMesh {
     pub material: Arc<dyn Material>,
     pub flat_shading: bool,
 
-    vertices: Vec<Point3>,
-    vertex_uvs: Vec<Point3>,
-    vertex_normals: Vec<Vec3>,
-    position: Point3,
+    vertices: Vec<Point4>,
+    vertex_uvs: Vec<Point4>,
+    vertex_normals: Vec<Vec4>,
+    position: Point4,
 
-    transformed_vertices: Vec<Point3>,
+    transformed_vertices: Vec<Point4>,
     triangles: Vec<Triangle>,
 
     bounds: AxisAlignedBoundingBox,
@@ -36,9 +36,9 @@ pub struct TriangleMesh {
 
 impl TriangleMesh {
     pub fn new(
-        vertices: Vec<Point3>,
-        vertex_uvs: Vec<Point3>,
-        vertex_normals: Vec<Vec3>,
+        vertices: Vec<Point4>,
+        vertex_uvs: Vec<Point4>,
+        vertex_normals: Vec<Vec4>,
         triangles: Vec<Triangle>,
         material: Arc<dyn Material>,
     ) -> Self {
@@ -50,7 +50,7 @@ impl TriangleMesh {
             vertices,
             vertex_uvs,
             vertex_normals,
-            position: Vec3::origin(),
+            position: Vec4::point(0.0, 0.0, 0.0),
             triangles,
             material,
             flat_shading: false,
@@ -59,7 +59,7 @@ impl TriangleMesh {
         }
     }
 
-    pub fn set_position(&mut self, pos: Point3) {
+    pub fn set_position(&mut self, pos: Point4) {
         self.position = pos;
 
         self.update_transformed();
@@ -99,7 +99,7 @@ impl TriangleMesh {
         let edge2 = v2 - v0;
 
         // Compute the barycentric coordinates t, u, v using Cramer's Rule
-        let ray_x_edge2 = Vec3::cross(&ray.dir, &edge2);
+        let ray_x_edge2 = Vec4::cross(&ray.dir, &edge2);
 
         let det = edge1.dot(&ray_x_edge2);
         if det.abs() < f64::EPSILON {
@@ -116,7 +116,7 @@ impl TriangleMesh {
 
         // Uses the property a.(b×c) = b.(c×a) = c.(a×b)
         // and a×b = b×(-a)
-        let b_x_edge1 = Vec3::cross(&b, &edge1);
+        let b_x_edge1 = Vec4::cross(&b, &edge1);
         let v = ray.dir.dot(&b_x_edge1) * inv_det;
         if v < 0.0 || u + v > 1.0 {
             return None; // Intersection lies outside triangle
@@ -132,7 +132,7 @@ impl TriangleMesh {
 
             // Calculate normals
             let normal = if self.flat_shading {
-                Vec3::cross(&edge1, &edge2).to_unit()
+                Vec4::cross(&edge1, &edge2).to_unit()
             } else {
                 let [n0, n1, n2] = [
                     self.vertex_normals[triangle.normal_indices[0]],
@@ -153,7 +153,7 @@ impl TriangleMesh {
 
                     uv0 * w + uv1 * u + uv2 * v
                 }
-                None => Vec3::origin(),
+                None => Vec4::vec(0.0, 0.0, 0.0),
             };
 
             Some(HitRecord::new(

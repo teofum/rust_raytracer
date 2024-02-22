@@ -2,7 +2,7 @@ use std::error::Error;
 
 use image::{io::Reader as ImageReader, Pixel};
 
-use crate::vec3::{Color, Vec3};
+use crate::vec4::{Color, Vec4};
 
 pub struct Buffer {
     width: usize,
@@ -16,7 +16,7 @@ impl Buffer {
 
         // Initialize the buffer
         for _ in 0..(width * height) {
-            data.push(Vec3::origin());
+            data.push(Vec4::vec(0.0, 0.0, 0.0));
         }
 
         Buffer {
@@ -36,7 +36,7 @@ impl Buffer {
         // Initialize the buffer with image contents
         for p in image.pixels() {
             let rgb = p.channels();
-            data.push(Vec3(rgb[0] as f64, rgb[1] as f64, rgb[2] as f64));
+            data.push(Vec4::vec(rgb[0] as f64, rgb[1] as f64, rgb[2] as f64));
         }
 
         Ok(Buffer {

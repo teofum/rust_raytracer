@@ -1,3 +1,3 @@
-use crate::vec3::Vec3;
+use crate::vec4::Vec4;
 
-pub const INFINITY_VEC: Vec3 = Vec3(f64::INFINITY, f64::INFINITY, f64::INFINITY);
+pub const INFINITY: Vec4 = Vec4(f64::INFINITY, f64::INFINITY, f64::INFINITY, 1.0);
