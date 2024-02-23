@@ -2,7 +2,7 @@ use std::{f64::consts::PI, sync::Arc};
 
 use rand::Rng;
 use rand_distr::Standard;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::ray::Ray;
 use crate::texture::Texture;
@@ -22,7 +22,7 @@ impl LambertianDiffuse {
 }
 
 impl Material for LambertianDiffuse {
-    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
+    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
         let scatter_dir = onb_from_vec(hit.normal()) * random_cosine_vec(rng);
 
         let scattered = Ray::new(hit.pos(), scatter_dir);
@@ -43,7 +43,7 @@ impl Material for LambertianDiffuse {
     }
 }
 
-fn random_cosine_vec(rng: &mut XorShiftRng) -> Vec4 {
+fn random_cosine_vec(rng: &mut Pcg64Mcg) -> Vec4 {
     let r1: f64 = rng.sample(Standard);
     let r2: f64 = rng.sample(Standard);
 

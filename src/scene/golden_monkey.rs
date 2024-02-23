@@ -3,7 +3,7 @@ use std::fs::File;
 use std::sync::Arc;
 
 use rand::{Rng, SeedableRng};
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
@@ -59,7 +59,7 @@ impl Scene for GoldenMonkeyScene {
         mesh.translate(0.0, 1.0, 0.0);
 
         // Random spheres
-        let mut rng = XorShiftRng::from_rng(rand::thread_rng()).unwrap();
+        let mut rng = Pcg64Mcg::from_rng(rand::thread_rng()).unwrap();
 
         let mut random_spheres: Vec<Box<dyn Hit>> = Vec::with_capacity(21);
         for i in -10..11 {

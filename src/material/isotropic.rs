@@ -1,6 +1,6 @@
 use std::{f64::consts::PI, sync::Arc};
 
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
@@ -20,7 +20,7 @@ impl Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
+    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
         let scattered = Ray::new(hit.pos(), Vec4::random_unit(rng));
         Some(ScatterResult {
             attenuation: self.albedo.sample(hit.uv(), &hit.pos()),

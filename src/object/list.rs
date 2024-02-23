@@ -1,4 +1,4 @@
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::constants::INFINITY;
@@ -12,7 +12,7 @@ pub struct ObjectList {
     bounds: AxisAlignedBoundingBox,
 
     /// Disables the bounding box check before hit test.
-    /// 
+    ///
     /// Needed as a workaround for volumes. Don't use it otherwise as it has a
     /// big impact on performance.
     pub disable_bounds_check: bool,
@@ -50,7 +50,7 @@ impl ObjectList {
 }
 
 impl Hit for ObjectList {
-    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut Pcg64Mcg) -> Option<HitRecord> {
         if !self.disable_bounds_check && !aabb::test_bounding_box(&self.bounds, ray, &t) {
             return None;
         }

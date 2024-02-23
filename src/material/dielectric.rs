@@ -1,5 +1,5 @@
 use rand::Rng;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
@@ -24,7 +24,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
         let ior_ratio = if hit.front_face() {
             1.0 / self.ior
         } else {

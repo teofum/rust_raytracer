@@ -1,6 +1,6 @@
 use rand::Rng;
 use rand_distr::{Standard, StandardNormal};
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
@@ -23,7 +23,7 @@ impl Vec4 {
         Vec4(x, y, z, 1.0)
     }
 
-    pub fn random_vec(rng: &mut XorShiftRng) -> Self {
+    pub fn random_vec(rng: &mut Pcg64Mcg) -> Self {
         let x = rng.sample(Standard);
         let y = rng.sample(Standard);
         let z = rng.sample(Standard);
@@ -31,14 +31,14 @@ impl Vec4 {
         Vec4(x, y, z, 0.0)
     }
 
-    pub fn random_in_unit_disk(rng: &mut XorShiftRng) -> Self {
+    pub fn random_in_unit_disk(rng: &mut Pcg64Mcg) -> Self {
         let x = rng.sample(StandardNormal);
         let y = rng.sample(StandardNormal);
 
         Vec4(x, y, 0.0, 0.0).to_unit()
     }
 
-    pub fn random_unit(rng: &mut XorShiftRng) -> Self {
+    pub fn random_unit(rng: &mut Pcg64Mcg) -> Self {
         let x = rng.sample(StandardNormal);
         let y = rng.sample(StandardNormal);
         let z = rng.sample(StandardNormal);

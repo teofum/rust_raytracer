@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
@@ -20,7 +20,7 @@ impl Emissive {
 }
 
 impl Material for Emissive {
-    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut XorShiftRng) -> Option<ScatterResult> {
+    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut Pcg64Mcg) -> Option<ScatterResult> {
         None
     }
 

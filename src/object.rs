@@ -1,4 +1,4 @@
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
@@ -85,7 +85,7 @@ impl<'a> HitRecord<'a> {
 }
 
 pub trait Hit: Send + Sync {
-    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord>;
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut Pcg64Mcg) -> Option<HitRecord>;
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox;
 }

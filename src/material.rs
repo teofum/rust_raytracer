@@ -1,4 +1,4 @@
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
@@ -25,7 +25,7 @@ pub trait Material: Send + Sync {
     /// Scatter a ray according to material properties.
     ///
     /// Returns `None` if the ray is absorbed.
-    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult>;
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult>;
 
     fn emit(&self, _: &HitRecord) -> Color {
         Vec4::vec(0.0, 0.0, 0.0)

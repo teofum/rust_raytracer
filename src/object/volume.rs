@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use rand::Rng;
 use rand_distr::Standard;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::material::Material;
 use crate::ray::Ray;
@@ -28,7 +28,7 @@ impl Volume {
 }
 
 impl Hit for Volume {
-    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut Pcg64Mcg) -> Option<HitRecord> {
         if let Some(hit_enter) = self.boundary.test(ray, Interval::UNIVERSE, rng) {
             let exit_t = Interval(hit_enter.t() + 0.0001, f64::INFINITY);
 

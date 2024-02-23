@@ -1,4 +1,4 @@
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
@@ -28,7 +28,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut XorShiftRng) -> Option<ScatterResult> {
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
         let reflected = ray.dir.reflect(hit.normal());
         let scatter_dir = reflected + Vec4::random_unit(rng) * self.roughness * reflected.length();
 

@@ -4,7 +4,7 @@ use std::fs::File;
 use std::sync::Arc;
 
 use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
@@ -37,7 +37,7 @@ impl Scene for PerlinScene {
         };
 
         // Set up materials
-        let mut rng = XorShiftRng::from_rng(rand::thread_rng()).unwrap();
+        let mut rng = Pcg64Mcg::from_rng(rand::thread_rng()).unwrap();
 
         let noise_perlin = Box::new(PerlinNoise3D::new(&mut rng));
         let mut tex_marble = NoiseSolidTexture::new(noise_perlin);

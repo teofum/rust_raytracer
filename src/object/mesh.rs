@@ -10,7 +10,7 @@ use super::{Hit, HitRecord};
 
 mod octree;
 use octree::{OctreeNode, OctreeNodeData};
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 #[derive(Clone, Copy)]
 pub struct Triangle {
@@ -175,7 +175,7 @@ impl TriangleMesh {
 }
 
 impl Hit for TriangleMesh {
-    fn test(&self, ray: &Ray, t: Interval, _: &mut XorShiftRng) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
         self.test_octree_node(&self.octree, ray, t)
     }
 

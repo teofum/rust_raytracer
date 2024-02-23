@@ -1,5 +1,5 @@
 use rand::Rng;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::vec4::{Point4, Vec4};
 
@@ -15,7 +15,7 @@ pub struct PerlinNoise3D {
 }
 
 impl PerlinNoise3D {
-    pub fn new(rng: &mut XorShiftRng) -> Self {
+    pub fn new(rng: &mut Pcg64Mcg) -> Self {
         let mut random_vec = [Vec4::vec(0.0, 0.0, 0.0); POINT_COUNT];
         for i in 0..POINT_COUNT {
             random_vec[i] = Vec4::random_unit(rng);
@@ -33,7 +33,7 @@ impl PerlinNoise3D {
         }
     }
 
-    fn gen_perm(rng: &mut XorShiftRng) -> [usize; POINT_COUNT] {
+    fn gen_perm(rng: &mut Pcg64Mcg) -> [usize; POINT_COUNT] {
         let mut p = [0; POINT_COUNT];
         for i in 0..POINT_COUNT {
             p[i] = i
@@ -43,7 +43,7 @@ impl PerlinNoise3D {
         p
     }
 
-    fn permute(p: &mut [usize; POINT_COUNT], rng: &mut XorShiftRng) {
+    fn permute(p: &mut [usize; POINT_COUNT], rng: &mut Pcg64Mcg) {
         for i in (1..POINT_COUNT).rev() {
             let target = rng.gen_range(0..=i);
             p.swap(i, target);

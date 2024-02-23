@@ -1,5 +1,5 @@
 use rand::Rng;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::interval::Interval;
@@ -25,7 +25,7 @@ pub struct BoundingVolumeHierarchyNode {
 }
 
 impl BoundingVolumeHierarchyNode {
-    pub fn from(mut objects: Vec<Box<dyn Hit>>, axes: [bool; 3], rng: &mut XorShiftRng) -> Self {
+    pub fn from(mut objects: Vec<Box<dyn Hit>>, axes: [bool; 3], rng: &mut Pcg64Mcg) -> Self {
         let mut axis_idx = rng.gen_range(0..3);
         while !axes[axis_idx] {
             axis_idx = rng.gen_range(0..3);
@@ -77,7 +77,7 @@ impl BoundingVolumeHierarchyNode {
 }
 
 impl Hit for BoundingVolumeHierarchyNode {
-    fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, rng: &mut Pcg64Mcg) -> Option<HitRecord> {
         if !aabb::test_bounding_box(&self.bounds, ray, &t) {
             return None;
         }

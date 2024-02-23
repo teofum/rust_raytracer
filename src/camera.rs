@@ -4,7 +4,7 @@ use std::time::Instant;
 
 use rand::{Rng, SeedableRng};
 use rand_distr::Standard;
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::buffer::Buffer;
 use crate::interval::Interval;
@@ -172,7 +172,7 @@ impl Camera {
                 let time = Instant::now();
 
                 let mut thread_rng =
-                    XorShiftRng::from_rng(rand::thread_rng()).expect("Failed to init RNG");
+                    Pcg64Mcg::from_rng(rand::thread_rng()).expect("Failed to init RNG");
                 let image_height = thread_self_ref.image_height;
                 let image_width = thread_self_ref.image_width;
 
@@ -231,7 +231,7 @@ impl Camera {
         pixel_y: usize,
         sample_x: usize,
         sample_y: usize,
-        rng: &mut XorShiftRng,
+        rng: &mut Pcg64Mcg,
     ) -> Ray {
         let pixel_center = self.first_pixel
             + (self.pixel_delta.0 * pixel_x as f64)
@@ -252,7 +252,7 @@ impl Camera {
         ray: &Ray,
         object: &Arc<dyn Hit>,
         depth: usize,
-        rng: &mut XorShiftRng,
+        rng: &mut Pcg64Mcg,
     ) -> Color {
         if depth <= 0 {
             return Vec4::vec(0.0, 0.0, 0.0);
@@ -278,7 +278,7 @@ impl Camera {
         (self.background_color)(ray)
     }
 
-    fn pixel_sample_square(&self, sample_x: usize, sample_y: usize, rng: &mut XorShiftRng) -> Vec4 {
+    fn pixel_sample_square(&self, sample_x: usize, sample_y: usize, rng: &mut Pcg64Mcg) -> Vec4 {
         let rx: f64 = rng.sample(Standard);
         let ry: f64 = rng.sample(Standard);
         let x = (sample_x as f64 + rx) * ISRSPT - 0.5;
@@ -289,7 +289,7 @@ impl Camera {
 
     /// # Panics
     /// Panics if aperture_radius is `None`. Caller should make sure aperture radius is set.
-    fn defocus_disk_sample(&self, rng: &mut XorShiftRng) -> Vec4 {
+    fn defocus_disk_sample(&self, rng: &mut Pcg64Mcg) -> Vec4 {
         let v = Vec4::random_in_unit_disk(rng);
         self.position
             + (self.basis[0] * v[0] + self.basis[1] * v[1]) * self.aperture_radius.unwrap()

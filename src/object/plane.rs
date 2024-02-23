@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use rand_xorshift::XorShiftRng;
+use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{get_bounding_box, AxisAlignedBoundingBox};
 use crate::mat4::Mat4;
@@ -56,7 +56,7 @@ impl Plane {
 }
 
 impl Hit for Plane {
-    fn test(&self, ray: &Ray, t: Interval, _: &mut XorShiftRng) -> Option<HitRecord> {
+    fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
         let dot_ray_normal = self.normal.dot(&ray.dir);
 
         if dot_ray_normal.abs() < f64::EPSILON {
