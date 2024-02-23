@@ -1,5 +1,5 @@
 use rand::Rng;
-use rand_distr::StandardNormal;
+use rand_distr::{Standard, StandardNormal};
 use rand_xorshift::XorShiftRng;
 use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
@@ -24,9 +24,9 @@ impl Vec4 {
     }
 
     pub fn random_vec(rng: &mut XorShiftRng) -> Self {
-        let x = rng.gen_range(0.0..1.0);
-        let y = rng.gen_range(0.0..1.0);
-        let z = rng.gen_range(0.0..1.0);
+        let x = rng.sample(Standard);
+        let y = rng.sample(Standard);
+        let z = rng.sample(Standard);
 
         Vec4(x, y, z, 0.0)
     }

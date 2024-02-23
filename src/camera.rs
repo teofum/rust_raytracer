@@ -3,6 +3,7 @@ use std::thread;
 use std::time::Instant;
 
 use rand::{Rng, SeedableRng};
+use rand_distr::Standard;
 use rand_xorshift::XorShiftRng;
 
 use crate::buffer::Buffer;
@@ -278,8 +279,10 @@ impl Camera {
     }
 
     fn pixel_sample_square(&self, sample_x: usize, sample_y: usize, rng: &mut XorShiftRng) -> Vec4 {
-        let x = (sample_x as f64 + rng.gen_range(0.0..1.0)) * ISRSPT - 0.5;
-        let y = (sample_y as f64 + rng.gen_range(0.0..1.0)) * ISRSPT - 0.5;
+        let rx: f64 = rng.sample(Standard);
+        let ry: f64 = rng.sample(Standard);
+        let x = (sample_x as f64 + rx) * ISRSPT - 0.5;
+        let y = (sample_y as f64 + ry) * ISRSPT - 0.5;
 
         self.pixel_delta.0 * x + self.pixel_delta.1 * y
     }

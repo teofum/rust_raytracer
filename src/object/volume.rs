@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
 use rand::Rng;
+use rand_distr::Standard;
 use rand_xorshift::XorShiftRng;
 
-use crate::{interval::Interval, vec4::Vec4};
 use crate::material::Material;
 use crate::ray::Ray;
+use crate::{interval::Interval, vec4::Vec4};
 
 use super::{Hit, HitRecord};
 
@@ -42,7 +43,7 @@ impl Hit for Volume {
                 t_min = f64::max(t_min, 0.0);
                 let ray_len = ray.dir.length();
                 let dist_inside_boundary = (t_max - t_min) * ray_len;
-                let hit_dist = self.neg_inv_density * f64::ln(rng.gen_range(0.0..1.0));
+                let hit_dist = self.neg_inv_density * f64::ln(rng.sample(Standard));
 
                 if hit_dist > dist_inside_boundary {
                     return None;
@@ -55,7 +56,7 @@ impl Hit for Volume {
                     ray,
                     hit_pos,
                     t,
-                    (0.0, 0.0), // Arbitrary, unused
+                    (0.0, 0.0),               // Arbitrary, unused
                     Vec4::vec(1.0, 0.0, 0.0), // Arbitrary, unused
                     self.material.as_ref(),
                 ));

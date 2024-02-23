@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{f64::consts::PI, sync::Arc};
 
 use rand_xorshift::XorShiftRng;
 
@@ -29,6 +29,6 @@ impl Material for Isotropic {
     }
 
     fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {
-        1.0
+        1.0 / (4.0 * PI)
     }
 }
