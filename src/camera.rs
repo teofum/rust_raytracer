@@ -11,7 +11,7 @@ use crate::object::Hit;
 use crate::ray::Ray;
 use crate::vec4::{Color, Point4, Vec4};
 
-const SQRT_SAMPLES_PER_THREAD: usize = 5;
+const SQRT_SAMPLES_PER_THREAD: usize = 10;
 
 /// Inverse Square Root of Samples Per Thread
 const ISRSPT: f64 = 1.0 / SQRT_SAMPLES_PER_THREAD as f64;
