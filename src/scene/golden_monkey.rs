@@ -7,7 +7,7 @@ use rand_xorshift::XorShiftRng;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
-use rust_raytracer::object::bvh::BoundingVolumeHierarchyNode;
+use rust_raytracer::object::bvh::{self, BoundingVolumeHierarchyNode};
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
 use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
@@ -94,7 +94,7 @@ impl Scene for GoldenMonkeyScene {
             }
         }
 
-        let spheres_bvh = BoundingVolumeHierarchyNode::from(random_spheres, &mut rng);
+        let spheres_bvh = BoundingVolumeHierarchyNode::from(random_spheres, bvh::AXES_XZ, &mut rng);
 
         let mut world = ObjectList::new();
         world.add(Box::new(mesh));

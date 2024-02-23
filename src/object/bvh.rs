@@ -11,14 +11,26 @@ use super::{Hit, HitRecord};
 
 mod null_obj;
 
+pub const AXES_X: [bool; 3] = [true, false, false];
+pub const AXES_Y: [bool; 3] = [false, true, false];
+pub const AXES_Z: [bool; 3] = [false, false, true];
+pub const AXES_XY: [bool; 3] = [true, true, false];
+pub const AXES_XZ: [bool; 3] = [true, false, true];
+pub const AXES_YZ: [bool; 3] = [false, true, true];
+pub const AXES_ALL: [bool; 3] = [true, true, true];
+
 pub struct BoundingVolumeHierarchyNode {
     children: (Box<dyn Hit>, Box<dyn Hit>),
     bounds: AxisAlignedBoundingBox,
 }
 
 impl BoundingVolumeHierarchyNode {
-    pub fn from(mut objects: Vec<Box<dyn Hit>>, rng: &mut XorShiftRng) -> Self {
-        let axis_idx = rng.gen_range(0..3);
+    pub fn from(mut objects: Vec<Box<dyn Hit>>, axes: [bool; 3], rng: &mut XorShiftRng) -> Self {
+        let mut axis_idx = rng.gen_range(0..3);
+        while !axes[axis_idx] {
+            axis_idx = rng.gen_range(0..3);
+        }
+
         let comparator = |a: &Box<dyn Hit>, b: &Box<dyn Hit>| {
             let min_a = a.get_bounding_box().0[axis_idx];
             let min_b = b.get_bounding_box().0[axis_idx];
@@ -51,8 +63,8 @@ impl BoundingVolumeHierarchyNode {
             let first_half = objects;
 
             children = (
-                Box::new(Self::from(first_half, rng)),
-                Box::new(Self::from(second_half, rng)),
+                Box::new(Self::from(first_half, axes, rng)),
+                Box::new(Self::from(second_half, axes, rng)),
             );
             bounds = aabb::combine_bounds(&[
                 children.0.get_bounding_box(),
