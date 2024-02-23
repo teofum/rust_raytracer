@@ -27,4 +27,8 @@ impl Material for Emissive {
     fn emit(&self, hit: &HitRecord) -> Color {
         self.emission_map.sample(hit.uv(), &hit.pos())
     }
+
+    fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {
+        1.0
+    }
 }

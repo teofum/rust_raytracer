@@ -27,4 +27,8 @@ impl Material for Isotropic {
             scattered,
         })
     }
+
+    fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {
+        1.0
+    }
 }

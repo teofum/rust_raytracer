@@ -30,4 +30,6 @@ pub trait Material: Send + Sync {
     fn emit(&self, _: &HitRecord) -> Color {
         Vec4::vec(0.0, 0.0, 0.0)
     }
+
+    fn scattering_pdf(&self, ray_in: &Ray, scattered: &Ray, hit: &HitRecord) -> f64;
 }

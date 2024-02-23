@@ -13,7 +13,7 @@ use super::Scene;
 // Config variables
 const ASPECT_RATIO: f64 = 1.0;
 const OUTPUT_WIDTH: usize = 600;
-const FOCAL_LENGTH: f64 = 35.0;
+const FOCAL_LENGTH: f64 = 33.0;
 
 pub struct CornellBoxScene;
 
@@ -21,7 +21,7 @@ impl Scene for CornellBoxScene {
     fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec4::point(0.0, 0.0, 110.0), Vec4::point(0.0, 0.0, 0.0));
+        camera.move_and_look_at(Vec4::point(277.5, 277.5, -800.0), Vec4::point(277.5, 277.5, 0.0));
 
         // Set up materials
         let mat_white: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
@@ -39,54 +39,56 @@ impl Scene for CornellBoxScene {
 
         // Set up objects
         let floor = Plane::new(
-            Vec4::point(0.0, -27.5, 0.0),
-            (Vec4::vec(-27.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, 27.5)),
+            Vec4::point(277.5, 0.0, 277.5),
+            (Vec4::vec(277.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
             Arc::clone(&mat_white),
         );
         let ceiling = Plane::new(
-            Vec4::point(0.0, 27.5, 0.0),
-            (Vec4::vec(27.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -27.5)),
+            Vec4::point(277.5, 555.0, 277.5),
+            (Vec4::vec(277.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
             Arc::clone(&mat_white),
         );
         let back_wall = Plane::new(
-            Vec4::point(0.0, 0.0, -27.5),
-            (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(-27.5, 0.0, 0.0)),
+            Vec4::point(277.5, 277.5, 555.0),
+            (Vec4::vec(0.0, 277.5, 0.0), Vec4::vec(277.5, 0.0, 0.0)),
             Arc::clone(&mat_white),
         );
         let left_wall = Plane::new(
-            Vec4::point(-27.5, 0.0, 0.0),
-            (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(0.0, 0.0, -27.5)),
+            Vec4::point(555.0, 277.5, 277.5),
+            (Vec4::vec(0.0, 276.5, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
             Arc::clone(&mat_green),
         );
         let right_wall = Plane::new(
-            Vec4::point(27.5, 0.0, 0.0),
-            (Vec4::vec(0.0, 27.5, 0.0), Vec4::vec(0.0, 0.0, 27.5)),
+            Vec4::point(0.0, 277.5, 277.5),
+            (Vec4::vec(0.0, 277.5, 0.0), Vec4::vec(0.0, 0.0, -277.5)),
             Arc::clone(&mat_red),
         );
 
         let light = Plane::new(
-            Vec4::point(0.0, 27.49, 0.0),
-            (Vec4::vec(6.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -5.25)),
+            Vec4::point(277.5, 554.9, 277.5),
+            (Vec4::vec(-65.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -52.5)),
             Arc::clone(&mat_light),
         );
 
         let box1 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
-            Vec4::vec(16.5, 16.5, 16.5),
+            Vec4::vec(165.0, 330.0, 165.0),
             Arc::clone(&mat_white),
         );
         let mut box1 = Transform::new(Box::new(box1));
-        box1.rotate_y(deg_to_rad(-15.0));
-        box1.translate(27.5 - 21.25, 8.25 - 27.5, 27.5 - 14.75);
+        box1.translate(82.5, 165.0, 82.5);
+        box1.rotate_y(deg_to_rad(18.0));
+        box1.translate(265.0, 0.0, 295.0);
 
         let box2 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
-            Vec4::vec(16.5, 33.0, 16.5),
+            Vec4::vec(165.0, 165.0, 165.0),
             Arc::clone(&mat_white),
         );
         let mut box2 = Transform::new(Box::new(box2));
-        box2.rotate_y(deg_to_rad(18.0));
-        box2.translate(27.5 - 34.75, 16.5 - 27.5, 27.5 - 37.75);
+        box2.translate(82.5, 82.5, 82.5);
+        box2.rotate_y(deg_to_rad(-15.0));
+        box2.translate(130.0, 0.0, 65.0);
 
         let mut world = ObjectList::new();
         world.add(Box::new(floor));

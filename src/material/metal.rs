@@ -42,4 +42,8 @@ impl Material for Metal {
             None // Absorb ray if it would be scattered inside the surface
         }
     }
+
+    fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {
+        1.0
+    }
 }

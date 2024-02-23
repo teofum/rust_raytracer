@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{f64::consts::PI, sync::Arc};
 
 use rand_xorshift::XorShiftRng;
 
@@ -34,5 +34,15 @@ impl Material for LambertianDiffuse {
             attenuation: self.albedo.sample(hit.uv(), &hit.pos()),
             scattered,
         })
+    }
+
+    fn scattering_pdf(&self, _: &Ray, scattered: &Ray, hit: &HitRecord) -> f64 {
+        let cos_theta = Vec4::dot(&hit.normal(), &scattered.dir.to_unit());
+
+        if cos_theta < 0.0 {
+            0.0
+        } else {
+            cos_theta / PI
+        }
     }
 }

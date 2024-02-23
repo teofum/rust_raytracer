@@ -50,6 +50,10 @@ impl Material for Dielectric {
             scattered,
         })
     }
+
+    fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {
+        1.0
+    }
 }
 
 // Schlick's approximation for reflectance
