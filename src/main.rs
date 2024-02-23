@@ -12,18 +12,20 @@ use scene::GoldenMonkeyScene;
 use scene::LightTestScene;
 use scene::PerlinScene;
 use scene::Scene;
+use scene::TonemapTestScene;
 
 const OUT_FILENAME: &'static str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let scene = 4;
+    let scene = 6;
     let (camera, world) = match scene {
         1 => EarthScene::init()?,
         2 => PerlinScene::init()?,
         3 => LightTestScene::init()?,
         4 => CornellBoxScene::init()?,
         5 => CornellSmokeScene::init()?,
+        6 => TonemapTestScene::init()?,
         _ => GoldenMonkeyScene::init()?,
     };
 

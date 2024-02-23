@@ -16,6 +16,8 @@ mod light_test;
 pub use light_test::LightTestScene;
 mod perlin_noise;
 pub use perlin_noise::PerlinScene;
+mod tonemap_test;
+pub use tonemap_test::TonemapTestScene;
 
 pub trait Scene {
     fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>>;
