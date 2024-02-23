@@ -22,6 +22,7 @@ pub struct Triangle {
 pub struct TriangleMesh {
     pub material: Arc<dyn Material>,
     pub flat_shading: bool,
+    pub hit_back_faces: bool,
 
     vertices: Vec<Point4>,
     vertex_uvs: Vec<Point4>,
@@ -50,6 +51,7 @@ impl TriangleMesh {
             triangles,
             material,
             flat_shading: false,
+            hit_back_faces: false,
             bounds,
             octree,
         }
@@ -71,7 +73,8 @@ impl TriangleMesh {
         let ray_x_edge2 = Vec4::cross(&ray.dir, &edge2);
 
         let det = edge1.dot(&ray_x_edge2);
-        if det.abs() < f64::EPSILON {
+        let dd = if self.hit_back_faces { det.abs() } else { det };
+        if dd < f64::EPSILON {
             return None;
         }
 
