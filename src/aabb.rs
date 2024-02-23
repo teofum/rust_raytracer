@@ -47,7 +47,7 @@ pub fn get_bounding_box(vertices: &[Point4]) -> AxisAlignedBoundingBox {
 // Fast ray-box intersection by Andrew Woo
 // from Graphics Gems, 1990
 pub fn test_bounding_box(
-    (b_min, b_max): AxisAlignedBoundingBox,
+    (b_min, b_max): &AxisAlignedBoundingBox,
     ray: &Ray,
     t_int: &Interval,
 ) -> bool {

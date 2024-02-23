@@ -66,7 +66,7 @@ impl BoundingVolumeHierarchyNode {
 
 impl Hit for BoundingVolumeHierarchyNode {
     fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
-        if !aabb::test_bounding_box(self.bounds, ray, &t) {
+        if !aabb::test_bounding_box(&self.bounds, ray, &t) {
             return None;
         }
 

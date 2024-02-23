@@ -51,7 +51,7 @@ impl ObjectList {
 
 impl Hit for ObjectList {
     fn test(&self, ray: &Ray, t: Interval, rng: &mut XorShiftRng) -> Option<HitRecord> {
-        if !self.disable_bounds_check && !aabb::test_bounding_box(self.bounds, ray, &t) {
+        if !self.disable_bounds_check && !aabb::test_bounding_box(&self.bounds, ray, &t) {
             return None;
         }
 

@@ -140,7 +140,7 @@ impl TriangleMesh {
     }
 
     fn test_octree_node(&self, node: &OctreeNode, ray: &Ray, t: Interval) -> Option<HitRecord> {
-        if !aabb::test_bounding_box(node.bounding_box, ray, &t) {
+        if !aabb::test_bounding_box(&node.bounding_box, ray, &t) {
             return None;
         }
 
