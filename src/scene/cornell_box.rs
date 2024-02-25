@@ -2,7 +2,7 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
-use rust_raytracer::material::{Emissive, LambertianDiffuse, Material};
+use rust_raytracer::material::{Emissive, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Transform};
 use rust_raytracer::texture::ConstantColorTexture;
 use rust_raytracer::utils::deg_to_rad;
@@ -39,6 +39,10 @@ impl Scene for CornellBoxScene {
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
             ConstantColorTexture::from_values(15.0, 15.0, 15.0),
         )));
+        let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(
+            Arc::new(ConstantColorTexture::from_values(0.8, 0.85, 0.88)),
+            0.0,
+        ));
 
         // Set up objects
         let floor = Plane::new(
@@ -81,7 +85,7 @@ impl Scene for CornellBoxScene {
         let box1 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
             Vec4::vec(165.0, 330.0, 165.0),
-            Arc::clone(&mat_white),
+            Arc::clone(&mat_metal),
         );
         let mut box1 = Transform::new(Box::new(box1));
         box1.translate(82.5, 165.0, 82.5);

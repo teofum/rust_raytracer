@@ -43,7 +43,10 @@ impl Scene for GoldenMonkeyScene {
                 Arc::new(ConstantColorTexture::from_values(0.9, 0.9, 0.9)),
                 0.02,
             ))));
-        let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(Vec4::point(0.8, 0.6, 0.2), 0.05));
+        let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(
+            Arc::new(ConstantColorTexture::from_values(0.8, 0.6, 0.2)),
+            0.05,
+        ));
         let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
         // Set up objects

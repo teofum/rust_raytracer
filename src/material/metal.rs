@@ -1,25 +1,24 @@
+use std::sync::Arc;
+
 use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::vec4::{Color, Vec4};
+use crate::texture::Texture;
+use crate::vec4::Vec4;
 
 use super::{Material, ScatterResult};
 
 pub struct Metal {
-    albedo: Color,
+    albedo: Arc<dyn Texture>,
     roughness: f64,
 }
 
 impl Metal {
-    pub fn new(albedo: Color, roughness: f64) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>, roughness: f64) -> Self {
         let roughness = roughness.clamp(0.0, 1.0);
 
         Metal { albedo, roughness }
-    }
-
-    pub fn albedo(&self) -> Color {
-        self.albedo
     }
 
     pub fn roughness(&self) -> f64 {
@@ -35,7 +34,7 @@ impl Material for Metal {
         if scatter_dir.dot(&hit.normal()) > 0.0 {
             let scattered = Ray::new(hit.pos(), scatter_dir);
             ScatterResult::ScatteredWithRay {
-                attenuation: self.albedo,
+                attenuation: self.albedo.sample(hit.uv(), &hit.pos()),
                 scattered,
             }
         } else {

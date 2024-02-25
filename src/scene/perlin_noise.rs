@@ -11,7 +11,7 @@ use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::noise::PerlinNoise3D;
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
-use rust_raytracer::texture::NoiseSolidTexture;
+use rust_raytracer::texture::{ConstantColorTexture, NoiseSolidTexture};
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -45,7 +45,10 @@ impl Scene for PerlinScene {
         tex_marble.map = |p, sampled| 0.5 * (1.0 + f64::sin(p.z() + 10.0 * sampled));
         let mat_marble: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(tex_marble)));
 
-        let mat_floor: Arc<dyn Material> = Arc::new(Metal::new(Vec4::vec(0.8, 0.8, 0.8), 0.02));
+        let mat_floor: Arc<dyn Material> = Arc::new(Metal::new(
+            Arc::new(ConstantColorTexture::from_values(0.8, 0.8, 0.8)),
+            0.02,
+        ));
 
         // Set up objects
         let sphere = Sphere::new(Vec4::point(0.0, 0.0, 1.5), 1.0, Arc::clone(&mat_marble));
