@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{get_bounding_box, AxisAlignedBoundingBox};
@@ -16,6 +17,9 @@ pub struct Plane {
     center: Point4,
     size_half: (f64, f64),
     normal: Vec4,
+    u: Vec4,
+    v: Vec4,
+    area: f64,
     inverse_basis: Mat4,
     bounds: AxisAlignedBoundingBox,
 }
@@ -28,7 +32,10 @@ impl Plane {
 
         let u_unit = u.to_unit();
         let v_unit = v.to_unit();
-        let normal = Vec4::cross(&u_unit, &v_unit);
+
+        let n = Vec4::cross(&u, &v);
+        let area = n.length() * 4.0;
+        let normal = n.to_unit();
 
         // Since u_unit, v_unit and normal are orthonormal vectors, basis is an
         // orthogonal matrix, and thus its inverse is its transpose
@@ -49,6 +56,9 @@ impl Plane {
             size_half: (u.length().abs(), v.length().abs()),
             material,
             normal,
+            u,
+            v,
+            area,
             inverse_basis,
             bounds,
         }
@@ -91,5 +101,26 @@ impl Hit for Plane {
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
         self.bounds
+    }
+
+    fn pdf_value(&self, origin: Point4, dir: Vec4, rng: &mut Pcg64Mcg) -> f64 {
+        let ray = Ray::new(origin, dir);
+
+        if let Some(hit) = self.test(&ray, Interval(0.001, f64::INFINITY), rng) {
+            let dist_squared = hit.t() * hit.t() * dir.length_squared();
+            let cosine = (dir.dot(&hit.normal()) / dir.length()).abs();
+
+            dist_squared / (cosine * self.area)
+        } else {
+            0.0
+        }
+    }
+
+    fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
+        let u = rng.gen_range(0.0..1.0) - 0.5;
+        let v = rng.gen_range(0.0..1.0) - 0.5;
+        let p = self.center + self.u * u + self.v * v;
+
+        p - origin
     }
 }

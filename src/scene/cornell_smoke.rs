@@ -18,7 +18,7 @@ const FOCAL_LENGTH: f64 = 35.0;
 pub struct CornellSmokeScene;
 
 impl Scene for CornellSmokeScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec4::point(0.0, 0.0, 110.0), Vec4::point(0.0, 0.0, 0.0));
@@ -111,6 +111,6 @@ impl Scene for CornellSmokeScene {
 
         let world = Arc::new(world);
 
-        Ok((camera, world))
+        Ok((camera, world, Arc::new(ObjectList::new())))
     }
 }

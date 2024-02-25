@@ -5,7 +5,7 @@ use rand_pcg::Pcg64Mcg;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::texture::Texture;
-use crate::vec4::Color;
+use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
 
@@ -25,7 +25,11 @@ impl Material for Emissive {
     }
 
     fn emit(&self, hit: &HitRecord) -> Color {
-        self.emission_map.sample(hit.uv(), &hit.pos())
+        if hit.front_face() {
+            self.emission_map.sample(hit.uv(), &hit.pos())
+        } else {
+            Vec4::vec(0.0, 0.0, 0.0)
+        }
     }
 
     fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {

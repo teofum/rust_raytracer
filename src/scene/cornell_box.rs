@@ -18,10 +18,13 @@ const FOCAL_LENGTH: f64 = 33.0;
 pub struct CornellBoxScene;
 
 impl Scene for CornellBoxScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec4::point(277.5, 277.5, -800.0), Vec4::point(277.5, 277.5, 0.0));
+        camera.move_and_look_at(
+            Vec4::point(277.5, 277.5, -800.0),
+            Vec4::point(277.5, 277.5, 0.0),
+        );
 
         // Set up materials
         let mat_white: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
@@ -69,6 +72,11 @@ impl Scene for CornellBoxScene {
             (Vec4::vec(-65.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -52.5)),
             Arc::clone(&mat_light),
         );
+        let light2 = Plane::new(
+            Vec4::point(277.5, 554.9, 277.5),
+            (Vec4::vec(-65.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -52.5)),
+            Arc::clone(&mat_light),
+        );
 
         let box1 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
@@ -102,6 +110,8 @@ impl Scene for CornellBoxScene {
 
         let world = Arc::new(world);
 
-        Ok((camera, world))
+        let lights: Arc<dyn Hit> = Arc::new(light2);
+
+        Ok((camera, world, lights))
     }
 }

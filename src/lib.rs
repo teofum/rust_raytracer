@@ -9,6 +9,7 @@ pub mod material;
 pub mod noise;
 pub mod object;
 pub mod output;
+pub mod pdf;
 pub mod ppm;
 pub mod ray;
 pub mod texture;

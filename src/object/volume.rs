@@ -6,6 +6,7 @@ use rand_pcg::Pcg64Mcg;
 
 use crate::material::Material;
 use crate::ray::Ray;
+use crate::vec4::Point4;
 use crate::{interval::Interval, vec4::Vec4};
 
 use super::{Hit, HitRecord};
@@ -68,5 +69,13 @@ impl Hit for Volume {
 
     fn get_bounding_box(&self) -> crate::aabb::AxisAlignedBoundingBox {
         self.boundary.get_bounding_box()
+    }
+
+    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
+        0.0
+    }
+
+    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
+        Vec4::vec(1.0, 0.0, 0.0)
     }
 }

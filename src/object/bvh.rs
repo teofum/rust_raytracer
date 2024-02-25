@@ -4,6 +4,7 @@ use rand_pcg::Pcg64Mcg;
 use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::interval::Interval;
 use crate::ray::Ray;
+use crate::vec4::{Point4, Vec4};
 
 use self::null_obj::NullObject;
 
@@ -98,5 +99,13 @@ impl Hit for BoundingVolumeHierarchyNode {
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
         self.bounds
+    }
+
+    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
+        0.0
+    }
+
+    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
+        Vec4::vec(1.0, 0.0, 0.0)
     }
 }

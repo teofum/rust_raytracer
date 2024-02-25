@@ -17,7 +17,7 @@ const FOCAL_LENGTH: f64 = 35.0;
 pub struct TonemapTestScene;
 
 impl Scene for TonemapTestScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec4::point(0.0, 30.0, 15.0), Vec4::point(0.0, 0.0, -0.75));
@@ -99,6 +99,6 @@ impl Scene for TonemapTestScene {
 
         let world = Arc::new(world);
 
-        Ok((camera, world))
+        Ok((camera, world, Arc::new(ObjectList::new())))
     }
 }

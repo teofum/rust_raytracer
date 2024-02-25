@@ -19,7 +19,7 @@ const OUT_FILENAME: &'static str = "out.png";
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
     let scene = 4;
-    let (camera, world) = match scene {
+    let (camera, world, lights) = match scene {
         1 => EarthScene::init()?,
         2 => PerlinScene::init()?,
         3 => LightTestScene::init()?,
@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Output
     let mut buf = camera.create_buffer();
-    camera.render(world, &mut buf);
+    camera.render(world, lights, &mut buf);
 
     let elapsed = time.elapsed();
     println!("Done: {:.2?}. Writing output to file...", elapsed);

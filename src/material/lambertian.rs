@@ -1,7 +1,5 @@
 use std::{f64::consts::PI, sync::Arc};
 
-use rand::Rng;
-use rand_distr::Standard;
 use rand_pcg::Pcg64Mcg;
 
 use crate::ray::Ray;
@@ -23,9 +21,9 @@ impl LambertianDiffuse {
 
 impl Material for LambertianDiffuse {
     fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
-        let scatter_dir = onb_from_vec(hit.normal()) * random_cosine_vec(rng);
+        // let scatter_dir = onb_from_vec(hit.normal()) * Vec4::random_cosine(rng);
 
-        let scattered = Ray::new(hit.pos(), scatter_dir);
+        let scattered = Ray::new(hit.pos(), hit.normal());
         Some(ScatterResult {
             attenuation: self.albedo.sample(hit.uv(), &hit.pos()),
             scattered,
@@ -41,17 +39,4 @@ impl Material for LambertianDiffuse {
             cos_theta / PI
         }
     }
-}
-
-fn random_cosine_vec(rng: &mut Pcg64Mcg) -> Vec4 {
-    let r1: f64 = rng.sample(Standard);
-    let r2: f64 = rng.sample(Standard);
-
-    let phi = r1 * 2.0 * PI;
-    let sqrt_r2 = r2.sqrt();
-    let x = phi.cos() * sqrt_r2;
-    let y = phi.sin() * sqrt_r2;
-    let z = (1.0 - r2).sqrt();
-
-    Vec4::vec(x, y, z)
 }

@@ -20,5 +20,5 @@ mod tonemap_test;
 pub use tonemap_test::TonemapTestScene;
 
 pub trait Scene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>>;
+    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>>;
 }

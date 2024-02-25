@@ -79,4 +79,12 @@ impl Hit for Sphere {
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
         self.bounds
     }
+
+    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
+        0.0
+    }
+
+    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
+        Vec4::vec(1.0, 0.0, 0.0)
+    }
 }

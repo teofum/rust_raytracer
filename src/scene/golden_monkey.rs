@@ -23,7 +23,7 @@ const FOCAL_LENGTH: f64 = 70.0;
 pub struct GoldenMonkeyScene;
 
 impl Scene for GoldenMonkeyScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec4::point(5.0, 2.0, 9.0), Vec4::point(0.0, 0.5, 0.0));
@@ -103,6 +103,6 @@ impl Scene for GoldenMonkeyScene {
 
         let world = Arc::new(world);
 
-        Ok((camera, world))
+        Ok((camera, world, Arc::new(ObjectList::new())))
     }
 }

@@ -4,7 +4,7 @@ use crate::aabb::{self, AxisAlignedBoundingBox};
 use crate::interval::Interval;
 use crate::mat4::Mat4;
 use crate::ray::Ray;
-use crate::vec4::Vec4;
+use crate::vec4::{Point4, Vec4};
 
 use super::{Hit, HitRecord};
 
@@ -127,5 +127,13 @@ impl Hit for Transform {
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
         self.bounds
+    }
+
+    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
+        0.0
+    }
+
+    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
+        Vec4::vec(1.0, 0.0, 0.0)
     }
 }
