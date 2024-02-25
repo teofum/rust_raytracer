@@ -2,8 +2,8 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
-use rust_raytracer::material::{Emissive, LambertianDiffuse, Material, Metal};
-use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Transform};
+use rust_raytracer::material::{Dielectric, Emissive, LambertianDiffuse, Material};
+use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
 use rust_raytracer::texture::ConstantColorTexture;
 use rust_raytracer::utils::deg_to_rad;
 use rust_raytracer::vec4::Vec4;
@@ -39,10 +39,7 @@ impl Scene for CornellBoxScene {
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
             ConstantColorTexture::from_values(15.0, 15.0, 15.0),
         )));
-        let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(
-            Arc::new(ConstantColorTexture::from_values(0.8, 0.85, 0.88)),
-            0.0,
-        ));
+        let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
         // Set up objects
         let floor = Plane::new(
@@ -76,45 +73,44 @@ impl Scene for CornellBoxScene {
             (Vec4::vec(-65.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -52.5)),
             Arc::clone(&mat_light),
         );
-        let light2 = Plane::new(
-            Vec4::point(277.5, 554.9, 277.5),
-            (Vec4::vec(-65.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -52.5)),
-            Arc::clone(&mat_light),
-        );
+        let light: Arc<dyn Hit> = Arc::new(light);
 
         let box1 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
             Vec4::vec(165.0, 330.0, 165.0),
-            Arc::clone(&mat_metal),
+            Arc::clone(&mat_white),
         );
         let mut box1 = Transform::new(Box::new(box1));
         box1.translate(82.5, 165.0, 82.5);
         box1.rotate_y(deg_to_rad(18.0));
         box1.translate(265.0, 0.0, 295.0);
 
-        let box2 = make_box(
-            Vec4::point(0.0, 0.0, 0.0),
-            Vec4::vec(165.0, 165.0, 165.0),
-            Arc::clone(&mat_white),
-        );
-        let mut box2 = Transform::new(Box::new(box2));
-        box2.translate(82.5, 82.5, 82.5);
-        box2.rotate_y(deg_to_rad(-15.0));
-        box2.translate(130.0, 0.0, 65.0);
+        // let box2 = make_box(
+        //     Vec4::point(0.0, 0.0, 0.0),
+        //     Vec4::vec(165.0, 165.0, 165.0),
+        //     Arc::clone(&mat_white),
+        // );
+        // let mut box2 = Transform::new(Box::new(box2));
+        // box2.translate(82.5, 82.5, 82.5);
+        // box2.rotate_y(deg_to_rad(-15.0));
+        // box2.translate(130.0, 0.0, 65.0);
+
+        let glass_ball = Sphere::new(Vec4::point(212.5, 82.5, 147.5), 82.5, mat_glass);
+
+        let lights: Arc<dyn Hit> = Arc::clone(&light);
 
         let mut world = ObjectList::new();
-        world.add(Box::new(floor));
-        world.add(Box::new(ceiling));
-        world.add(Box::new(back_wall));
-        world.add(Box::new(left_wall));
-        world.add(Box::new(right_wall));
-        world.add(Box::new(light));
-        world.add(Box::new(box1));
-        world.add(Box::new(box2));
+        world.add(Arc::new(floor));
+        world.add(Arc::new(ceiling));
+        world.add(Arc::new(back_wall));
+        world.add(Arc::new(left_wall));
+        world.add(Arc::new(right_wall));
+        world.add(light);
+        world.add(Arc::new(box1));
+        // world.add(Arc::new(box2));
+        world.add(Arc::new(glass_ball));
 
         let world = Arc::new(world);
-
-        let lights: Arc<dyn Hit> = Arc::new(light2);
 
         Ok((camera, world, lights))
     }

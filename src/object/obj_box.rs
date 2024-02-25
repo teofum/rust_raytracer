@@ -13,32 +13,32 @@ pub fn make_box(center: Point4, size: Vec4, material: Arc<dyn Material>) -> Obje
     let dy = Vec4::vec(0.0, half_size.y(), 0.0);
     let dz = Vec4::vec(0.0, 0.0, half_size.z());
 
-    sides.add(Box::new(Plane::new(
+    sides.add(Arc::new(Plane::new(
         center + dy,
         (dx, -dz),
         Arc::clone(&material),
     )));
-    sides.add(Box::new(Plane::new(
+    sides.add(Arc::new(Plane::new(
         center - dy,
         (-dx, -dz),
         Arc::clone(&material),
     )));
-    sides.add(Box::new(Plane::new(
+    sides.add(Arc::new(Plane::new(
         center - dx,
         (dy, -dz),
         Arc::clone(&material),
     )));
-    sides.add(Box::new(Plane::new(
+    sides.add(Arc::new(Plane::new(
         center + dx,
         (dy, dz),
         Arc::clone(&material),
     )));
-    sides.add(Box::new(Plane::new(
+    sides.add(Arc::new(Plane::new(
         center - dz,
         (dy, dx),
         Arc::clone(&material),
     )));
-    sides.add(Box::new(Plane::new(
+    sides.add(Arc::new(Plane::new(
         center + dz,
         (dy, -dx),
         Arc::clone(&material),

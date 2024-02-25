@@ -100,9 +100,9 @@ impl Scene for GoldenMonkeyScene {
         let spheres_bvh = BoundingVolumeHierarchyNode::from(random_spheres, bvh::AXES_XZ, &mut rng);
 
         let mut world = ObjectList::new();
-        world.add(Box::new(mesh));
-        world.add(Box::new(floor));
-        world.add(Box::new(spheres_bvh));
+        world.add(Arc::new(mesh));
+        world.add(Arc::new(floor));
+        world.add(Arc::new(spheres_bvh));
 
         let world = Arc::new(world);
 

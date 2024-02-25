@@ -37,9 +37,9 @@ impl Scene for EarthScene {
         )));
 
         // Set up objects
-        let earth = Box::new(Sphere::new(Vec4::point(0.0, 0.0, 0.0), 1.5, mat_earth));
+        let earth = Arc::new(Sphere::new(Vec4::point(0.0, 0.0, 0.0), 1.5, mat_earth));
 
-        let floor = Box::new(Plane::new(
+        let floor = Arc::new(Plane::new(
             Vec4::point(0.0, -1.5, 0.0),
             (Vec4::vec(-10.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, 10.0)),
             mat_floor,

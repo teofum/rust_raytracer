@@ -61,22 +61,22 @@ impl Scene for TonemapTestScene {
         )));
 
         // Set up objects
-        let sphere_r_0 = Box::new(Sphere::new(Vec4::point(-2.5, 0.5, -5.0), 1.0, mat_r_0));
-        let sphere_r_1 = Box::new(Sphere::new(Vec4::point(-2.5, 0.5, -2.5), 1.0, mat_r_1));
-        let sphere_r_2 = Box::new(Sphere::new(Vec4::point(-2.5, 0.5, 0.0), 1.0, mat_r_2));
-        let sphere_r_3 = Box::new(Sphere::new(Vec4::point(-2.5, 0.5, 2.5), 1.0, mat_r_3));
+        let sphere_r_0 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, -5.0), 1.0, mat_r_0));
+        let sphere_r_1 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, -2.5), 1.0, mat_r_1));
+        let sphere_r_2 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, 0.0), 1.0, mat_r_2));
+        let sphere_r_3 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, 2.5), 1.0, mat_r_3));
 
-        let sphere_g_0 = Box::new(Sphere::new(Vec4::point(0.0, 0.5, -5.0), 1.0, mat_g_0));
-        let sphere_g_1 = Box::new(Sphere::new(Vec4::point(0.0, 0.5, -2.5), 1.0, mat_g_1));
-        let sphere_g_2 = Box::new(Sphere::new(Vec4::point(0.0, 0.5, 0.0), 1.0, mat_g_2));
-        let sphere_g_3 = Box::new(Sphere::new(Vec4::point(0.0, 0.5, 2.5), 1.0, mat_g_3));
+        let sphere_g_0 = Arc::new(Sphere::new(Vec4::point(0.0, 0.5, -5.0), 1.0, mat_g_0));
+        let sphere_g_1 = Arc::new(Sphere::new(Vec4::point(0.0, 0.5, -2.5), 1.0, mat_g_1));
+        let sphere_g_2 = Arc::new(Sphere::new(Vec4::point(0.0, 0.5, 0.0), 1.0, mat_g_2));
+        let sphere_g_3 = Arc::new(Sphere::new(Vec4::point(0.0, 0.5, 2.5), 1.0, mat_g_3));
 
-        let sphere_b_0 = Box::new(Sphere::new(Vec4::point(2.5, 0.5, -5.0), 1.0, mat_b_0));
-        let sphere_b_1 = Box::new(Sphere::new(Vec4::point(2.5, 0.5, -2.5), 1.0, mat_b_1));
-        let sphere_b_2 = Box::new(Sphere::new(Vec4::point(2.5, 0.5, 0.0), 1.0, mat_b_2));
-        let sphere_b_3 = Box::new(Sphere::new(Vec4::point(2.5, 0.5, 2.5), 1.0, mat_b_3));
+        let sphere_b_0 = Arc::new(Sphere::new(Vec4::point(2.5, 0.5, -5.0), 1.0, mat_b_0));
+        let sphere_b_1 = Arc::new(Sphere::new(Vec4::point(2.5, 0.5, -2.5), 1.0, mat_b_1));
+        let sphere_b_2 = Arc::new(Sphere::new(Vec4::point(2.5, 0.5, 0.0), 1.0, mat_b_2));
+        let sphere_b_3 = Arc::new(Sphere::new(Vec4::point(2.5, 0.5, 2.5), 1.0, mat_b_3));
 
-        let floor = Box::new(Plane::new(
+        let floor = Arc::new(Plane::new(
             Vec4::point(0.0, 0.0, 0.0),
             (Vec4::vec(-10.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, 10.0)),
             mat_floor,

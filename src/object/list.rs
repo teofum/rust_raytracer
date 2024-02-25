@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{self, AxisAlignedBoundingBox};
@@ -9,7 +11,7 @@ use crate::vec4::{Point4, Vec4};
 use super::{Hit, HitRecord};
 
 pub struct ObjectList {
-    objects: Vec<Box<dyn Hit>>,
+    objects: Vec<Arc<dyn Hit>>,
     bounds: AxisAlignedBoundingBox,
 
     /// Disables the bounding box check before hit test.
@@ -28,7 +30,7 @@ impl ObjectList {
         }
     }
 
-    pub fn from(objects: Vec<Box<dyn Hit>>) -> Self {
+    pub fn from(objects: Vec<Arc<dyn Hit>>) -> Self {
         let object_bounds: Vec<_> = objects.iter().map(|obj| obj.get_bounding_box()).collect();
         let bounds = aabb::combine_bounds(&object_bounds);
 
@@ -44,7 +46,7 @@ impl ObjectList {
         self.bounds = (INFINITY, -INFINITY);
     }
 
-    pub fn add(&mut self, object: Box<dyn Hit>) {
+    pub fn add(&mut self, object: Arc<dyn Hit>) {
         self.bounds = aabb::combine_bounds(&[self.bounds, object.get_bounding_box()]);
         self.objects.push(object);
     }

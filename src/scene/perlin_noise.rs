@@ -67,9 +67,9 @@ impl Scene for PerlinScene {
         mesh.translate(0.0, 0.45, -2.0);
 
         let mut world = ObjectList::new();
-        world.add(Box::new(sphere));
-        world.add(Box::new(floor));
-        world.add(Box::new(mesh));
+        world.add(Arc::new(sphere));
+        world.add(Arc::new(floor));
+        world.add(Arc::new(mesh));
 
         let world = Arc::new(world);
 

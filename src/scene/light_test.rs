@@ -60,10 +60,10 @@ impl Scene for LightTestScene {
         mesh.translate(0.0, 0.0, -1.5);
 
         let mut world = ObjectList::new();
-        world.add(Box::new(sphere));
-        world.add(Box::new(sphere_2));
-        world.add(Box::new(floor));
-        world.add(Box::new(mesh));
+        world.add(Arc::new(sphere));
+        world.add(Arc::new(sphere_2));
+        world.add(Arc::new(floor));
+        world.add(Arc::new(mesh));
 
         let world = Arc::new(world);
 

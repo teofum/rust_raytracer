@@ -100,14 +100,14 @@ impl Scene for CornellSmokeScene {
         let box2 = Volume::new(Box::new(box2), mat_fog, 0.15);
 
         let mut world = ObjectList::new();
-        world.add(Box::new(floor));
-        world.add(Box::new(ceiling));
-        world.add(Box::new(back_wall));
-        world.add(Box::new(left_wall));
-        world.add(Box::new(right_wall));
-        world.add(Box::new(light));
-        world.add(Box::new(box1));
-        world.add(Box::new(box2));
+        world.add(Arc::new(floor));
+        world.add(Arc::new(ceiling));
+        world.add(Arc::new(back_wall));
+        world.add(Arc::new(left_wall));
+        world.add(Arc::new(right_wall));
+        world.add(Arc::new(light));
+        world.add(Arc::new(box1));
+        world.add(Arc::new(box2));
 
         let world = Arc::new(world);
 
