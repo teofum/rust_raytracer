@@ -8,8 +8,8 @@ use crate::vec4::Vec4;
 use super::PDF;
 
 pub struct HittablePDF {
-    object: Arc<dyn Hit>,
-    origin: Vec4,
+    pub object: Arc<dyn Hit>,
+    pub origin: Vec4,
 }
 
 impl HittablePDF {

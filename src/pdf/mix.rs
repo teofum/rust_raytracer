@@ -5,13 +5,13 @@ use crate::vec4::Vec4;
 
 use super::PDF;
 
-pub struct MixPDF {
-    source: (Box<dyn PDF>, Box<dyn PDF>),
+pub struct MixPDF<'a> {
+    source: (&'a dyn PDF, &'a dyn PDF),
     mix: f64,
 }
 
-impl MixPDF {
-    pub fn new(first: Box<dyn PDF>, second: Box<dyn PDF>, mix: f64) -> Self {
+impl<'a> MixPDF<'a> {
+    pub fn new(first: &'a dyn PDF, second: &'a dyn PDF, mix: f64) -> Self {
         MixPDF {
             mix,
             source: (first, second),
@@ -19,7 +19,7 @@ impl MixPDF {
     }
 }
 
-impl PDF for MixPDF {
+impl<'a> PDF for MixPDF<'a> {
     fn value(&self, dir: &Vec4, rng: &mut Pcg64Mcg) -> f64 {
         let first_val = self.source.0.value(dir, rng);
         let second_val = self.source.1.value(dir, rng);

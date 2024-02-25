@@ -172,6 +172,8 @@ impl Camera {
             let thread_lights = Arc::clone(&lights);
             let thread_self_ref = Arc::clone(&self_ref);
 
+            let mut lights_pdf = HittablePDF::new(thread_lights, Vec4::point(0.0, 0.0, 0.0));
+
             let thread = thread::spawn(move || {
                 let time = Instant::now();
 
@@ -181,8 +183,6 @@ impl Camera {
                 let image_width = thread_self_ref.image_width;
 
                 for y in 0..image_height {
-                    // print!("Rendering... [line {}/{}]\r", y + 1, self.image_height);
-
                     for x in 0..image_width {
                         let mut color = Vec4::vec(0.0, 0.0, 0.0);
 
@@ -193,7 +193,7 @@ impl Camera {
                                 color += thread_self_ref.ray_color(
                                     &mut ray,
                                     &thread_world,
-                                    &thread_lights,
+                                    &mut lights_pdf,
                                     MAX_DEPTH,
                                     &mut thread_rng,
                                 );
@@ -256,7 +256,7 @@ impl Camera {
         &self,
         ray: &Ray,
         object: &Arc<dyn Hit>,
-        lights: &Arc<dyn Hit>,
+        lights_pdf: &mut HittablePDF,
         depth: usize,
         rng: &mut Pcg64Mcg,
     ) -> Color {
@@ -272,15 +272,16 @@ impl Camera {
                     attenuation,
                     pdf: material_pdf,
                 } => {
-                    let hittable_pdf = Box::new(HittablePDF::new(Arc::clone(lights), hit.pos()));
-                    let mix_pdf = MixPDF::new(material_pdf, hittable_pdf, LIGHT_BIAS);
+                    lights_pdf.origin = hit.pos();
+                    let mix_pdf = MixPDF::new(material_pdf.as_ref(), lights_pdf, LIGHT_BIAS);
 
                     let scattered = Ray::new(hit.pos(), mix_pdf.generate(rng));
                     let pdf = mix_pdf.value(&scattered.dir, rng);
 
                     let scattering_pdf = hit.material().scattering_pdf(ray, &scattered, &hit);
 
-                    let scatter_color = self.ray_color(&scattered, object, lights, depth - 1, rng);
+                    let scatter_color =
+                        self.ray_color(&scattered, object, lights_pdf, depth - 1, rng);
                     let from_scatter = (scatter_color * attenuation * scattering_pdf) / pdf;
 
                     from_emission + from_scatter
@@ -289,7 +290,8 @@ impl Camera {
                     attenuation,
                     scattered,
                 } => {
-                    let scatter_color = self.ray_color(&scattered, object, lights, depth - 1, rng);
+                    let scatter_color =
+                        self.ray_color(&scattered, object, lights_pdf, depth - 1, rng);
                     let from_scatter = scatter_color * attenuation;
 
                     from_emission + from_scatter

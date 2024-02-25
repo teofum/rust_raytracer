@@ -11,7 +11,7 @@ pub use mix::MixPDF;
 mod uniform;
 pub use uniform::UniformPDF;
 
-pub trait PDF {
+pub trait PDF: Send + Sync {
     fn value(&self, dir: &Vec4, rng: &mut Pcg64Mcg) -> f64;
 
     fn generate(&self, rng: &mut Pcg64Mcg) -> Vec4;
