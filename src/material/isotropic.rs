@@ -2,10 +2,9 @@ use std::{f64::consts::PI, sync::Arc};
 
 use rand_pcg::Pcg64Mcg;
 
-use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::texture::Texture;
-use crate::vec4::Vec4;
+use crate::{object::HitRecord, pdf::UniformPDF};
 
 use super::{Material, ScatterResult};
 
@@ -20,12 +19,14 @@ impl Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
-        let scattered = Ray::new(hit.pos(), Vec4::random_unit(rng));
-        Some(ScatterResult {
+    fn scatter(&self, _: &Ray, hit: &HitRecord, _: &mut Pcg64Mcg) -> ScatterResult {
+        let pdf = UniformPDF::new();
+        let pdf = Box::new(pdf);
+
+        ScatterResult::ScatteredWithPDF {
             attenuation: self.albedo.sample(hit.uv(), &hit.pos()),
-            scattered,
-        })
+            pdf,
+        }
     }
 
     fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {

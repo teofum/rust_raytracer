@@ -28,18 +28,18 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult {
         let reflected = ray.dir.reflect(hit.normal());
         let scatter_dir = reflected + Vec4::random_unit(rng) * self.roughness * reflected.length();
 
         if scatter_dir.dot(&hit.normal()) > 0.0 {
             let scattered = Ray::new(hit.pos(), scatter_dir);
-            Some(ScatterResult {
+            ScatterResult::ScatteredWithRay {
                 attenuation: self.albedo,
                 scattered,
-            })
+            }
         } else {
-            None // Absorb ray if it would be scattered inside the surface
+            ScatterResult::Absorbed // Absorb ray if it would be scattered inside the surface
         }
     }
 

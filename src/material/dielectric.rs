@@ -24,7 +24,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult {
         let ior_ratio = if hit.front_face() {
             1.0 / self.ior
         } else {
@@ -45,10 +45,10 @@ impl Material for Dielectric {
         };
 
         let scattered = Ray::new(hit.pos(), scatter_dir);
-        Some(ScatterResult {
+        ScatterResult::ScatteredWithRay {
             attenuation: Vec4::vec(1.0, 1.0, 1.0),
             scattered,
-        })
+        }
     }
 
     fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {

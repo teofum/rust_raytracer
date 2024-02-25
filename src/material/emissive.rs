@@ -20,8 +20,8 @@ impl Emissive {
 }
 
 impl Material for Emissive {
-    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut Pcg64Mcg) -> Option<ScatterResult> {
-        None
+    fn scatter(&self, _: &Ray, _: &HitRecord, _: &mut Pcg64Mcg) -> ScatterResult {
+        ScatterResult::Emissive
     }
 
     fn emit(&self, hit: &HitRecord) -> Color {

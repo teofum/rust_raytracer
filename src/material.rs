@@ -1,6 +1,7 @@
 use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
+use crate::pdf::PDF;
 use crate::ray::Ray;
 use crate::vec4::{Color, Vec4};
 
@@ -16,16 +17,22 @@ pub use isotropic::Isotropic;
 pub use lambertian::LambertianDiffuse;
 pub use metal::Metal;
 
-pub struct ScatterResult {
-    pub attenuation: Color,
-    pub scattered: Ray,
+pub enum ScatterResult {
+    ScatteredWithPDF {
+        attenuation: Color,
+        pdf: Box<dyn PDF>,
+    },
+    ScatteredWithRay {
+        attenuation: Color,
+        scattered: Ray,
+    },
+    Absorbed,
+    Emissive,
 }
 
 pub trait Material: Send + Sync {
     /// Scatter a ray according to material properties.
-    ///
-    /// Returns `None` if the ray is absorbed.
-    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult>;
+    fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult;
 
     fn emit(&self, _: &HitRecord) -> Color {
         Vec4::vec(0.0, 0.0, 0.0)

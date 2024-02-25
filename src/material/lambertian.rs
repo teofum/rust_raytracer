@@ -2,10 +2,11 @@ use std::{f64::consts::PI, sync::Arc};
 
 use rand_pcg::Pcg64Mcg;
 
+use crate::object::HitRecord;
+use crate::pdf::CosinePDF;
 use crate::ray::Ray;
 use crate::texture::Texture;
 use crate::vec4::Vec4;
-use crate::{object::HitRecord, utils::onb_from_vec};
 
 use super::{Material, ScatterResult};
 
@@ -20,14 +21,14 @@ impl LambertianDiffuse {
 }
 
 impl Material for LambertianDiffuse {
-    fn scatter(&self, _: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> Option<ScatterResult> {
-        // let scatter_dir = onb_from_vec(hit.normal()) * Vec4::random_cosine(rng);
+    fn scatter(&self, _: &Ray, hit: &HitRecord, _: &mut Pcg64Mcg) -> ScatterResult {
+        let pdf = CosinePDF::new(hit.normal());
+        let pdf = Box::new(pdf);
 
-        let scattered = Ray::new(hit.pos(), hit.normal());
-        Some(ScatterResult {
+        ScatterResult::ScatteredWithPDF {
             attenuation: self.albedo.sample(hit.uv(), &hit.pos()),
-            scattered,
-        })
+            pdf,
+        }
     }
 
     fn scattering_pdf(&self, _: &Ray, scattered: &Ray, hit: &HitRecord) -> f64 {

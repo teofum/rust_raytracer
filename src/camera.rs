@@ -8,18 +8,20 @@ use rand_pcg::Pcg64Mcg;
 
 use crate::buffer::Buffer;
 use crate::interval::Interval;
+use crate::material::ScatterResult;
 use crate::object::Hit;
-use crate::pdf::{CosinePDF, HittablePDF, MixPDF, PDF};
+use crate::pdf::{HittablePDF, MixPDF, PDF};
 use crate::ray::Ray;
 use crate::vec4::{Color, Point4, Vec4};
 
+// Config;
 const SQRT_SAMPLES_PER_THREAD: usize = 10;
-
-/// Inverse Square Root of Samples Per Thread
-const ISRSPT: f64 = 1.0 / SQRT_SAMPLES_PER_THREAD as f64;
+const LIGHT_BIAS: f64 = 0.5;
 const THREAD_COUNT: usize = 10; // Number of threads to spawn
 const MAX_DEPTH: usize = 20; // Max ray bounces
 
+/// Inverse Square Root of Samples Per Thread
+const ISRSPT: f64 = 1.0 / SQRT_SAMPLES_PER_THREAD as f64;
 const SAMPLES_PER_THREAD: usize = SQRT_SAMPLES_PER_THREAD * SQRT_SAMPLES_PER_THREAD;
 const SAMPLES_PER_PIXEL: usize = SAMPLES_PER_THREAD * THREAD_COUNT; // Total number of random samples per pixel
 
@@ -265,22 +267,36 @@ impl Camera {
         if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY), rng) {
             let from_emission = hit.material().emit(&hit);
 
-            if let Some(res) = hit.material().scatter(ray, &hit, rng) {
-                let cosine_pdf = CosinePDF::new(hit.normal());
-                let hittable_pdf = HittablePDF::new(Arc::clone(lights), hit.pos());
-                let mix_pdf = MixPDF::new(Box::new(cosine_pdf), Box::new(hittable_pdf), 0.5);
+            return match hit.material().scatter(ray, &hit, rng) {
+                ScatterResult::ScatteredWithPDF {
+                    attenuation,
+                    pdf: material_pdf,
+                } => {
+                    let hittable_pdf = Box::new(HittablePDF::new(Arc::clone(lights), hit.pos()));
+                    let mix_pdf = MixPDF::new(material_pdf, hittable_pdf, LIGHT_BIAS);
 
-                let scattered = Ray::new(hit.pos(), mix_pdf.generate(rng));
-                let pdf = mix_pdf.value(&scattered.dir, rng);
+                    let scattered = Ray::new(hit.pos(), mix_pdf.generate(rng));
+                    let pdf = mix_pdf.value(&scattered.dir, rng);
 
-                let scattering_pdf = hit.material().scattering_pdf(ray, &scattered, &hit);
+                    let scattering_pdf = hit.material().scattering_pdf(ray, &scattered, &hit);
 
-                let scatter_color = self.ray_color(&scattered, object, lights, depth - 1, rng);
-                let from_scatter = (scatter_color * res.attenuation * scattering_pdf) / pdf;
-                return from_emission + from_scatter;
-            }
+                    let scatter_color = self.ray_color(&scattered, object, lights, depth - 1, rng);
+                    let from_scatter = (scatter_color * attenuation * scattering_pdf) / pdf;
 
-            return from_emission; // Ray was absorbed by material
+                    from_emission + from_scatter
+                }
+                ScatterResult::ScatteredWithRay {
+                    attenuation,
+                    scattered,
+                } => {
+                    let scatter_color = self.ray_color(&scattered, object, lights, depth - 1, rng);
+                    let from_scatter = scatter_color * attenuation;
+
+                    from_emission + from_scatter
+                }
+                ScatterResult::Absorbed => Vec4::vec(0.0, 0.0, 0.0),
+                ScatterResult::Emissive => from_emission,
+            };
         }
 
         (self.background_color)(ray)
