@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{LambertianDiffuse, Material};
-use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
+use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
 use rust_raytracer::texture::ConstantColorTexture;
 use rust_raytracer::vec4::Vec4;
 
@@ -21,12 +21,6 @@ impl Scene for TonemapTestScene {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec4::point(0.0, 30.0, 15.0), Vec4::point(0.0, 0.0, -0.75));
-        camera.background_color = |ray| {
-            let unit_dir = ray.dir.to_unit();
-            let t = 0.5 * (unit_dir.y() + 1.0);
-
-            Vec4::lerp(Vec4::vec(50.0, 50.0, 50.0), Vec4::vec(1.0, 1.4, 2.0), t)
-        };
 
         // Set up materials
         let color_r_0 = ConstantColorTexture::from_values(0.1, 0.0, 0.0);
@@ -61,6 +55,11 @@ impl Scene for TonemapTestScene {
         )));
 
         // Set up objects
+        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(
+            50.0, 50.0, 50.0,
+        )));
+        let sky: Arc<dyn Hit> = Arc::new(sky);
+
         let sphere_r_0 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, -5.0), 1.0, mat_r_0));
         let sphere_r_1 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, -2.5), 1.0, mat_r_1));
         let sphere_r_2 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, 0.0), 1.0, mat_r_2));
@@ -96,9 +95,15 @@ impl Scene for TonemapTestScene {
         world.add(sphere_b_2);
         world.add(sphere_b_3);
         world.add(floor);
+        world.add(Arc::clone(&sky));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, Arc::new(ObjectList::new())))
+        let mut lights = ObjectList::new();
+        lights.add(sky);
+
+        let lights = Arc::new(lights);
+
+        Ok((camera, world, lights))
     }
 }

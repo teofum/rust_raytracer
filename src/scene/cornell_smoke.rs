@@ -73,9 +73,10 @@ impl Scene for CornellSmokeScene {
 
         let light = Plane::new(
             Vec4::point(0.0, 27.49, 0.0),
-            (Vec4::vec(13.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -10.5)),
+            (Vec4::vec(13.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, 10.5)),
             Arc::clone(&mat_light),
         );
+        let light: Arc<dyn Hit> = Arc::new(light);
 
         let mut box1 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
@@ -105,12 +106,17 @@ impl Scene for CornellSmokeScene {
         world.add(Arc::new(back_wall));
         world.add(Arc::new(left_wall));
         world.add(Arc::new(right_wall));
-        world.add(Arc::new(light));
+        world.add(Arc::clone(&light));
         world.add(Arc::new(box1));
         world.add(Arc::new(box2));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, Arc::new(ObjectList::new())))
+        let mut lights = ObjectList::new();
+        lights.add(light);
+
+        let lights = Arc::new(lights);
+
+        Ok((camera, world, lights))
     }
 }

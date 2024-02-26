@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{LambertianDiffuse, Material};
-use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
+use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere, Sun};
 use rust_raytracer::texture::{ConstantColorTexture, ImageTexture};
 use rust_raytracer::vec4::Vec4;
 
@@ -21,12 +21,6 @@ impl Scene for EarthScene {
         // Set up camera
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec4::point(13.0, 2.0, 3.0), Vec4::point(0.0, 0.0, 0.0));
-        camera.background_color = |ray| {
-            let unit_dir = ray.dir.to_unit();
-            let t = 0.5 * (unit_dir.y() + 1.0);
-
-            Vec4::lerp(Vec4::vec(5.0, 5.0, 5.0), Vec4::vec(1.0, 1.4, 2.0), t)
-        };
 
         // Set up materials
         let tex_earth = ImageTexture::from_file("resource/earthmap.jpg")?;
@@ -37,6 +31,12 @@ impl Scene for EarthScene {
         )));
 
         // Set up objects
+        let sun = Sun::new(
+            Arc::new(ConstantColorTexture::from_values(10.0, 10.0, 10.0)),
+            Vec4::vec(0.0, 1.0, 2.0),
+        );
+        let sun: Arc<dyn Hit> = Arc::new(sun);
+
         let earth = Arc::new(Sphere::new(Vec4::point(0.0, 0.0, 0.0), 1.5, mat_earth));
 
         let floor = Arc::new(Plane::new(
@@ -48,9 +48,15 @@ impl Scene for EarthScene {
         let mut world = ObjectList::new();
         world.add(earth);
         world.add(floor);
+        world.add(Arc::clone(&sun));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, Arc::new(ObjectList::new())))
+        let mut lights = ObjectList::new();
+        lights.add(sun);
+
+        let lights = Arc::new(lights);
+
+        Ok((camera, world, lights))
     }
 }

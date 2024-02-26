@@ -10,7 +10,7 @@ use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::noise::PerlinNoise3D;
 use rust_raytracer::object::transform::Transform;
-use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
+use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
 use rust_raytracer::texture::{ConstantColorTexture, NoiseSolidTexture};
 use rust_raytracer::vec4::Vec4;
 
@@ -29,12 +29,6 @@ impl Scene for PerlinScene {
         let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
         camera.move_and_look_at(Vec4::point(13.0, 1.0, 4.0), Vec4::point(0.0, 0.0, 0.0));
         camera.set_f_number(Some(4.0));
-        camera.background_color = |ray| {
-            let unit_dir = ray.dir.to_unit();
-            let t = 0.5 * (unit_dir.y() + 1.0);
-
-            Vec4::lerp(Vec4::vec(3.0, 3.0, 3.0), Vec4::vec(1.0, 1.4, 2.0), t)
-        };
 
         // Set up materials
         let mut rng = Pcg64Mcg::from_rng(rand::thread_rng()).unwrap();
@@ -51,6 +45,9 @@ impl Scene for PerlinScene {
         ));
 
         // Set up objects
+        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(1.0, 1.0, 1.0)));
+        let sky: Arc<dyn Hit> = Arc::new(sky);
+
         let sphere = Sphere::new(Vec4::point(0.0, 0.0, 1.5), 1.0, Arc::clone(&mat_marble));
 
         let floor = Plane::new(
@@ -70,9 +67,15 @@ impl Scene for PerlinScene {
         world.add(Arc::new(sphere));
         world.add(Arc::new(floor));
         world.add(Arc::new(mesh));
+        world.add(Arc::clone(&sky));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, Arc::new(ObjectList::new())))
+        let mut lights = ObjectList::new();
+        lights.add(sky);
+
+        let lights = Arc::new(lights);
+
+        Ok((camera, world, lights))
     }
 }

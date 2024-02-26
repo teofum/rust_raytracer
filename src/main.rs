@@ -18,7 +18,7 @@ const OUT_FILENAME: &'static str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
-    let scene = 0;
+    let scene = 5;
     let (camera, world, lights) = match scene {
         1 => EarthScene::init()?,
         2 => PerlinScene::init()?,
