@@ -1,12 +1,15 @@
 use std::f64::consts::PI;
 use std::sync::Arc;
 
+use rand::Rng;
+use rand_distr::Standard;
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
+use crate::utils::onb_from_vec;
 use crate::vec4::{Point4, Vec4};
 
 use super::{Hit, HitRecord};
@@ -80,11 +83,40 @@ impl Hit for Sphere {
         self.bounds
     }
 
-    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
-        0.0
+    fn pdf_value(&self, origin: Point4, dir: Vec4, rng: &mut Pcg64Mcg) -> f64 {
+        if let Some(_) = self.test(&Ray::new(origin, dir), Interval(0.001, f64::INFINITY), rng) {
+            let radius_squared = self.radius * self.radius;
+            let cos_theta_max =
+                (1.0 - radius_squared / (self.center - origin).length_squared()).sqrt();
+
+            let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
+
+            1.0 / solid_angle
+        } else {
+            0.0
+        }
     }
 
-    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
-        Vec4::vec(1.0, 0.0, 0.0)
+    fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
+        let dir = self.center - origin;
+        let basis = onb_from_vec(dir);
+
+        basis * random_to_sphere(self.radius, dir.length_squared(), rng)
     }
+}
+
+fn random_to_sphere(radius: f64, distance_squared: f64, rng: &mut Pcg64Mcg) -> Vec4 {
+    let radius_squared = radius * radius;
+    let cos_theta_max = (1.0 - radius_squared / distance_squared).sqrt();
+
+    let r1: f64 = rng.sample(Standard);
+    let r2: f64 = rng.sample(Standard);
+
+    let phi = r1 * 2.0 * PI;
+    let z = 1.0 + r2 * (cos_theta_max - 1.0);
+
+    let x = phi.cos() * (1.0 - z * z).sqrt();
+    let y = phi.sin() * (1.0 - z * z).sqrt();
+
+    Vec4::vec(x, y, z)
 }
