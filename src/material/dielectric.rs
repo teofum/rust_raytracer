@@ -3,6 +3,7 @@ use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
+use crate::utils::reflectance;
 use crate::vec4::Vec4;
 
 use super::{Material, ScatterResult};
@@ -54,12 +55,4 @@ impl Material for Dielectric {
     fn scattering_pdf(&self, _: &Ray, _: &Ray, _: &HitRecord) -> f64 {
         1.0
     }
-}
-
-// Schlick's approximation for reflectance
-fn reflectance(cos_theta: f64, ior_ratio: f64) -> f64 {
-    let r0 = (1.0 - ior_ratio) / (1.0 + ior_ratio);
-    let r0 = r0 * r0;
-
-    r0 + (1.0 - r0) * (1.0 - cos_theta).powi(5)
 }

@@ -26,3 +26,11 @@ pub fn onb_from_vec(w: Vec4) -> Mat4 {
 
     Mat4::from_columns(u, v, w, Vec4(0.0, 0.0, 0.0, 1.0))
 }
+
+// Schlick's approximation for reflectance
+pub fn reflectance(cos_theta: f64, ior_ratio: f64) -> f64 {
+    let r0 = (1.0 - ior_ratio) / (1.0 + ior_ratio);
+    let r0 = r0 * r0;
+
+    r0 + (1.0 - r0) * (1.0 - cos_theta).powi(5)
+}

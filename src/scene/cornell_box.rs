@@ -2,9 +2,9 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
-use rust_raytracer::material::{Dielectric, Emissive, LambertianDiffuse, Material};
+use rust_raytracer::material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material};
 use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
-use rust_raytracer::texture::ConstantTexture;
+use rust_raytracer::texture::{CheckerboardTexture, ConstantTexture};
 use rust_raytracer::utils::deg_to_rad;
 use rust_raytracer::vec4::Vec4;
 
@@ -41,11 +41,21 @@ impl Scene for CornellBoxScene {
         )));
         let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
+        let mat_gloss_test: Arc<dyn Material> = Arc::new(Glossy::new(
+            Arc::new(ConstantTexture::from_values(0.95, 0.95, 0.95)),
+            Arc::new(CheckerboardTexture::new(
+                Arc::new(ConstantTexture::new(0.0)),
+                Arc::new(ConstantTexture::new(1.0)),
+                0.25,
+            )),
+            1.5,
+        ));
+
         // Set up objects
         let floor = Plane::new(
             Vec4::point(277.5, 0.0, 277.5),
             (Vec4::vec(277.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
-            Arc::clone(&mat_white),
+            Arc::clone(&mat_gloss_test),
         );
         let ceiling = Plane::new(
             Vec4::point(277.5, 555.0, 277.5),

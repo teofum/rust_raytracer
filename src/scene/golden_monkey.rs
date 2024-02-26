@@ -6,7 +6,7 @@ use rand::{Rng, SeedableRng};
 use rand_pcg::Pcg64Mcg;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::loaders::obj::load_mesh_from_file;
-use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
+use rust_raytracer::material::{Dielectric, Glossy, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::bvh::{self, BoundingVolumeHierarchyNode};
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere, Sun};
@@ -85,9 +85,11 @@ impl Scene for GoldenMonkeyScene {
 
                 if mat_type < 0.95 {
                     let albedo = Vec4::random_vec(&mut rng) * Vec4::random_vec(&mut rng);
-                    let material: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-                        ConstantTexture::new(albedo),
-                    )));
+                    let material: Arc<dyn Material> = Arc::new(Glossy::new(
+                        Arc::new(ConstantTexture::new(albedo)),
+                        Arc::new(ConstantTexture::new(0.1)),
+                        1.5,
+                    ));
 
                     let sphere = Sphere::new(center, 0.2, material);
                     random_spheres.push(Box::new(sphere));
