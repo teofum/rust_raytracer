@@ -10,17 +10,21 @@ use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
 
-pub struct LambertianDiffuse {
+pub struct Glossy {
     albedo: Arc<dyn Sampler<Output = Color>>,
+    roughness: Arc<dyn Sampler<Output = f64>>,
 }
 
-impl LambertianDiffuse {
-    pub fn new(albedo: Arc<dyn Sampler<Output = Color>>) -> Self {
-        LambertianDiffuse { albedo }
+impl Glossy {
+    pub fn new(
+        albedo: Arc<dyn Sampler<Output = Color>>,
+        roughness: Arc<dyn Sampler<Output = f64>>,
+    ) -> Self {
+        Glossy { albedo, roughness }
     }
 }
 
-impl Material for LambertianDiffuse {
+impl Material for Glossy {
     fn scatter(&self, _: &Ray, hit: &HitRecord, _: &mut Pcg64Mcg) -> ScatterResult {
         let pdf = CosinePDF::new(hit.normal());
         let pdf = Box::new(pdf);

@@ -10,7 +10,7 @@ use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::bvh::{self, BoundingVolumeHierarchyNode};
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere, Sun};
-use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
+use rust_raytracer::texture::{CheckerboardTexture, ConstantTexture};
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -33,22 +33,22 @@ impl Scene for GoldenMonkeyScene {
         // Set up materials
         let mat_ground: Arc<dyn Material> =
             Arc::new(LambertianDiffuse::new(Arc::new(CheckerboardTexture::new(
-                Arc::new(ConstantColorTexture::from_values(0.2, 0.3, 0.1)),
-                Arc::new(ConstantColorTexture::from_values(0.9, 0.9, 0.9)),
+                Arc::new(ConstantTexture::from_values(0.2, 0.3, 0.1)),
+                Arc::new(ConstantTexture::from_values(0.9, 0.9, 0.9)),
                 0.02,
             ))));
         let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(
-            Arc::new(ConstantColorTexture::from_values(0.8, 0.6, 0.2)),
+            Arc::new(ConstantTexture::from_values(0.8, 0.6, 0.2)),
             0.05,
         ));
         let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
         // Set up objects
-        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(0.2, 0.6, 2.0)));
+        let sky = Sky::new(Arc::new(ConstantTexture::from_values(0.2, 0.6, 2.0)));
         let sky: Arc<dyn Hit> = Arc::new(sky);
 
         let sun = Sun::new(
-            Arc::new(ConstantColorTexture::from_values(20.0, 20.0, 20.0)),
+            Arc::new(ConstantTexture::from_values(20.0, 20.0, 20.0)),
             Vec4::vec(-1.0, 1.0, 0.0),
         );
         let sun: Arc<dyn Hit> = Arc::new(sun);
@@ -86,7 +86,7 @@ impl Scene for GoldenMonkeyScene {
                 if mat_type < 0.95 {
                     let albedo = Vec4::random_vec(&mut rng) * Vec4::random_vec(&mut rng);
                     let material: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-                        ConstantColorTexture::new(albedo),
+                        ConstantTexture::new(albedo),
                     )));
 
                     let sphere = Sphere::new(center, 0.2, material);

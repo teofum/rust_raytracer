@@ -4,7 +4,7 @@ use std::sync::Arc;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{LambertianDiffuse, Material};
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
-use rust_raytracer::texture::ConstantColorTexture;
+use rust_raytracer::texture::ConstantTexture;
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -23,41 +23,39 @@ impl Scene for TonemapTestScene {
         camera.move_and_look_at(Vec4::point(0.0, 30.0, 15.0), Vec4::point(0.0, 0.0, -0.75));
 
         // Set up materials
-        let color_r_0 = ConstantColorTexture::from_values(0.1, 0.0, 0.0);
+        let color_r_0 = ConstantTexture::from_values(0.1, 0.0, 0.0);
         let mat_r_0: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_r_0)));
-        let color_r_1 = ConstantColorTexture::from_values(0.2, 0.0, 0.0);
+        let color_r_1 = ConstantTexture::from_values(0.2, 0.0, 0.0);
         let mat_r_1: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_r_1)));
-        let color_r_2 = ConstantColorTexture::from_values(0.5, 0.0, 0.0);
+        let color_r_2 = ConstantTexture::from_values(0.5, 0.0, 0.0);
         let mat_r_2: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_r_2)));
-        let color_r_3 = ConstantColorTexture::from_values(1.0, 0.0, 0.0);
+        let color_r_3 = ConstantTexture::from_values(1.0, 0.0, 0.0);
         let mat_r_3: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_r_3)));
 
-        let color_g_0 = ConstantColorTexture::from_values(0.0, 0.1, 0.0);
+        let color_g_0 = ConstantTexture::from_values(0.0, 0.1, 0.0);
         let mat_g_0: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_g_0)));
-        let color_g_1 = ConstantColorTexture::from_values(0.0, 0.2, 0.0);
+        let color_g_1 = ConstantTexture::from_values(0.0, 0.2, 0.0);
         let mat_g_1: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_g_1)));
-        let color_g_2 = ConstantColorTexture::from_values(0.0, 0.5, 0.0);
+        let color_g_2 = ConstantTexture::from_values(0.0, 0.5, 0.0);
         let mat_g_2: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_g_2)));
-        let color_g_3 = ConstantColorTexture::from_values(0.0, 1.0, 0.0);
+        let color_g_3 = ConstantTexture::from_values(0.0, 1.0, 0.0);
         let mat_g_3: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_g_3)));
 
-        let color_b_0 = ConstantColorTexture::from_values(0.0, 0.0, 0.1);
+        let color_b_0 = ConstantTexture::from_values(0.0, 0.0, 0.1);
         let mat_b_0: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_b_0)));
-        let color_b_1 = ConstantColorTexture::from_values(0.0, 0.0, 0.2);
+        let color_b_1 = ConstantTexture::from_values(0.0, 0.0, 0.2);
         let mat_b_1: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_b_1)));
-        let color_b_2 = ConstantColorTexture::from_values(0.0, 0.0, 0.5);
+        let color_b_2 = ConstantTexture::from_values(0.0, 0.0, 0.5);
         let mat_b_2: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_b_2)));
-        let color_b_3 = ConstantColorTexture::from_values(0.0, 0.0, 1.0);
+        let color_b_3 = ConstantTexture::from_values(0.0, 0.0, 1.0);
         let mat_b_3: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(color_b_3)));
 
         let mat_floor: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-            ConstantColorTexture::from_values(0.5, 0.5, 0.5),
+            ConstantTexture::from_values(0.5, 0.5, 0.5),
         )));
 
         // Set up objects
-        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(
-            50.0, 50.0, 50.0,
-        )));
+        let sky = Sky::new(Arc::new(ConstantTexture::from_values(50.0, 50.0, 50.0)));
         let sky: Arc<dyn Hit> = Arc::new(sky);
 
         let sphere_r_0 = Arc::new(Sphere::new(Vec4::point(-2.5, 0.5, -5.0), 1.0, mat_r_0));

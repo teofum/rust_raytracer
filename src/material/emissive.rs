@@ -4,17 +4,17 @@ use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::texture::Texture;
+use crate::texture::Sampler;
 use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
 
 pub struct Emissive {
-    emission_map: Arc<dyn Texture>,
+    emission_map: Arc<dyn Sampler<Output = Color>>,
 }
 
 impl Emissive {
-    pub fn new(emission_map: Arc<dyn Texture>) -> Self {
+    pub fn new(emission_map: Arc<dyn Sampler<Output = Color>>) -> Self {
         Emissive { emission_map }
     }
 }

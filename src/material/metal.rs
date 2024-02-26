@@ -4,18 +4,18 @@ use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
 use crate::ray::Ray;
-use crate::texture::Texture;
-use crate::vec4::Vec4;
+use crate::texture::Sampler;
+use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
 
 pub struct Metal {
-    albedo: Arc<dyn Texture>,
+    albedo: Arc<dyn Sampler<Output = Color>>,
     roughness: f64,
 }
 
 impl Metal {
-    pub fn new(albedo: Arc<dyn Texture>, roughness: f64) -> Self {
+    pub fn new(albedo: Arc<dyn Sampler<Output = Color>>, roughness: f64) -> Self {
         let roughness = roughness.clamp(0.0, 1.0);
 
         Metal { albedo, roughness }

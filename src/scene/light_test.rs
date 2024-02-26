@@ -7,7 +7,7 @@ use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Emissive, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
-use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
+use rust_raytracer::texture::{CheckerboardTexture, ConstantTexture};
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -29,19 +29,19 @@ impl Scene for LightTestScene {
         // Set up materials
         let mat_ground: Arc<dyn Material> =
             Arc::new(LambertianDiffuse::new(Arc::new(CheckerboardTexture::new(
-                Arc::new(ConstantColorTexture::from_values(0.2, 0.3, 0.1)),
-                Arc::new(ConstantColorTexture::from_values(0.9, 0.9, 0.9)),
+                Arc::new(ConstantTexture::from_values(0.2, 0.3, 0.1)),
+                Arc::new(ConstantTexture::from_values(0.9, 0.9, 0.9)),
                 0.02,
             ))));
         let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(
-            Arc::new(ConstantColorTexture::from_values(0.8, 0.6, 0.2)),
+            Arc::new(ConstantTexture::from_values(0.8, 0.6, 0.2)),
             0.05,
         ));
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
-            ConstantColorTexture::from_values(7.0, 1.0, 7.0),
+            ConstantTexture::from_values(7.0, 1.0, 7.0),
         )));
         let mat_light_2: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
-            ConstantColorTexture::from_values(1.0, 6.0, 8.0),
+            ConstantTexture::from_values(1.0, 6.0, 8.0),
         )));
 
         // Set up objects

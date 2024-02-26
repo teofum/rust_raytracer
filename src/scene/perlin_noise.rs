@@ -11,7 +11,7 @@ use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::noise::PerlinNoise3D;
 use rust_raytracer::object::transform::Transform;
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
-use rust_raytracer::texture::{ConstantColorTexture, NoiseSolidTexture};
+use rust_raytracer::texture::{ConstantTexture, Interpolate, NoiseSolidTexture};
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -37,15 +37,20 @@ impl Scene for PerlinScene {
         let mut tex_marble = NoiseSolidTexture::new(noise_perlin);
         tex_marble.scale = Vec4::vec(2.0, 2.0, 2.0);
         tex_marble.map = |p, sampled| 0.5 * (1.0 + f64::sin(p.z() + 10.0 * sampled));
-        let mat_marble: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(tex_marble)));
+        let mat_marble: Arc<dyn Material> =
+            Arc::new(LambertianDiffuse::new(Arc::new(Interpolate::new(
+                Arc::new(ConstantTexture::from_values(0.2, 0.15, 0.1)),
+                Arc::new(ConstantTexture::from_values(1.0, 1.0, 1.0)),
+                Arc::new(tex_marble),
+            ))));
 
         let mat_floor: Arc<dyn Material> = Arc::new(Metal::new(
-            Arc::new(ConstantColorTexture::from_values(0.8, 0.8, 0.8)),
+            Arc::new(ConstantTexture::from_values(0.8, 0.8, 0.8)),
             0.02,
         ));
 
         // Set up objects
-        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(1.0, 1.0, 1.0)));
+        let sky = Sky::new(Arc::new(ConstantTexture::from_values(1.0, 1.0, 1.0)));
         let sky: Arc<dyn Hit> = Arc::new(sky);
 
         let sphere = Sphere::new(Vec4::point(0.0, 0.0, 1.5), 1.0, Arc::clone(&mat_marble));

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{LambertianDiffuse, Material};
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere, Sun};
-use rust_raytracer::texture::{ConstantColorTexture, ImageTexture};
+use rust_raytracer::texture::{ConstantTexture, ImageTexture};
 use rust_raytracer::vec4::Vec4;
 
 use super::Scene;
@@ -27,12 +27,12 @@ impl Scene for EarthScene {
         let mat_earth: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(tex_earth)));
 
         let mat_floor: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-            ConstantColorTexture::from_values(0.5, 0.5, 0.5),
+            ConstantTexture::from_values(0.5, 0.5, 0.5),
         )));
 
         // Set up objects
         let sun = Sun::new(
-            Arc::new(ConstantColorTexture::from_values(10.0, 10.0, 10.0)),
+            Arc::new(ConstantTexture::from_values(10.0, 10.0, 10.0)),
             Vec4::vec(0.0, 1.0, 2.0),
         );
         let sun: Arc<dyn Hit> = Arc::new(sun);

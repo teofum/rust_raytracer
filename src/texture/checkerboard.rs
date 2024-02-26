@@ -1,19 +1,17 @@
-use std::sync::Arc;
+use crate::vec4::Point4;
 
-use crate::vec4::{Color, Point4};
+use super::{Sampler, TexturePointer};
 
-use super::Texture;
-
-pub struct CheckerboardTexture {
-    even_squares: Arc<dyn Texture>,
-    odd_squares: Arc<dyn Texture>,
+pub struct CheckerboardTexture<T> {
+    even_squares: TexturePointer<T>,
+    odd_squares: TexturePointer<T>,
     scale: f64,
 }
 
-impl CheckerboardTexture {
+impl<T> CheckerboardTexture<T> {
     pub fn new(
-        even_squares: Arc<dyn Texture>,
-        odd_squares: Arc<dyn Texture>,
+        even_squares: TexturePointer<T>,
+        odd_squares: TexturePointer<T>,
         scale: f64,
     ) -> Self {
         CheckerboardTexture {
@@ -24,8 +22,13 @@ impl CheckerboardTexture {
     }
 }
 
-impl Texture for CheckerboardTexture {
-    fn sample(&self, (u, v): (f64, f64), p: &Point4) -> Color {
+impl<T> Sampler for CheckerboardTexture<T>
+where
+    T: Send + Sync + Copy,
+{
+    type Output = T;
+
+    fn sample(&self, (u, v): (f64, f64), p: &Point4) -> Self::Output {
         let iu = (u * 2.0 / self.scale) as u32;
         let iv = (v * 2.0 / self.scale) as u32;
 
@@ -38,16 +41,16 @@ impl Texture for CheckerboardTexture {
     }
 }
 
-pub struct CheckerboardSolidTexture {
-    even_volumes: Arc<dyn Texture>,
-    odd_volumes: Arc<dyn Texture>,
+pub struct CheckerboardSolidTexture<T> {
+    even_volumes: TexturePointer<T>,
+    odd_volumes: TexturePointer<T>,
     scale: f64,
 }
 
-impl CheckerboardSolidTexture {
+impl<T> CheckerboardSolidTexture<T> {
     pub fn new(
-        even_volumes: Arc<dyn Texture>,
-        odd_volumes: Arc<dyn Texture>,
+        even_volumes: TexturePointer<T>,
+        odd_volumes: TexturePointer<T>,
         scale: f64,
     ) -> Self {
         CheckerboardSolidTexture {
@@ -58,8 +61,13 @@ impl CheckerboardSolidTexture {
     }
 }
 
-impl Texture for CheckerboardSolidTexture {
-    fn sample(&self, uv: (f64, f64), p: &Point4) -> Color {
+impl<T> Sampler for CheckerboardSolidTexture<T>
+where
+    T: Send + Sync + Copy,
+{
+    type Output = T;
+
+    fn sample(&self, uv: (f64, f64), p: &Point4) -> Self::Output {
         let ix = (p.x() / self.scale).floor() as i32;
         let iy = (p.y() / self.scale).floor() as i32;
         let iz = (p.z() / self.scale).floor() as i32;

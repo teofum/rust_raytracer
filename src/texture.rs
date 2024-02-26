@@ -1,20 +1,25 @@
-use crate::vec4::{Color, Point4};
+use std::sync::Arc;
+
+use crate::vec4::Point4;
 
 pub mod checkerboard;
-pub use checkerboard::{CheckerboardSolidTexture, CheckerboardTexture};
-
-pub mod constant_color;
-pub use constant_color::ConstantColorTexture;
-
+pub mod constant;
 pub mod image;
-pub use image::ImageTexture;
-
+pub mod interpolate;
 pub mod noise;
-pub use noise::NoiseSolidTexture;
-
 pub mod uv_debug;
+
+pub use checkerboard::{CheckerboardSolidTexture, CheckerboardTexture};
+pub use constant::ConstantTexture;
+pub use image::ImageTexture;
+pub use interpolate::Interpolate;
+pub use noise::NoiseSolidTexture;
 pub use uv_debug::UvDebugTexture;
 
-pub trait Texture: Send + Sync {
-    fn sample(&self, uv: (f64, f64), p: &Point4) -> Color;
+pub trait Sampler: Send + Sync {
+    type Output: Send + Sync + Copy;
+
+    fn sample(&self, uv: (f64, f64), p: &Point4) -> Self::Output;
 }
+
+pub type TexturePointer<T> = Arc<dyn Sampler<Output = T>>;

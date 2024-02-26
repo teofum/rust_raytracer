@@ -1,7 +1,7 @@
 use crate::noise::Noise3D;
-use crate::vec4::{Color, Point4, Vec4};
+use crate::vec4::{Point4, Vec4};
 
-use super::Texture;
+use super::Sampler;
 
 pub type FloatNoise = Box<dyn Noise3D<Output = f64>>;
 
@@ -24,10 +24,12 @@ impl NoiseSolidTexture {
     }
 }
 
-impl Texture for NoiseSolidTexture {
-    fn sample(&self, _: (f64, f64), p: &Point4) -> Color {
+impl Sampler for NoiseSolidTexture {
+    type Output = f64;
+
+    fn sample(&self, _: (f64, f64), p: &Point4) -> Self::Output {
         let p_scaled = *p * self.scale;
         let sampled = self.noise.sample_turbulence(&p_scaled, self.samples);
-        Vec4::vec(1.0, 1.0, 1.0) * (self.map)(p_scaled, sampled)
+        (self.map)(p_scaled, sampled)
     }
 }

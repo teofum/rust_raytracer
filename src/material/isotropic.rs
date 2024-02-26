@@ -2,18 +2,20 @@ use std::{f64::consts::PI, sync::Arc};
 
 use rand_pcg::Pcg64Mcg;
 
+use crate::object::HitRecord;
+use crate::pdf::UniformPDF;
 use crate::ray::Ray;
-use crate::texture::Texture;
-use crate::{object::HitRecord, pdf::UniformPDF};
+use crate::texture::Sampler;
+use crate::vec4::Color;
 
 use super::{Material, ScatterResult};
 
 pub struct Isotropic {
-    albedo: Arc<dyn Texture>,
+    albedo: Arc<dyn Sampler<Output = Color>>,
 }
 
 impl Isotropic {
-    pub fn new(albedo: Arc<dyn Texture>) -> Self {
+    pub fn new(albedo: Arc<dyn Sampler<Output = Color>>) -> Self {
         Isotropic { albedo }
     }
 }

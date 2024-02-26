@@ -4,7 +4,7 @@ use std::sync::Arc;
 use rust_raytracer::camera::Camera;
 use rust_raytracer::material::{Dielectric, Emissive, LambertianDiffuse, Material};
 use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
-use rust_raytracer::texture::ConstantColorTexture;
+use rust_raytracer::texture::ConstantTexture;
 use rust_raytracer::utils::deg_to_rad;
 use rust_raytracer::vec4::Vec4;
 
@@ -28,16 +28,16 @@ impl Scene for CornellBoxScene {
 
         // Set up materials
         let mat_white: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-            ConstantColorTexture::from_values(0.73, 0.73, 0.73),
+            ConstantTexture::from_values(0.73, 0.73, 0.73),
         )));
         let mat_green: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-            ConstantColorTexture::from_values(0.12, 0.45, 0.15),
+            ConstantTexture::from_values(0.12, 0.45, 0.15),
         )));
         let mat_red: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(
-            ConstantColorTexture::from_values(0.65, 0.05, 0.05),
+            ConstantTexture::from_values(0.65, 0.05, 0.05),
         )));
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
-            ConstantColorTexture::from_values(15.0, 15.0, 15.0),
+            ConstantTexture::from_values(15.0, 15.0, 15.0),
         )));
         let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 

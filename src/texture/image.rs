@@ -3,7 +3,7 @@ use std::error::Error;
 use crate::buffer::Buffer;
 use crate::vec4::{Color, Point4};
 
-use super::Texture;
+use super::Sampler;
 
 pub enum TextureRepeat {
     Clamp,
@@ -32,8 +32,10 @@ impl ImageTexture {
     }
 }
 
-impl Texture for ImageTexture {
-    fn sample(&self, (u, v): (f64, f64), _: &Point4) -> Color {
+impl Sampler for ImageTexture {
+    type Output = Color;
+
+    fn sample(&self, (u, v): (f64, f64), _: &Point4) -> Self::Output {
         // Handle repeating if UV outside [0; 1] range
         let (u, v) = match self.repeat {
             TextureRepeat::Clamp => (u.clamp(0.0, 1.0), v.clamp(0.0, 1.0)),

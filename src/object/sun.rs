@@ -6,8 +6,8 @@ use crate::aabb::AxisAlignedBoundingBox;
 use crate::interval::Interval;
 use crate::material::Emissive;
 use crate::ray::Ray;
-use crate::texture::Texture;
-use crate::vec4::{Point4, Vec4};
+use crate::texture::Sampler;
+use crate::vec4::{Color, Point4, Vec4};
 
 use super::{Hit, HitRecord};
 
@@ -19,7 +19,7 @@ pub struct Sun {
 }
 
 impl Sun {
-    pub fn new(emission_map: Arc<dyn Texture>, direction: Vec4) -> Self {
+    pub fn new(emission_map: Arc<dyn Sampler<Output = Color>>, direction: Vec4) -> Self {
         let material = Emissive::new(emission_map);
         Sun {
             material,
