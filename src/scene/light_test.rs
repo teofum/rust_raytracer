@@ -46,7 +46,9 @@ impl Scene for LightTestScene {
 
         // Set up objects
         let sphere = Sphere::new(Vec4::vec(-1.0, 0.0, 1.0), 0.5, mat_light);
+        let sphere: Arc<dyn Hit> = Arc::new(sphere);
         let sphere_2 = Sphere::new(Vec4::vec(2.0, 0.5, -1.2), 0.4, mat_light_2);
+        let sphere_2: Arc<dyn Hit> = Arc::new(sphere_2);
 
         let floor = Plane::new(
             Vec4::point(0.0, -1.0, 0.0),
@@ -60,13 +62,19 @@ impl Scene for LightTestScene {
         mesh.translate(0.0, 0.0, -1.5);
 
         let mut world = ObjectList::new();
-        world.add(Arc::new(sphere));
-        world.add(Arc::new(sphere_2));
+        world.add(Arc::clone(&sphere));
+        world.add(Arc::clone(&sphere_2));
         world.add(Arc::new(floor));
         world.add(Arc::new(mesh));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, Arc::new(ObjectList::new())))
+        let mut lights = ObjectList::new();
+        lights.add(sphere);
+        lights.add(sphere_2);
+
+        let lights = Arc::new(lights);
+
+        Ok((camera, world, lights))
     }
 }
