@@ -1,4 +1,3 @@
-use std::f64::consts::PI;
 use std::sync::Arc;
 
 use rand_pcg::Pcg64Mcg;
@@ -12,31 +11,41 @@ use crate::vec4::{Point4, Vec4};
 
 use super::{Hit, HitRecord};
 
-pub struct Sky {
+const THETA_MAX: f64 = 0.001;
+
+pub struct Sun {
+    direction: Vec4,
     material: Emissive,
 }
 
-impl Sky {
-    pub fn new(emission_map: Arc<dyn Texture>) -> Self {
+impl Sun {
+    pub fn new(emission_map: Arc<dyn Texture>, direction: Vec4) -> Self {
         let material = Emissive::new(emission_map);
-        Sky { material }
+        Sun {
+            material,
+            direction: direction.to_unit(),
+        }
     }
 }
 
-impl Hit for Sky {
+impl Hit for Sun {
     fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
-        let hit_t = f64::INFINITY;
+        let unit_dir = ray.dir.to_unit();
+        if (self.direction.dot(&unit_dir) - 1.0).abs() > THETA_MAX {
+            return None;
+        }
 
-        if hit_t > t.max() {
+        let hit_t = f64::MAX;
+
+        if hit_t >= t.max() {
             return None;
         }
 
         let hit_pos = ray.at(hit_t);
 
-        let unit_dir = ray.dir.to_unit();
         let normal = -unit_dir;
-        let u = f64::atan2(unit_dir.x(), unit_dir.z()) / (2.0 * PI) + 0.5;
-        let v = unit_dir.dot(&Vec4::vec(0.0, 1.0, 0.0)) / 2.0 + 0.5;
+        let u = 0.0;
+        let v = 0.0;
 
         Some(HitRecord::new(
             ray,
@@ -56,10 +65,10 @@ impl Hit for Sky {
     }
 
     fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
-        1.0 / (4.0 * PI)
+        1.0
     }
 
-    fn random(&self, _: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
-        Vec4::random_unit(rng)
+    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
+        self.direction
     }
 }

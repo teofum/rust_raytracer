@@ -13,6 +13,7 @@ pub mod obj_box;
 pub mod plane;
 pub mod sky;
 pub mod sphere;
+pub mod sun;
 pub mod transform;
 pub mod volume;
 
@@ -22,6 +23,7 @@ pub use obj_box::make_box;
 pub use plane::Plane;
 pub use sky::Sky;
 pub use sphere::Sphere;
+pub use sun::Sun;
 pub use transform::Transform;
 pub use volume::Volume;
 

@@ -9,7 +9,7 @@ use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::bvh::{self, BoundingVolumeHierarchyNode};
 use rust_raytracer::object::transform::Transform;
-use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
+use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere, Sun};
 use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
 use rust_raytracer::vec4::Vec4;
 
@@ -44,8 +44,14 @@ impl Scene for GoldenMonkeyScene {
         let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
         // Set up objects
-        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(3.0, 3.0, 4.0)));
+        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(0.2, 0.6, 2.0)));
         let sky: Arc<dyn Hit> = Arc::new(sky);
+
+        let sun = Sun::new(
+            Arc::new(ConstantColorTexture::from_values(20.0, 20.0, 20.0)),
+            Vec4::vec(-1.0, 1.0, 0.0),
+        );
+        let sun: Arc<dyn Hit> = Arc::new(sun);
 
         let floor = Plane::new(
             Vec4::point(0.0, 0.0, 0.0),
@@ -101,9 +107,16 @@ impl Scene for GoldenMonkeyScene {
         world.add(Arc::new(floor));
         world.add(Arc::new(spheres_bvh));
         world.add(Arc::clone(&sky));
+        world.add(Arc::clone(&sun));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, sky))
+        let mut lights = ObjectList::new();
+        lights.add(sky);
+        lights.add(sun);
+
+        let lights = Arc::new(lights);
+
+        Ok((camera, world, lights))
     }
 }
