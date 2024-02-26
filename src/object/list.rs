@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{self, AxisAlignedBoundingBox};
@@ -75,11 +76,21 @@ impl Hit for ObjectList {
         self.bounds
     }
 
-    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
-        0.0
+    fn pdf_value(&self, origin: Point4, dir: Vec4, rng: &mut Pcg64Mcg) -> f64 {
+        let weight = 1.0 / self.objects.len() as f64;
+        let mut sum = 0.0;
+
+        for obj in &self.objects {
+            sum += weight * obj.pdf_value(origin, dir, rng);
+        }
+
+        sum
     }
 
-    fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
-        Vec4::vec(1.0, 0.0, 0.0)
+    fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
+        let size = self.objects.len();
+        let idx = rng.gen_range(0..size);
+
+        self.objects[idx].random(origin, rng)
     }
 }

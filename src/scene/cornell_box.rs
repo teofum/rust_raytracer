@@ -98,20 +98,24 @@ impl Scene for CornellBoxScene {
         let glass_ball = Sphere::new(Vec4::point(212.5, 82.5, 147.5), 82.5, mat_glass);
         let glass_ball: Arc<dyn Hit> = Arc::new(glass_ball);
 
-        let lights: Arc<dyn Hit> = Arc::clone(&glass_ball);
-
         let mut world = ObjectList::new();
         world.add(Arc::new(floor));
         world.add(Arc::new(ceiling));
         world.add(Arc::new(back_wall));
         world.add(Arc::new(left_wall));
         world.add(Arc::new(right_wall));
-        world.add(light);
+        world.add(Arc::clone(&light));
         world.add(Arc::new(box1));
         // world.add(Arc::new(box2));
-        world.add(glass_ball);
+        world.add(Arc::clone(&glass_ball));
 
         let world = Arc::new(world);
+
+        let mut lights = ObjectList::new();
+        lights.add(light);
+        lights.add(glass_ball);
+
+        let lights = Arc::new(lights);
 
         Ok((camera, world, lights))
     }
