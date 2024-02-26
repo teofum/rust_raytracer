@@ -89,6 +89,10 @@ impl Hit for ObjectList {
 
     fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
         let size = self.objects.len();
+        if size == 0 {
+            return Vec4::vec(1.0, 0.0, 0.0);
+        }
+
         let idx = rng.gen_range(0..size);
 
         self.objects[idx].random(origin, rng)
