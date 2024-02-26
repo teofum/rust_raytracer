@@ -9,7 +9,7 @@ use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{Dielectric, LambertianDiffuse, Material, Metal};
 use rust_raytracer::object::bvh::{self, BoundingVolumeHierarchyNode};
 use rust_raytracer::object::transform::Transform;
-use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere};
+use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
 use rust_raytracer::texture::{CheckerboardTexture, ConstantColorTexture};
 use rust_raytracer::vec4::Vec4;
 
@@ -18,7 +18,7 @@ use super::Scene;
 // Config variables
 const ASPECT_RATIO: f64 = 3.0 / 2.0;
 const OUTPUT_WIDTH: usize = 600;
-const FOCAL_LENGTH: f64 = 70.0;
+const FOCAL_LENGTH: f64 = 50.0;
 
 pub struct GoldenMonkeyScene;
 
@@ -29,12 +29,6 @@ impl Scene for GoldenMonkeyScene {
         camera.move_and_look_at(Vec4::point(5.0, 2.0, 9.0), Vec4::point(0.0, 0.5, 0.0));
         camera.set_f_number(Some(2.8));
         camera.focus(Some(10.0));
-        camera.background_color = |ray| {
-            let unit_dir = ray.dir.to_unit();
-            let t = 0.5 * (unit_dir.y() + 1.0);
-
-            Vec4::lerp(Vec4::vec(10.0, 10.0, 10.0), Vec4::vec(1.0, 1.4, 2.0), t)
-        };
 
         // Set up materials
         let mat_ground: Arc<dyn Material> =
@@ -50,6 +44,9 @@ impl Scene for GoldenMonkeyScene {
         let mat_glass: Arc<dyn Material> = Arc::new(Dielectric::new(1.5));
 
         // Set up objects
+        let sky = Sky::new(Arc::new(ConstantColorTexture::from_values(3.0, 3.0, 4.0)));
+        let sky: Arc<dyn Hit> = Arc::new(sky);
+
         let floor = Plane::new(
             Vec4::point(0.0, 0.0, 0.0),
             (Vec4::vec(20.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -20.0)),
@@ -103,9 +100,10 @@ impl Scene for GoldenMonkeyScene {
         world.add(Arc::new(mesh));
         world.add(Arc::new(floor));
         world.add(Arc::new(spheres_bvh));
+        world.add(Arc::clone(&sky));
 
         let world = Arc::new(world);
 
-        Ok((camera, world, Arc::new(ObjectList::new())))
+        Ok((camera, world, sky))
     }
 }
