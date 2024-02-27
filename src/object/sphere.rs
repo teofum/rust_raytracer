@@ -34,10 +34,9 @@ impl Sphere {
             material,
         }
     }
-}
 
-impl Hit for Sphere {
-    fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
+    #[inline(always)]
+    fn test_impl(&self, ray: &Ray, t: Interval, skip_uvs: bool) -> Option<HitRecord> {
         let center_diff = ray.origin - self.center;
 
         // Test for ray-sphere intersection using quadratic formula
@@ -65,9 +64,13 @@ impl Hit for Sphere {
         let normal = (hit_pos - self.center) / self.radius;
 
         // Get UV coordinates
-        let theta = f64::acos(normal.y());
-        let phi = f64::atan2(-normal.z(), normal.x()) + PI;
-        let uv = (phi / (2.0 * PI), theta / PI);
+        let uv = if !skip_uvs {
+            let theta = f64::acos(normal.y());
+            let phi = f64::atan2(-normal.z(), normal.x()) + PI;
+            (phi / (2.0 * PI), theta / PI)
+        } else {
+            (0.0, 0.0)
+        };
 
         Some(HitRecord::new(
             ray,
@@ -78,13 +81,22 @@ impl Hit for Sphere {
             Arc::as_ref(&self.material),
         ))
     }
+}
+
+impl Hit for Sphere {
+    fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
+        self.test_impl(ray, t, false)
+    }
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
         self.bounds
     }
 
-    fn pdf_value(&self, origin: Point4, dir: Vec4, rng: &mut Pcg64Mcg) -> f64 {
-        if let Some(_) = self.test(&Ray::new(origin, dir), Interval(0.001, f64::INFINITY), rng) {
+    fn pdf_value(&self, origin: Point4, dir: Vec4, _: &mut Pcg64Mcg) -> f64 {
+        if self
+            .test_impl(&Ray::new(origin, dir), Interval(0.001, f64::INFINITY), true)
+            .is_some()
+        {
             let radius_squared = self.radius * self.radius;
             let cos_theta_max =
                 (1.0 - radius_squared / (self.center - origin).length_squared()).sqrt();
