@@ -25,7 +25,7 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(center: Point4, radius: f64, material: Arc<dyn Material>) -> Self {
         let radius_vec = Vec4::vec(radius, radius, radius);
-        let bounds = (center - radius_vec, center + radius_vec);
+        let bounds = [center - radius_vec, center + radius_vec];
 
         Sphere {
             center,

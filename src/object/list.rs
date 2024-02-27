@@ -26,7 +26,7 @@ impl ObjectList {
     pub fn new() -> Self {
         ObjectList {
             objects: Vec::new(),
-            bounds: (INFINITY, -INFINITY),
+            bounds: [INFINITY, -INFINITY],
             disable_bounds_check: false,
         }
     }
@@ -44,7 +44,7 @@ impl ObjectList {
 
     pub fn clear(&mut self) {
         self.objects.clear();
-        self.bounds = (INFINITY, -INFINITY);
+        self.bounds = [INFINITY, -INFINITY];
     }
 
     pub fn add(&mut self, object: Arc<dyn Hit>) {

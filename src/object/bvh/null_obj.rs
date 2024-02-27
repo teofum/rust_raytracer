@@ -17,7 +17,7 @@ impl Hit for NullObject {
     }
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox {
-        (INFINITY, -INFINITY)
+        [INFINITY, -INFINITY]
     }
 
     fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {

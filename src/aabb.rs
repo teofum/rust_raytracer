@@ -3,7 +3,7 @@ use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::vec4::{Point4, Vec4};
 
-pub type AxisAlignedBoundingBox = (Point4, Point4);
+pub type AxisAlignedBoundingBox = [Point4; 2];
 
 // Expand bounding boxes slightly to handle grazing rays
 const EPSILON_VEC: Vec4 = Vec4([0.001, 0.001, 0.001, 0.0]);
@@ -14,16 +14,16 @@ pub fn combine_bounds(bounds: &[AxisAlignedBoundingBox]) -> AxisAlignedBoundingB
 
     for bounding_box in bounds {
         for i in 0..3 {
-            if bounding_box.0[i] < bounds_min[i] {
-                bounds_min[i] = bounding_box.0[i];
+            if bounding_box[0][i] < bounds_min[i] {
+                bounds_min[i] = bounding_box[0][i];
             }
-            if bounding_box.1[i] > bounds_max[i] {
-                bounds_max[i] = bounding_box.1[i];
+            if bounding_box[1][i] > bounds_max[i] {
+                bounds_max[i] = bounding_box[1][i];
             }
         }
     }
 
-    (bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC)
+    [bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC]
 }
 
 pub fn get_bounding_box(vertices: &[Point4]) -> AxisAlignedBoundingBox {
@@ -41,20 +41,15 @@ pub fn get_bounding_box(vertices: &[Point4]) -> AxisAlignedBoundingBox {
         }
     }
 
-    (bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC)
+    [bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC]
 }
 
 // From "An Efficient and Robust Ray–Box Intersection Algorithm"
 // by Amy Williams et al.
 #[inline(always)]
-pub fn test_bounding_box(
-    (b_min, b_max): &AxisAlignedBoundingBox,
-    ray: &Ray,
-    t_int: &Interval,
-) -> bool {
+pub fn test_bounding_box(bounds: &AxisAlignedBoundingBox, ray: &Ray, t_int: &Interval) -> bool {
     let inv_dir = ray.inv_dir();
     let sign = ray.sign();
-    let bounds = [b_min, b_max];
 
     let mut t_min = (bounds[sign[0] as usize].x() - ray.origin().x()) * inv_dir.x();
     let mut t_max = (bounds[1 - sign[0] as usize].x() - ray.origin().x()) * inv_dir.x();

@@ -33,8 +33,8 @@ impl BoundingVolumeHierarchyNode {
         }
 
         let comparator = |a: &Box<dyn Hit>, b: &Box<dyn Hit>| {
-            let min_a = a.get_bounding_box().0[axis_idx];
-            let min_b = b.get_bounding_box().0[axis_idx];
+            let min_a = a.get_bounding_box()[0][axis_idx];
+            let min_b = b.get_bounding_box()[0][axis_idx];
 
             min_a.total_cmp(&min_b)
         };

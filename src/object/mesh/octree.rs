@@ -20,7 +20,7 @@ impl OctreeNode {
         vertices: &Vec<Point4>,
         triangles: &Vec<Triangle>,
         filter: Option<&Vec<usize>>,
-        (b_min, b_max): AxisAlignedBoundingBox,
+        [b_min, b_max]: AxisAlignedBoundingBox,
     ) -> Self {
         let triangle_idx_pairs: Vec<_> = triangles
             .iter()
@@ -35,7 +35,7 @@ impl OctreeNode {
             let indices: Vec<_> = triangle_idx_pairs.into_iter().map(|(i, _)| i).collect();
             OctreeNode {
                 data: OctreeNodeData::Leaf(indices),
-                bounding_box: (b_min, b_max),
+                bounding_box: [b_min, b_max],
             }
         } else {
             let midpoint = (b_min + b_max) / 2.0;
@@ -59,7 +59,7 @@ impl OctreeNode {
                     vertices[triangle.vert_indices[2]],
                 ];
 
-                let (t_min, t_max) = aabb::get_bounding_box(&triangle_vertices);
+                let [t_min, t_max] = aabb::get_bounding_box(&triangle_vertices);
 
                 let mut in_lists = [true; 8];
                 if t_min.x() > midpoint.x() {
@@ -121,73 +121,73 @@ impl OctreeNode {
                     vertices,
                     triangles,
                     Some(&index_lists[0]),
-                    (b_min, midpoint),
+                    [b_min, midpoint],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[1]),
-                    (
+                    [
                         Vec4::point(min_x, min_y, mid_z),
                         Vec4::point(mid_x, mid_y, max_z),
-                    ),
+                    ],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[2]),
-                    (
+                    [
                         Vec4::point(min_x, mid_y, min_z),
                         Vec4::point(mid_x, max_y, mid_z),
-                    ),
+                    ],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[3]),
-                    (
+                    [
                         Vec4::point(min_x, mid_y, mid_z),
                         Vec4::point(mid_x, max_y, max_z),
-                    ),
+                    ],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[4]),
-                    (
+                    [
                         Vec4::point(mid_x, min_y, min_z),
                         Vec4::point(max_x, mid_y, mid_z),
-                    ),
+                    ],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[5]),
-                    (
+                    [
                         Vec4::point(mid_x, min_y, mid_z),
                         Vec4::point(max_x, mid_y, max_z),
-                    ),
+                    ],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[6]),
-                    (
+                    [
                         Vec4::point(mid_x, mid_y, min_z),
                         Vec4::point(max_x, max_y, mid_z),
-                    ),
+                    ],
                 )),
                 Box::new(Self::new(
                     vertices,
                     triangles,
                     Some(&index_lists[7]),
-                    (midpoint, b_max),
+                    [midpoint, b_max],
                 )),
             ]);
 
             OctreeNode {
                 data,
-                bounding_box: (b_min, b_max),
+                bounding_box: [b_min, b_max],
             }
         }
     }

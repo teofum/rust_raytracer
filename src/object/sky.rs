@@ -52,7 +52,7 @@ impl Hit for Sky {
         let max = Vec4::point(f64::MAX, f64::MAX, f64::MAX);
         let min = Vec4::point(f64::MIN, f64::MIN, f64::MIN);
 
-        (min, max)
+        [min, max]
     }
 
     fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {

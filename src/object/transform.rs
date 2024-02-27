@@ -83,7 +83,7 @@ impl Transform {
     }
 
     fn update_bounds(&mut self) {
-        let (o_min, o_max) = self.object.get_bounding_box();
+        let [o_min, o_max] = self.object.get_bounding_box();
 
         let (sx, sy, sz) = (o_max - o_min).xyz();
         let mut corners = [
