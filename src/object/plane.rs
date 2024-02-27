@@ -4,7 +4,6 @@ use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{get_bounding_box, AxisAlignedBoundingBox};
-use crate::mat4::Mat4;
 use crate::ray::Ray;
 use crate::vec4::{Point4, Vec4};
 use crate::{interval::Interval, material::Material};
@@ -13,14 +12,14 @@ use super::{Hit, HitRecord};
 
 pub struct Plane {
     pub material: Arc<dyn Material>,
+    pub render_backface: bool,
 
-    center: Point4,
-    size_half: (f64, f64),
+    corner: Point4,
+    size: (f64, f64),
     normal: Vec4,
     u: Vec4,
     v: Vec4,
     area: f64,
-    inverse_basis: Mat4,
     bounds: AxisAlignedBoundingBox,
 }
 
@@ -37,11 +36,6 @@ impl Plane {
         let area = n.length() * 4.0;
         let normal = n.to_unit();
 
-        // Since u_unit, v_unit and normal are orthonormal vectors, basis is an
-        // orthogonal matrix, and thus its inverse is its transpose
-        let basis = Mat4::from_columns(u_unit, v_unit, normal, Vec4::point(0.0, 0.0, 0.0));
-        let inverse_basis = basis.transposed();
-
         let corners = [
             center + u + v,
             center + u - v,
@@ -52,15 +46,15 @@ impl Plane {
         let bounds = get_bounding_box(&corners);
 
         Plane {
-            center,
-            size_half: (u.length().abs(), v.length().abs()),
+            corner: corners[3],
+            size: (u.length() * 2.0, v.length() * 2.0),
             material,
             normal,
-            u,
-            v,
+            u: u_unit,
+            v: v_unit,
             area,
-            inverse_basis,
             bounds,
+            render_backface: false,
         }
     }
 }
@@ -69,31 +63,33 @@ impl Hit for Plane {
     fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
         let dot_ray_normal = self.normal.dot(&ray.dir);
 
-        if dot_ray_normal.abs() < f64::EPSILON {
+        let dd = if self.render_backface {
+            dot_ray_normal.abs()
+        } else {
+            -dot_ray_normal
+        };
+        if dd < f64::EPSILON {
             return None;
         }
 
-        let hit_t = self.normal.dot(&(self.center - ray.origin)) / dot_ray_normal;
-        if hit_t <= t.min() || t.max() <= hit_t {
+        let hit_t = self.normal.dot(&(self.corner - ray.origin)) / dot_ray_normal;
+        if hit_t <= t.0 || t.1 <= hit_t {
             return None;
         }
 
         let hit_pos = ray.at(hit_t);
-        let hit_on_plane = self.inverse_basis * (hit_pos - self.center);
-        if hit_on_plane.x().abs() > self.size_half.0 || hit_on_plane.y().abs() > self.size_half.1 {
+        let local_pos = hit_pos - self.corner;
+        let u = local_pos.dot(&self.u) / self.size.0;
+        let v = local_pos.dot(&self.v) / self.size.1;
+        if u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0 {
             return None;
         }
-
-        let uv = (
-            hit_on_plane.x() / (self.size_half.0 * 2.0) + 0.5,
-            hit_on_plane.y() / (self.size_half.1 * 2.0) + 0.5,
-        );
 
         Some(HitRecord::new(
             ray,
             hit_pos,
             hit_t,
-            uv,
+            (u, v),
             self.normal,
             Arc::as_ref(&self.material),
         ))
@@ -117,9 +113,9 @@ impl Hit for Plane {
     }
 
     fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
-        let u = rng.gen_range(0.0..1.0) - 0.5;
-        let v = rng.gen_range(0.0..1.0) - 0.5;
-        let p = self.center + self.u * u + self.v * v;
+        let u = rng.gen_range(0.0..1.0);
+        let v = rng.gen_range(0.0..1.0);
+        let p = self.corner + self.u * u + self.v * v;
 
         p - origin
     }

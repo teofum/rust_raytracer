@@ -54,7 +54,7 @@ impl Scene for CornellBoxScene {
         // Set up objects
         let floor = Plane::new(
             Vec4::point(277.5, 0.0, 277.5),
-            (Vec4::vec(277.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
+            (Vec4::vec(277.5, 0.0, 0.0), Vec4::vec(0.0, 0.0, -277.5)),
             Arc::clone(&mat_gloss_test),
         );
         let ceiling = Plane::new(
@@ -69,12 +69,12 @@ impl Scene for CornellBoxScene {
         );
         let left_wall = Plane::new(
             Vec4::point(555.0, 277.5, 277.5),
-            (Vec4::vec(0.0, 276.5, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
+            (Vec4::vec(0.0, 277.5, 0.0), Vec4::vec(0.0, 0.0, -277.5)),
             Arc::clone(&mat_green),
         );
         let right_wall = Plane::new(
             Vec4::point(0.0, 277.5, 277.5),
-            (Vec4::vec(0.0, 277.5, 0.0), Vec4::vec(0.0, 0.0, -277.5)),
+            (Vec4::vec(0.0, 277.5, 0.0), Vec4::vec(0.0, 0.0, 277.5)),
             Arc::clone(&mat_red),
         );
 
