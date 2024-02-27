@@ -51,10 +51,10 @@ pub fn test_bounding_box(bounds: &AxisAlignedBoundingBox, ray: &Ray, t_int: &Int
     let inv_dir = ray.inv_dir();
     let sign = ray.sign();
 
-    let mut t_min = (bounds[sign[0] as usize].x() - ray.origin().x()) * inv_dir.x();
-    let mut t_max = (bounds[1 - sign[0] as usize].x() - ray.origin().x()) * inv_dir.x();
-    let ty_min = (bounds[sign[1] as usize].y() - ray.origin().y()) * inv_dir.y();
-    let ty_max = (bounds[1 - sign[1] as usize].y() - ray.origin().y()) * inv_dir.y();
+    let mut t_min = (bounds[sign[0] as usize][0] - ray.origin()[0]) * inv_dir[0];
+    let mut t_max = (bounds[1 - sign[0] as usize][0] - ray.origin()[0]) * inv_dir[0];
+    let ty_min = (bounds[sign[1] as usize][1] - ray.origin()[1]) * inv_dir[1];
+    let ty_max = (bounds[1 - sign[1] as usize][1] - ray.origin()[1]) * inv_dir[1];
 
     if (t_min > ty_max) || (ty_min > t_max) {
         return false;
@@ -67,8 +67,8 @@ pub fn test_bounding_box(bounds: &AxisAlignedBoundingBox, ray: &Ray, t_int: &Int
         t_max = ty_max;
     }
 
-    let tz_min = (bounds[sign[2] as usize].z() - ray.origin().z()) * inv_dir.z();
-    let tz_max = (bounds[1 - sign[2] as usize].z() - ray.origin().z()) * inv_dir.z();
+    let tz_min = (bounds[sign[2] as usize][2] - ray.origin()[2]) * inv_dir[2];
+    let tz_max = (bounds[1 - sign[2] as usize][2] - ray.origin()[2]) * inv_dir[2];
 
     if (t_min > tz_max) || (tz_min > t_max) {
         return false;
