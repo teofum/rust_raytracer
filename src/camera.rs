@@ -15,7 +15,7 @@ use crate::ray::Ray;
 use crate::vec4::{Color, Point4, Vec4};
 
 // Config;
-const SQRT_SAMPLES_PER_THREAD: usize = 20;
+const SQRT_SAMPLES_PER_THREAD: usize = 5;
 const LIGHT_BIAS: f64 = 0.5;
 const THREAD_COUNT: usize = 10; // Number of threads to spawn
 const MAX_DEPTH: usize = 20; // Max ray bounces

@@ -24,7 +24,7 @@ pub fn onb_from_vec(w: Vec4) -> Mat4 {
     let v = w.cross(&a).to_unit();
     let u = w.cross(&v);
 
-    Mat4::from_columns(u, v, w, Vec4(0.0, 0.0, 0.0, 1.0))
+    Mat4::from_columns(u, v, w, Vec4([0.0, 0.0, 0.0, 1.0]))
 }
 
 // Schlick's approximation for reflectance

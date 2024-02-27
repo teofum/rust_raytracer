@@ -102,12 +102,12 @@ impl Mat4 {
             panic!("Index out of bounds");
         }
 
-        Vec4(
+        Vec4([
             self.0[index * 4],
             self.0[index * 4 + 1],
             self.0[index * 4 + 2],
             self.0[index * 4 + 3],
-        )
+        ])
     }
 
     pub fn column(&self, index: usize) -> Vec4 {
@@ -115,12 +115,12 @@ impl Mat4 {
             panic!("Index out of bounds");
         }
 
-        Vec4(
+        Vec4([
             self.0[index],
             self.0[index + 4],
             self.0[index + 8],
             self.0[index + 12],
-        )
+        ])
     }
 
     // Utility fuctions
@@ -203,12 +203,12 @@ impl Mul<Vec4> for Mat4 {
     type Output = Vec4;
 
     fn mul(self, rhs: Vec4) -> Self::Output {
-        Vec4(
+        Vec4([
             self.0[0] * rhs[0] + self.0[1] * rhs[1] + self.0[2] * rhs[2] + self.0[3] * rhs[3],
             self.0[4] * rhs[0] + self.0[5] * rhs[1] + self.0[6] * rhs[2] + self.0[7] * rhs[3],
             self.0[8] * rhs[0] + self.0[9] * rhs[1] + self.0[10] * rhs[2] + self.0[11] * rhs[3],
             self.0[12] * rhs[0] + self.0[13] * rhs[1] + self.0[14] * rhs[2] + self.0[15] * rhs[3],
-        )
+        ])
     }
 }
 

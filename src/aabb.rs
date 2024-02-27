@@ -6,7 +6,7 @@ use crate::vec4::{Point4, Vec4};
 pub type AxisAlignedBoundingBox = (Point4, Point4);
 
 // Expand bounding boxes slightly to handle grazing rays
-const EPSILON_VEC: Vec4 = Vec4(0.001, 0.001, 0.001, 0.0);
+const EPSILON_VEC: Vec4 = Vec4([0.001, 0.001, 0.001, 0.0]);
 
 pub fn combine_bounds(bounds: &[AxisAlignedBoundingBox]) -> AxisAlignedBoundingBox {
     let mut bounds_min = INFINITY;
