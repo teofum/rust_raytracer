@@ -275,7 +275,7 @@ impl Camera {
                     let mix_pdf = MixPDF::new(material_pdf.as_ref(), lights_pdf, LIGHT_BIAS);
 
                     let scattered = Ray::new(hit.pos(), mix_pdf.generate(rng));
-                    let pdf = mix_pdf.value(&scattered.dir, rng);
+                    let pdf = mix_pdf.value(&scattered.dir(), rng);
 
                     let scattering_pdf = hit.material().scattering_pdf(ray, &scattered, &hit);
 

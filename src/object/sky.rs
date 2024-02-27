@@ -33,7 +33,7 @@ impl Hit for Sky {
 
         let hit_pos = ray.at(hit_t);
 
-        let unit_dir = ray.dir.to_unit();
+        let unit_dir = ray.dir().to_unit();
         let normal = -unit_dir;
         let u = f64::atan2(unit_dir.x(), unit_dir.z()) / (2.0 * PI) + 0.5;
         let v = unit_dir.dot(&Vec4::vec(0.0, 1.0, 0.0)) / 2.0 + 0.5;

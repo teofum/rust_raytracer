@@ -108,10 +108,10 @@ impl Transform {
 impl Hit for Transform {
     fn test(&self, ray: &Ray, t: Interval, rng: &mut Pcg64Mcg) -> Option<HitRecord> {
         // Transform ray to object space
-        let ray_obj = Ray {
-            origin: self.inv_transform * ray.origin,
-            dir: self.inv_transform * ray.dir,
-        };
+        let ray_obj = Ray::new(
+            self.inv_transform * ray.origin(),
+            self.inv_transform * ray.dir(),
+        );
 
         // Test for hit in object space
         if let Some(mut hit) = self.object.test(&ray_obj, t, rng) {

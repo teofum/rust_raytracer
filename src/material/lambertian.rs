@@ -32,7 +32,7 @@ impl Material for LambertianDiffuse {
     }
 
     fn scattering_pdf(&self, _: &Ray, scattered: &Ray, hit: &HitRecord) -> f64 {
-        let cos_theta = Vec4::dot(&hit.normal(), &scattered.dir.to_unit());
+        let cos_theta = Vec4::dot(&hit.normal(), &scattered.dir().to_unit());
 
         if cos_theta < 0.0 {
             0.0

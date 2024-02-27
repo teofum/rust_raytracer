@@ -46,7 +46,7 @@ impl<'a> HitRecord<'a> {
         outward_normal: Vec4,
         material: &'a dyn Material,
     ) -> Self {
-        let front_face = ray.dir.dot(&outward_normal) < 0.0;
+        let front_face = ray.dir().dot(&outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
         } else {

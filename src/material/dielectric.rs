@@ -32,7 +32,7 @@ impl Material for Dielectric {
             self.ior
         };
 
-        let unit_dir = ray.dir.to_unit();
+        let unit_dir = ray.dir().to_unit();
         let cos_theta = f64::min(1.0, (-unit_dir).dot(&hit.normal()));
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 

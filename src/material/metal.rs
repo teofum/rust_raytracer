@@ -28,7 +28,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult {
-        let reflected = ray.dir.reflect(hit.normal());
+        let reflected = ray.dir().reflect(hit.normal());
         let scatter_dir = reflected + Vec4::random_unit(rng) * self.roughness * reflected.length();
 
         if scatter_dir.dot(&hit.normal()) > 0.0 {

@@ -35,13 +35,13 @@ impl Glossy {
 
 impl Material for Glossy {
     fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult {
-        let unit_dir = ray.dir.to_unit();
+        let unit_dir = ray.dir().to_unit();
         let cos_theta = f64::min(1.0, (-unit_dir).dot(&hit.normal()));
 
         let specular = reflectance(cos_theta, self.inv_ior) > rng.gen_range(0.0..1.0);
         if specular {
             let roughness = self.roughness.sample(hit.uv(), &hit.pos());
-            let reflected = ray.dir.reflect(hit.normal());
+            let reflected = ray.dir().reflect(hit.normal());
             let scatter_dir = reflected + Vec4::random_unit(rng) * roughness * reflected.length();
 
             if scatter_dir.dot(&hit.normal()) > 0.0 {
@@ -65,7 +65,7 @@ impl Material for Glossy {
     }
 
     fn scattering_pdf(&self, _: &Ray, scattered: &Ray, hit: &HitRecord) -> f64 {
-        let cos_theta = Vec4::dot(&hit.normal(), &scattered.dir.to_unit());
+        let cos_theta = Vec4::dot(&hit.normal(), &scattered.dir().to_unit());
 
         if cos_theta < 0.0 {
             0.0

@@ -70,7 +70,7 @@ impl TriangleMesh {
         let edge2 = v2 - v0;
 
         // Compute the barycentric coordinates t, u, v using Cramer's Rule
-        let ray_x_edge2 = Vec4::cross(&ray.dir, &edge2);
+        let ray_x_edge2 = Vec4::cross(&ray.dir(), &edge2);
 
         let det = edge1.dot(&ray_x_edge2);
         let dd = if self.hit_back_faces { det.abs() } else { det };
@@ -79,7 +79,7 @@ impl TriangleMesh {
         }
 
         let inv_det = 1.0 / det;
-        let b = ray.origin - v0; // The 'b' vector in the Ax = b equation we're solving
+        let b = ray.origin() - v0; // The 'b' vector in the Ax = b equation we're solving
 
         let u = b.dot(&ray_x_edge2) * inv_det;
         if u < 0.0 || u > 1.0 {
@@ -89,7 +89,7 @@ impl TriangleMesh {
         // Uses the property a.(b×c) = b.(c×a) = c.(a×b)
         // and a×b = b×(-a)
         let b_x_edge1 = Vec4::cross(&b, &edge1);
-        let v = ray.dir.dot(&b_x_edge1) * inv_det;
+        let v = ray.dir().dot(&b_x_edge1) * inv_det;
         if v < 0.0 || u + v > 1.0 {
             return None; // Intersection lies outside triangle
         }

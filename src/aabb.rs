@@ -44,65 +44,47 @@ pub fn get_bounding_box(vertices: &[Point4]) -> AxisAlignedBoundingBox {
     (bounds_min - EPSILON_VEC, bounds_max + EPSILON_VEC)
 }
 
-// Fast ray-box intersection by Andrew Woo
-// from Graphics Gems, 1990
+// From "An Efficient and Robust Ray–Box Intersection Algorithm"
+// by Amy Williams et al.
+#[inline(always)]
 pub fn test_bounding_box(
     (b_min, b_max): &AxisAlignedBoundingBox,
     ray: &Ray,
     t_int: &Interval,
 ) -> bool {
-    let mut inside = true; // Ray origin inside bounds
-    let mut quadrant: [i8; 3] = [0; 3];
-    let mut candidate_plane = Vec4::point(0.0, 0.0, 0.0);
-    let mut max_t = Vec4::point(0.0, 0.0, 0.0);
+    let inv_dir = ray.inv_dir();
+    let sign = ray.sign();
+    let bounds = [b_min, b_max];
 
-    for i in 0..3 {
-        if ray.origin[i] < b_min[i] {
-            quadrant[i] = -1;
-            candidate_plane[i] = b_min[i];
-            inside = false;
-        } else if ray.origin[i] > b_max[i] {
-            quadrant[i] = 1;
-            candidate_plane[i] = b_max[i];
-            inside = false;
-        } else {
-            quadrant[i] = 0;
-        }
-    }
+    let mut t_min = (bounds[sign[0] as usize].x() - ray.origin().x()) * inv_dir.x();
+    let mut t_max = (bounds[1 - sign[0] as usize].x() - ray.origin().x()) * inv_dir.x();
+    let ty_min = (bounds[sign[1] as usize].y() - ray.origin().y()) * inv_dir.y();
+    let ty_max = (bounds[1 - sign[1] as usize].y() - ray.origin().y()) * inv_dir.y();
 
-    if inside {
-        return true;
-    }
-
-    // Calculate t distance to candidate planes
-    for i in 0..3 {
-        max_t[i] = if quadrant[i] != 0 && ray.dir[i] != 0.0 {
-            (candidate_plane[i] - ray.origin[i]) / ray.dir[i]
-        } else {
-            -1.0
-        }
-    }
-
-    // Use the largest max_t to pick a plane to intersect
-    let mut plane_idx = 0;
-    for i in 1..3 {
-        if max_t[i] > max_t[plane_idx] {
-            plane_idx = i;
-        }
-    }
-
-    if max_t[plane_idx] <= t_int.0 || max_t[plane_idx] >= t_int.1 {
+    if (t_min > ty_max) || (ty_min > t_max) {
         return false;
     }
 
-    for i in 0..3 {
-        if i != plane_idx {
-            let hit_coord = ray.origin[i] + max_t[plane_idx] * ray.dir[i];
-            if hit_coord < b_min[i] || hit_coord > b_max[i] {
-                return false;
-            }
-        }
+    if ty_min > t_min {
+        t_min = ty_min;
+    }
+    if ty_max < t_max {
+        t_max = ty_max;
     }
 
-    true
+    let tz_min = (bounds[sign[2] as usize].z() - ray.origin().z()) * inv_dir.z();
+    let tz_max = (bounds[1 - sign[2] as usize].z() - ray.origin().z()) * inv_dir.z();
+
+    if (t_min > tz_max) || (tz_min > t_max) {
+        return false;
+    }
+
+    if tz_min > t_min {
+        t_min = tz_min;
+    }
+    if tz_max < t_max {
+        t_max = tz_max;
+    }
+
+    t_min < t_int.1 && t_max > t_int.0
 }

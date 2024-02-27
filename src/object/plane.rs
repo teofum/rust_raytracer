@@ -61,7 +61,7 @@ impl Plane {
 
 impl Hit for Plane {
     fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
-        let dot_ray_normal = self.normal.dot(&ray.dir);
+        let dot_ray_normal = self.normal.dot(&ray.dir());
 
         let dd = if self.render_backface {
             dot_ray_normal.abs()
@@ -72,7 +72,7 @@ impl Hit for Plane {
             return None;
         }
 
-        let hit_t = self.normal.dot(&(self.corner - ray.origin)) / dot_ray_normal;
+        let hit_t = self.normal.dot(&(self.corner - ray.origin())) / dot_ray_normal;
         if hit_t <= t.0 || t.1 <= hit_t {
             return None;
         }

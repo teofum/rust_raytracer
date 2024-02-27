@@ -42,7 +42,7 @@ impl Hit for Volume {
                 }
 
                 t_min = f64::max(t_min, 0.0);
-                let ray_len = ray.dir.length();
+                let ray_len = ray.dir().length();
                 let dist_inside_boundary = (t_max - t_min) * ray_len;
                 let hit_dist = self.neg_inv_density * f64::ln(rng.sample(Standard));
 

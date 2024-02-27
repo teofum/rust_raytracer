@@ -30,7 +30,7 @@ impl Sun {
 
 impl Hit for Sun {
     fn test(&self, ray: &Ray, t: Interval, _: &mut Pcg64Mcg) -> Option<HitRecord> {
-        let unit_dir = ray.dir.to_unit();
+        let unit_dir = ray.dir().to_unit();
         if (self.direction.dot(&unit_dir) - 1.0).abs() > THETA_MAX {
             return None;
         }
