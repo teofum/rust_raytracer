@@ -33,7 +33,7 @@ impl Transform {
         let inv_translation = Mat4::translation(-x, -y, -z);
 
         self.transform = translation * self.transform;
-        self.inv_transform = self.inv_transform * inv_translation;
+        self.inv_transform *= inv_translation;
 
         self.update_bounds();
     }
@@ -43,7 +43,7 @@ impl Transform {
         let inv_rotation = Mat4::rotate_x(-theta);
 
         self.transform = rotation * self.transform;
-        self.inv_transform = self.inv_transform * inv_rotation;
+        self.inv_transform *= inv_rotation;
 
         self.update_bounds();
     }
@@ -53,7 +53,7 @@ impl Transform {
         let inv_rotation = Mat4::rotate_y(-theta);
 
         self.transform = rotation * self.transform;
-        self.inv_transform = self.inv_transform * inv_rotation;
+        self.inv_transform *= inv_rotation;
 
         self.update_bounds();
     }
@@ -63,7 +63,7 @@ impl Transform {
         let inv_rotation = Mat4::rotate_z(-theta);
 
         self.transform = rotation * self.transform;
-        self.inv_transform = self.inv_transform * inv_rotation;
+        self.inv_transform *= inv_rotation;
 
         self.update_bounds();
     }
@@ -73,7 +73,7 @@ impl Transform {
         let inv_scale = Mat4::scale(1.0 / x, 1.0 / y, 1.0 / z);
 
         self.transform = scale * self.transform;
-        self.inv_transform = self.inv_transform * inv_scale;
+        self.inv_transform *= inv_scale;
 
         self.update_bounds();
     }
@@ -97,8 +97,8 @@ impl Transform {
             o_max,
         ];
 
-        for i in 0..corners.len() {
-            corners[i] = self.transform * corners[i]
+        for corner in &mut corners {
+            *corner = self.transform * *corner
         }
 
         self.bounds = aabb::get_bounding_box(&corners);

@@ -47,7 +47,6 @@ impl Sampler for ImageTexture {
         let (width, height) = (width as f64 - 0.001, height as f64 - 0.001);
         let (x, y) = ((u * width) as usize, (v * height) as usize);
 
-        let sampled = self.buffer.get_pixel(x, y);
-        sampled
+        self.buffer.get_pixel(x, y)
     }
 }

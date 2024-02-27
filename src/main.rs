@@ -14,7 +14,7 @@ use scene::PerlinScene;
 use scene::Scene;
 use scene::TonemapTestScene;
 
-const OUT_FILENAME: &'static str = "out.png";
+const OUT_FILENAME: &str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();

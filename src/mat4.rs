@@ -103,7 +103,7 @@ impl Mat4 {
         }
 
         Vec4(
-            self.0[index * 4 + 0],
+            self.0[index * 4],
             self.0[index * 4 + 1],
             self.0[index * 4 + 2],
             self.0[index * 4 + 3],
@@ -116,7 +116,7 @@ impl Mat4 {
         }
 
         Vec4(
-            self.0[index + 0],
+            self.0[index],
             self.0[index + 4],
             self.0[index + 8],
             self.0[index + 12],
@@ -270,9 +270,7 @@ impl MulAssign for Mat4 {
             }
         }
 
-        for i in 0..16 {
-            self.0[i] = values[i];
-        }
+        self.0.copy_from_slice(&values)
     }
 }
 

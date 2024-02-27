@@ -188,10 +188,9 @@ impl Camera {
 
                         for sy in 0..SQRT_SAMPLES_PER_THREAD {
                             for sx in 0..SQRT_SAMPLES_PER_THREAD {
-                                let mut ray =
-                                    thread_self_ref.get_ray(x, y, sx, sy, &mut thread_rng);
+                                let ray = thread_self_ref.get_ray(x, y, sx, sy, &mut thread_rng);
                                 color += thread_self_ref.ray_color(
-                                    &mut ray,
+                                    &ray,
                                     &thread_world,
                                     &mut lights_pdf,
                                     MAX_DEPTH,
@@ -260,11 +259,11 @@ impl Camera {
         depth: usize,
         rng: &mut Pcg64Mcg,
     ) -> Color {
-        if depth <= 0 {
+        if depth == 0 {
             return Vec4::vec(0.0, 0.0, 0.0);
         }
 
-        if let Some(hit) = object.test(&ray, Interval(0.001, f64::INFINITY), rng) {
+        if let Some(hit) = object.test(ray, Interval(0.001, f64::INFINITY), rng) {
             let from_emission = hit.material().emit(&hit);
 
             return match hit.material().scatter(ray, &hit, rng) {
