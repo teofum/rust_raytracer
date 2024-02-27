@@ -15,10 +15,11 @@ pub struct Plane {
     pub render_backface: bool,
 
     corner: Point4,
-    size: (f64, f64),
     normal: Vec4,
-    u: Vec4,
-    v: Vec4,
+    u_unit: Vec4,
+    v_unit: Vec4,
+    inv_u: Vec4,
+    inv_v: Vec4,
     area: f64,
     bounds: AxisAlignedBoundingBox,
 }
@@ -47,11 +48,12 @@ impl Plane {
 
         Plane {
             corner: corners[3],
-            size: (u.length() * 2.0, v.length() * 2.0),
             material,
             normal,
-            u: u_unit,
-            v: v_unit,
+            u_unit,
+            v_unit,
+            inv_u: u_unit * 0.5 / u.length(),
+            inv_v: v_unit * 0.5 / v.length(),
             area,
             bounds,
             render_backface: false,
@@ -79,8 +81,8 @@ impl Hit for Plane {
 
         let hit_pos = ray.at(hit_t);
         let local_pos = hit_pos - self.corner;
-        let u = local_pos.dot(&self.u) / self.size.0;
-        let v = local_pos.dot(&self.v) / self.size.1;
+        let u = local_pos.dot(&self.inv_u);
+        let v = local_pos.dot(&self.inv_v);
         if u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0 {
             return None;
         }
@@ -115,7 +117,7 @@ impl Hit for Plane {
     fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
         let u = rng.gen_range(0.0..1.0);
         let v = rng.gen_range(0.0..1.0);
-        let p = self.corner + self.u * u + self.v * v;
+        let p = self.corner + self.u_unit * u + self.v_unit * v;
 
         p - origin
     }

@@ -51,6 +51,8 @@ pub fn test_bounding_box(bounds: &AxisAlignedBoundingBox, ray: &Ray, t_int: &Int
     let inv_dir = ray.inv_dir();
     let sign = ray.sign();
 
+    // Indexing into a Vec3 is slightly faster than calling the x/y/z getters, enough
+    // that it makes a difference with large BVHs/octrees
     let mut t_min = (bounds[sign[0] as usize][0] - ray.origin()[0]) * inv_dir[0];
     let mut t_max = (bounds[1 - sign[0] as usize][0] - ray.origin()[0]) * inv_dir[0];
     let ty_min = (bounds[sign[1] as usize][1] - ray.origin()[1]) * inv_dir[1];
