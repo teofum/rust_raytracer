@@ -1,6 +1,7 @@
 pub mod aabb;
 pub mod buffer;
 pub mod camera;
+pub mod config;
 pub mod constants;
 pub mod interval;
 pub mod loaders;

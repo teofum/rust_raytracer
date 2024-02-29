@@ -1,6 +1,8 @@
+use std::env;
 use std::error::Error;
 use std::time::Instant;
 
+use rust_raytracer::config::Config;
 use rust_raytracer::output::Writer;
 
 mod scene;
@@ -17,16 +19,18 @@ use scene::TonemapTestScene;
 const OUT_FILENAME: &str = "out.png";
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let config = Config::from_args(env::args());
+
     let time = Instant::now();
-    let scene = 4;
+    let scene = 0;
     let (camera, world, lights) = match scene {
-        1 => EarthScene::init()?,
-        2 => PerlinScene::init()?,
-        3 => LightTestScene::init()?,
-        4 => CornellBoxScene::init()?,
-        5 => CornellSmokeScene::init()?,
-        6 => TonemapTestScene::init()?,
-        _ => GoldenMonkeyScene::init()?,
+        1 => EarthScene::init(&config)?,
+        2 => PerlinScene::init(&config)?,
+        3 => LightTestScene::init(&config)?,
+        4 => CornellBoxScene::init(&config)?,
+        5 => CornellSmokeScene::init(&config)?,
+        6 => TonemapTestScene::init(&config)?,
+        _ => GoldenMonkeyScene::init(&config)?,
     };
 
     let elapsed = time.elapsed();

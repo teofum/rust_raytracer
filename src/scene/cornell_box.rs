@@ -2,29 +2,41 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
+use rust_raytracer::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
 use rust_raytracer::material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material};
 use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
 use rust_raytracer::texture::{CheckerboardTexture, ConstantTexture};
 use rust_raytracer::utils::deg_to_rad;
 use rust_raytracer::vec4::Vec4;
 
-use super::Scene;
-
-// Config variables
-const ASPECT_RATIO: f64 = 1.0;
-const OUTPUT_WIDTH: usize = 600;
-const FOCAL_LENGTH: f64 = 33.0;
+use super::{Scene, SceneData};
 
 pub struct CornellBoxScene;
 
 impl Scene for CornellBoxScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
-        // Set up camera
-        let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(
-            Vec4::point(277.5, 277.5, -800.0),
-            Vec4::point(277.5, 277.5, 0.0),
+    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>> {
+        let scene_defaults = SceneConfig {
+            output_width: Some(600),
+            aspect_ratio: Some(1.0),
+            focal_length: Some(33.0),
+            f_number: None,
+            focus_distance: None,
+            camera_pos: Some(Vec4::point(277.5, 277.5, -800.0)),
+            camera_target: Some(Vec4::point(277.5, 277.5, 0.0)),
+        };
+
+        let scene_config = SceneConfig::merge(
+            &SceneConfig::merge(&DEFAULT_SCENE_CONFIG, &scene_defaults),
+            &config.scene,
         );
+
+        let config = Config {
+            camera: config.camera,
+            scene: scene_config,
+        };
+
+        // Set up camera
+        let camera = Camera::new(&config);
 
         // Set up materials
         let mat_white: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(

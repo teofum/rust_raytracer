@@ -6,6 +6,7 @@ use std::sync::Arc;
 use rand::SeedableRng;
 use rand_pcg::Pcg64Mcg;
 use rust_raytracer::camera::Camera;
+use rust_raytracer::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
 use rust_raytracer::loaders::obj::load_mesh_from_file;
 use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
 use rust_raytracer::noise::PerlinNoise3D;
@@ -14,21 +15,34 @@ use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
 use rust_raytracer::texture::{ConstantTexture, Interpolate, NoiseSolidTexture};
 use rust_raytracer::vec4::Vec4;
 
-use super::Scene;
-
-// Config variables
-const ASPECT_RATIO: f64 = 3.0 / 2.0;
-const OUTPUT_WIDTH: usize = 600;
-const FOCAL_LENGTH: f64 = 70.0;
+use super::{Scene, SceneData};
 
 pub struct PerlinScene;
 
 impl Scene for PerlinScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>> {
+        let scene_defaults = SceneConfig {
+            output_width: Some(600),
+            aspect_ratio: Some(1.5),
+            focal_length: Some(70.0),
+            f_number: Some(4.0),
+            focus_distance: None,
+            camera_pos: Some(Vec4::point(13.0, 1.0, 4.0)),
+            camera_target: Some(Vec4::point(0.0, 0.0, 0.0)),
+        };
+
+        let scene_config = SceneConfig::merge(
+            &SceneConfig::merge(&DEFAULT_SCENE_CONFIG, &scene_defaults),
+            &config.scene,
+        );
+
+        let config = Config {
+            camera: config.camera,
+            scene: scene_config,
+        };
+
         // Set up camera
-        let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec4::point(13.0, 1.0, 4.0), Vec4::point(0.0, 0.0, 0.0));
-        camera.set_f_number(Some(4.0));
+        let camera = Camera::new(&config);
 
         // Set up materials
         let mut rng = Pcg64Mcg::from_rng(rand::thread_rng()).unwrap();

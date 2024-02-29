@@ -2,25 +2,40 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
+use rust_raytracer::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
 use rust_raytracer::material::{LambertianDiffuse, Material};
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sphere, Sun};
 use rust_raytracer::texture::{ConstantTexture, ImageTexture};
 use rust_raytracer::vec4::Vec4;
 
-use super::Scene;
-
-// Config variables
-const ASPECT_RATIO: f64 = 3.0 / 2.0;
-const OUTPUT_WIDTH: usize = 600;
-const FOCAL_LENGTH: f64 = 70.0;
+use super::{Scene, SceneData};
 
 pub struct EarthScene;
 
 impl Scene for EarthScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>> {
+        let scene_defaults = SceneConfig {
+            output_width: Some(600),
+            aspect_ratio: Some(1.5),
+            focal_length: Some(70.0),
+            f_number: None,
+            focus_distance: None,
+            camera_pos: Some(Vec4::point(13.0, 2.0, 3.0)),
+            camera_target: Some(Vec4::point(0.0, 0.0, 0.0)),
+        };
+
+        let scene_config = SceneConfig::merge(
+            &SceneConfig::merge(&DEFAULT_SCENE_CONFIG, &scene_defaults),
+            &config.scene,
+        );
+
+        let config = Config {
+            camera: config.camera,
+            scene: scene_config,
+        };
+
         // Set up camera
-        let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec4::point(13.0, 2.0, 3.0), Vec4::point(0.0, 0.0, 0.0));
+        let camera = Camera::new(&config);
 
         // Set up materials
         let tex_earth = ImageTexture::from_file("resource/earthmap.jpg")?;

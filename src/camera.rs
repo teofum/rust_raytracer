@@ -7,6 +7,7 @@ use rand_distr::Standard;
 use rand_pcg::Pcg64Mcg;
 
 use crate::buffer::Buffer;
+use crate::config::Config;
 use crate::interval::Interval;
 use crate::material::ScatterResult;
 use crate::object::Hit;
@@ -14,17 +15,7 @@ use crate::pdf::{HittablePDF, MixPDF, PDF};
 use crate::ray::Ray;
 use crate::vec4::{Color, Point4, Vec4};
 
-// Config;
-const SQRT_SAMPLES_PER_THREAD: usize = 5;
-const LIGHT_BIAS: f64 = 0.5;
-const THREAD_COUNT: usize = 10; // Number of threads to spawn
-const MAX_DEPTH: usize = 20; // Max ray bounces
-
-/// Inverse Square Root of Samples Per Thread
-const ISRSPT: f64 = 1.0 / SQRT_SAMPLES_PER_THREAD as f64;
-const SAMPLES_PER_THREAD: usize = SQRT_SAMPLES_PER_THREAD * SQRT_SAMPLES_PER_THREAD;
-const SAMPLES_PER_PIXEL: usize = SAMPLES_PER_THREAD * THREAD_COUNT; // Total number of random samples per pixel
-
+#[derive(Debug)]
 pub struct Camera {
     pub background_color: fn(ray: &Ray) -> Color,
 
@@ -42,20 +33,33 @@ pub struct Camera {
     first_pixel: Point4,
     basis: [Point4; 3],
     aperture_radius: Option<f64>,
+
+    sqrt_spt: usize,
+    max_depth: usize,
+    thread_count: usize,
+    light_bias: f64,
+    samples_per_pixel: usize,
+    inv_sqrt_spt: f64,
 }
 
 impl Camera {
-    pub fn new(image_width: usize, aspect_ratio: f64, focal_length: f64) -> Self {
+    pub fn new(config: &Config) -> Self {
+        let thread_count = config.camera.thread_count;
+        let sqrt_spt = config.camera.sqrt_samples_per_thread;
+        let samples_per_thread = sqrt_spt * sqrt_spt;
+        let samples_per_pixel = samples_per_thread * thread_count;
+        let inv_sqrt_spt = 1.0 / sqrt_spt as f64;
+
         let mut camera = Camera {
             background_color: |_| Vec4::vec(0.0, 0.0, 0.0),
 
-            image_width,
-            aspect_ratio,
-            focal_length,
-            f_number: None,
-            focus_distance: None,
-            position: Vec4::point(0.0, 0.0, 0.0),
-            look_at: Vec4::point(0.0, 0.0, -1.0),
+            image_width: config.scene.output_width.unwrap(),
+            aspect_ratio: config.scene.aspect_ratio.unwrap(),
+            focal_length: config.scene.focal_length.unwrap(),
+            f_number: config.scene.f_number,
+            focus_distance: config.scene.focus_distance,
+            position: config.scene.camera_pos.unwrap(),
+            look_at: config.scene.camera_target.unwrap(),
             v_up: Vec4::vec(0.0, 1.0, 0.0),
 
             image_height: 0,
@@ -63,6 +67,13 @@ impl Camera {
             pixel_delta: (Vec4::vec(0.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, 0.0)),
             first_pixel: Vec4::point(0.0, 0.0, 0.0),
             aperture_radius: None,
+
+            sqrt_spt,
+            max_depth: config.camera.max_depth,
+            thread_count,
+            light_bias: config.camera.light_bias,
+            samples_per_pixel,
+            inv_sqrt_spt,
         };
 
         camera.init();
@@ -164,9 +175,12 @@ impl Camera {
     pub fn render(self, world: Arc<dyn Hit>, lights: Arc<dyn Hit>, buf: &mut Buffer) {
         let mut threads = Vec::new();
 
+        let sqrt_spt = self.sqrt_spt;
+        let max_depth = self.max_depth;
+        let samples_per_pixel = self.samples_per_pixel;
         let self_ref = Arc::new(self);
 
-        for tid in 0..THREAD_COUNT {
+        for tid in 0..self_ref.thread_count {
             let mut thread_buf = self_ref.create_buffer();
             let thread_world = Arc::clone(&world);
             let thread_lights = Arc::clone(&lights);
@@ -186,19 +200,19 @@ impl Camera {
                     for x in 0..image_width {
                         let mut color = Vec4::vec(0.0, 0.0, 0.0);
 
-                        for sy in 0..SQRT_SAMPLES_PER_THREAD {
-                            for sx in 0..SQRT_SAMPLES_PER_THREAD {
+                        for sy in 0..sqrt_spt {
+                            for sx in 0..sqrt_spt {
                                 let ray = thread_self_ref.get_ray(x, y, sx, sy, &mut thread_rng);
                                 color += thread_self_ref.ray_color(
                                     &ray,
                                     &thread_world,
                                     &mut lights_pdf,
-                                    MAX_DEPTH,
+                                    max_depth,
                                     &mut thread_rng,
                                 );
                             }
                         }
-                        color /= SAMPLES_PER_PIXEL as f64;
+                        color /= samples_per_pixel as f64;
 
                         thread_buf.set_pixel(x, y, color);
                     }
@@ -272,7 +286,7 @@ impl Camera {
                     pdf: material_pdf,
                 } => {
                     lights_pdf.origin = hit.pos();
-                    let mix_pdf = MixPDF::new(material_pdf.as_ref(), lights_pdf, LIGHT_BIAS);
+                    let mix_pdf = MixPDF::new(material_pdf.as_ref(), lights_pdf, self.light_bias);
 
                     let scattered = Ray::new(hit.pos(), mix_pdf.generate(rng));
                     let pdf = mix_pdf.value(&scattered.dir(), rng);
@@ -306,8 +320,8 @@ impl Camera {
     fn pixel_sample_square(&self, sample_x: usize, sample_y: usize, rng: &mut Pcg64Mcg) -> Vec4 {
         let rx: f64 = rng.sample(Standard);
         let ry: f64 = rng.sample(Standard);
-        let x = (sample_x as f64 + rx) * ISRSPT - 0.5;
-        let y = (sample_y as f64 + ry) * ISRSPT - 0.5;
+        let x = (sample_x as f64 + rx) * self.inv_sqrt_spt - 0.5;
+        let y = (sample_y as f64 + ry) * self.inv_sqrt_spt - 0.5;
 
         self.pixel_delta.0 * x + self.pixel_delta.1 * y
     }

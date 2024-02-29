@@ -2,25 +2,40 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
+use rust_raytracer::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
 use rust_raytracer::material::{LambertianDiffuse, Material};
 use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
 use rust_raytracer::texture::ConstantTexture;
 use rust_raytracer::vec4::Vec4;
 
-use super::Scene;
-
-// Config variables
-const ASPECT_RATIO: f64 = 1.0;
-const OUTPUT_WIDTH: usize = 400;
-const FOCAL_LENGTH: f64 = 35.0;
+use super::{Scene, SceneData};
 
 pub struct TonemapTestScene;
 
 impl Scene for TonemapTestScene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>> {
+    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>> {
+        let scene_defaults = SceneConfig {
+            output_width: Some(400),
+            aspect_ratio: Some(1.0),
+            focal_length: Some(35.0),
+            f_number: None,
+            focus_distance: None,
+            camera_pos: Some(Vec4::point(0.0, 30.0, 15.0)),
+            camera_target: Some(Vec4::point(0.0, 0.0, -0.75)),
+        };
+
+        let scene_config = SceneConfig::merge(
+            &SceneConfig::merge(&DEFAULT_SCENE_CONFIG, &scene_defaults),
+            &config.scene,
+        );
+
+        let config = Config {
+            camera: config.camera,
+            scene: scene_config,
+        };
+
         // Set up camera
-        let mut camera = Camera::new(OUTPUT_WIDTH, ASPECT_RATIO, FOCAL_LENGTH);
-        camera.move_and_look_at(Vec4::point(0.0, 30.0, 15.0), Vec4::point(0.0, 0.0, -0.75));
+        let camera = Camera::new(&config);
 
         // Set up materials
         let color_r_0 = ConstantTexture::from_values(0.1, 0.0, 0.0);

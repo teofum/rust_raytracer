@@ -2,6 +2,7 @@ use std::error::Error;
 use std::sync::Arc;
 
 use rust_raytracer::camera::Camera;
+use rust_raytracer::config::Config;
 use rust_raytracer::object::Hit;
 
 mod cornell_box;
@@ -19,6 +20,8 @@ pub use perlin_noise::PerlinScene;
 mod tonemap_test;
 pub use tonemap_test::TonemapTestScene;
 
+pub type SceneData = (Camera, Arc<dyn Hit>, Arc<dyn Hit>);
+
 pub trait Scene {
-    fn init() -> Result<(Camera, Arc<dyn Hit>, Arc<dyn Hit>), Box<dyn Error>>;
+    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>>;
 }
