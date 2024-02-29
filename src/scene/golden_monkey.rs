@@ -25,7 +25,7 @@ impl Scene for GoldenMonkeyScene {
             aspect_ratio: Some(1.5),
             focal_length: Some(50.0),
             f_number: Some(2.8),
-            focus_distance: Some(10.0),
+            focus_distance: None,
             camera_pos: Some(Vec4::point(5.0, 2.0, 9.0)),
             camera_target: Some(Vec4::point(0.0, 0.5, 0.0)),
         };
