@@ -13,7 +13,7 @@ use super::{Scene, SceneData};
 pub struct EarthScene;
 
 impl Scene for EarthScene {
-    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>> {
+    fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
             aspect_ratio: Some(1.5),
@@ -30,8 +30,8 @@ impl Scene for EarthScene {
         );
 
         let config = Config {
-            camera: config.camera,
             scene: scene_config,
+            ..config
         };
 
         // Set up camera

@@ -51,6 +51,7 @@ pub struct CameraConfig {
 pub struct Config {
     pub scene: SceneConfig,
     pub camera: CameraConfig,
+    pub scene_name: String,
 }
 
 impl Config {
@@ -69,6 +70,8 @@ impl Config {
         let mut samples_per_pixel = 250;
         let mut max_depth = 20;
         let mut light_bias = 0.5;
+
+        let mut scene_name = String::new();
 
         for arg in args.skip(1) {
             if arg.starts_with("-") {
@@ -135,7 +138,7 @@ impl Config {
                     }
                 }
             } else {
-                // TODO: reserved for scene file
+                scene_name = arg;
             }
         }
 
@@ -158,6 +161,7 @@ impl Config {
                 max_depth,
                 light_bias,
             },
+            scene_name,
         }
     }
 }

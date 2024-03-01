@@ -23,5 +23,5 @@ pub use tonemap_test::TonemapTestScene;
 pub type SceneData = (Camera, Arc<dyn Hit>, Arc<dyn Hit>);
 
 pub trait Scene {
-    fn init(config: &Config) -> Result<SceneData, Box<dyn Error>>;
+    fn init(config: Config) -> Result<SceneData, Box<dyn Error>>;
 }

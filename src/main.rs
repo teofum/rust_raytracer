@@ -22,15 +22,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let config = Config::from_args(env::args());
 
     let time = Instant::now();
-    let scene = 0;
+    let scene = &config.scene_name[..];
     let (camera, world, lights) = match scene {
-        1 => EarthScene::init(&config)?,
-        2 => PerlinScene::init(&config)?,
-        3 => LightTestScene::init(&config)?,
-        4 => CornellBoxScene::init(&config)?,
-        5 => CornellSmokeScene::init(&config)?,
-        6 => TonemapTestScene::init(&config)?,
-        _ => GoldenMonkeyScene::init(&config)?,
+        "golden_monkey" | "" => GoldenMonkeyScene::init(config)?,
+        "earth" => EarthScene::init(config)?,
+        "perlin" => PerlinScene::init(config)?,
+        "light_test" => LightTestScene::init(config)?,
+        "cornell" => CornellBoxScene::init(config)?,
+        "cornell_smoke" => CornellSmokeScene::init(config)?,
+        "tonemap_test" => TonemapTestScene::init(config)?,
+        _ => panic!("Invalid scene name!"), // TODO support loading scenes from files
     };
 
     let elapsed = time.elapsed();
