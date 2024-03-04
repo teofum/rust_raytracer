@@ -190,4 +190,125 @@ A material that scatters light equally in all directions. Meant for constant-den
 
 ## Objects
 
-// TODO
+### Sphere
+
+**Type:** `sphere`
+
+```
+sphere <origin> <radius> <material>
+```
+
+A sphere primitive defined by an origin (center) point and a radius.
+
+### Plane
+
+**Type:** `plane`
+
+```
+plane <origin> <u> <v> <material>
+```
+
+A plane primitive defined by an origin (center) point and two vectors `<u>` and `<v>` from the center to the sides. The vectors must be perpendicular.
+
+### Box
+
+**Type:** `box`
+
+```
+box <origin> <size> <material>
+```
+
+An axis-aligned box primitive defined by an origin (center) point and a size with x, y and z components.
+
+### Mesh
+
+**Type:** `mesh`
+
+```
+mesh <file_path> <material>
+```
+
+A triangle mesh loaded from a .obj file. `<file_path>` is the path to a .obj file, relative to the current execution directory.
+
+### Transform
+
+**Type:** `transform`
+
+```
+transform <object> <...transform_prop>
+```
+
+A container that allows applying a transform matrix to an object. `<...transform_prop>` is a list of key-value pairs with any non-null transformations applied:
+
+- `t=<vec>`: Translation
+- `s=<vec|f64>`: Scale, may be a vector (non-uniform) or scalar (uniform)
+- `rx=<f64>`: Rotation along the X axis
+- `ry=<f64>`: Rotation along the Y axis
+- `rz=<f64>`: Rotation along the Z axis
+
+Two additional parameters are used to determine the order of transforms:
+
+- `order=<r|s|t>{3}`: Order of operations, where `r`, `s` and `t` are rotation, scale and translation respectively. Defaults to `srt`.
+- `rot_order=<x|y|z>{3}`: Order of rotation, defaults to `yxz`.
+
+### Object list
+
+**Type:** `list`
+
+```
+list <...object>
+```
+
+A container for a set of objects. Takes a list of objects as parameter.
+
+### Bounding Volume Hierarchy
+
+**Type:** `bvh`
+
+```
+bvh <...object>
+```
+
+A container for a set of objects with a bounding-volume hierarchy, used to improve performance with large lists of disjoint objects. Takes a list of objects as parameter.
+
+### Sky
+
+**Type:** `sky`
+
+```
+sky <emission_map>
+```
+
+A utility object for diffuse sky lighting. Rendered as a sphere of infinite radius. As an emissive-only object, it doesn't allow specifying a material and instead takes a texture with a vector output type as the emission map for an implicit emissive material.
+
+### Sun
+
+**Type:** `sun`
+
+```
+sun <direction> <emission_map>
+```
+
+A utility object for ideal directional lighting. Rendered as a point of light at infinity. As an emissive-only object, it doesn't allow specifying a material and instead takes a texture with a vector output type (usually a constant, as it doesn't report UVs) as the emission map for an implicit emissive material.
+
+### Volume
+
+**Type:** `volume`
+
+```
+volume <boundary> <material> <density>
+```
+
+A constant-density volume defined by some boundary object. Only objects with a convex shape are supported.
+
+## Noise generators
+
+### Perlin noise
+
+**Type:** `perlin`
+
+```
+perlin
+```
+
+A 3D perlin noise generator.
