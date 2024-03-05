@@ -8,6 +8,7 @@ use crate::vec4::Vec4;
 
 use super::{Material, ScatterResult};
 
+#[derive(Debug)]
 pub struct Dielectric {
     ior: f64,
 }

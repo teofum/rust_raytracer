@@ -4,6 +4,7 @@ use image::{io::Reader as ImageReader, Pixel};
 
 use crate::vec4::{Color, Vec4};
 
+#[derive(Debug)]
 pub struct Buffer {
     width: usize,
     height: usize,

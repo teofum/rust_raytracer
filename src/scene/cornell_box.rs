@@ -90,11 +90,12 @@ impl Scene for CornellBoxScene {
             Arc::clone(&mat_red),
         );
 
-        let light = Plane::new(
+        let mut light = Plane::new(
             Vec4::point(277.5, 554.9, 277.5),
             (Vec4::vec(-65.0, 0.0, 0.0), Vec4::vec(0.0, 0.0, -52.5)),
             Arc::clone(&mat_light),
         );
+        light.render_backface = true;
         let light: Arc<dyn Hit> = Arc::new(light);
 
         let box1 = make_box(
@@ -117,7 +118,7 @@ impl Scene for CornellBoxScene {
         // box2.rotate_y(deg_to_rad(-15.0));
         // box2.translate(130.0, 0.0, 65.0);
 
-        let glass_ball = Sphere::new(Vec4::point(212.5, 82.5, 147.5), 82.5, mat_glass);
+        let glass_ball = Sphere::new(Vec4::point(212.5, 82.51, 147.5), 82.5, mat_glass);
         let glass_ball: Arc<dyn Hit> = Arc::new(glass_ball);
 
         let mut world = ObjectList::new();

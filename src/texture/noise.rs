@@ -5,6 +5,7 @@ use super::Sampler;
 
 pub type FloatNoise = Box<dyn Noise3D<Output = f64>>;
 
+#[derive(Debug)]
 pub struct NoiseSolidTexture {
     noise: FloatNoise,
 

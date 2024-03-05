@@ -10,6 +10,7 @@ use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
 
+#[derive(Debug)]
 pub struct LambertianDiffuse {
     albedo: Arc<dyn Sampler<Output = Color>>,
 }

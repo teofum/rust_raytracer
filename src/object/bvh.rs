@@ -22,6 +22,7 @@ pub const AXES_XZ: [bool; 3] = [true, false, true];
 pub const AXES_YZ: [bool; 3] = [false, true, true];
 pub const AXES_ALL: [bool; 3] = [true, true, true];
 
+#[derive(Debug)]
 pub struct BoundingVolumeHierarchyNode {
     children: (Arc<dyn Hit>, Arc<dyn Hit>),
     bounds: AxisAlignedBoundingBox,

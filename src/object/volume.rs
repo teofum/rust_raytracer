@@ -11,6 +11,7 @@ use crate::{interval::Interval, vec4::Vec4};
 
 use super::{Hit, HitRecord};
 
+#[derive(Debug)]
 pub struct Volume {
     boundary: Box<dyn Hit>,
     material: Arc<dyn Material>,

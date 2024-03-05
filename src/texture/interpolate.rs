@@ -1,9 +1,13 @@
-use std::ops::{Add, Mul};
+use std::{
+    fmt::Debug,
+    ops::{Add, Mul},
+};
 
 use crate::vec4::Point4;
 
 use super::{Sampler, TexturePointer};
 
+#[derive(Debug)]
 pub struct Interpolate<T> {
     start: TexturePointer<T>,
     end: TexturePointer<T>,
@@ -18,7 +22,7 @@ impl<T> Interpolate<T> {
 
 impl<T> Sampler for Interpolate<T>
 where
-    T: Send + Sync + Copy + Mul<f64, Output = T> + Add<T, Output = T>,
+    T: Send + Sync + Copy + Mul<f64, Output = T> + Add<T, Output = T> + Debug,
 {
     type Output = T;
 

@@ -7,6 +7,7 @@ use super::Noise3D;
 
 const POINT_COUNT: usize = 256;
 
+#[derive(Debug)]
 pub struct PerlinNoise3D {
     random_vec: [Vec4; POINT_COUNT],
     perm_x: [usize; POINT_COUNT],

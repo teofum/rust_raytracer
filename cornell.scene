@@ -1,0 +1,27 @@
+# Materials and textures
+mat_white: lambertian (constant 0.73,0.73,0.73)
+mat_green: lambertian (constant 0.12,0.45,0.15)
+mat_red:   lambertian (constant 0.65,0.05,0.05)
+
+mat_light: emissive (constant 15,15,15)
+mat_glass: glass 1.5
+
+checker:   checker (constant 0) (constant 1) 0.25
+mat_checker: glossy (constant 0.95,0.95,0.95) $checker 1.5
+
+# Objects
+floor:      plane 277.5,0,277.5 277.5,0,0 0,0,-277.5 $mat_checker
+ceiling:    plane 277.5,555,277.5 277.5,0,0 0,0,277.5 $mat_white
+back_wall:  plane 277.5,277.5,555 0,277.5,0 277.5,0,0 $mat_white
+left_wall:  plane 555,277.5,277.5 0,277.5,0 0,0,-277.5 $mat_green
+right_wall: plane 0,277.5,277.5 0,277.5,0 0,0,277.5 $mat_red
+
+light: plane 277.5,554.9,277.5 -65,0,0 0,0,-52.5 $mat_light backface
+
+box: box 0,0,0 165,330,165 $mat_white
+box: transform $box t=82.5,165,82.5 ry=18 t=265,0,295
+ball: sphere 212.5,82.51,147.5 82.5 $mat_glass
+
+# World & Lights
+world: list $floor $ceiling $back_wall $left_wall $right_wall $light $box $ball
+lights: list $light $ball

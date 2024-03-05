@@ -10,6 +10,7 @@ use crate::{interval::Interval, material::Material};
 
 use super::{Hit, HitRecord};
 
+#[derive(Debug)]
 pub struct Plane {
     pub material: Arc<dyn Material>,
     pub render_backface: bool,

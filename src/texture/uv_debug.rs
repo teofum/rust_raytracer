@@ -2,6 +2,7 @@ use crate::vec4::{Color, Point4, Vec4};
 
 use super::Sampler;
 
+#[derive(Debug)]
 pub struct UvDebugTexture;
 
 impl Sampler for UvDebugTexture {

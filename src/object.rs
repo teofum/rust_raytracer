@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::AxisAlignedBoundingBox;
@@ -88,7 +90,7 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub trait Hit: Send + Sync {
+pub trait Hit: Send + Sync + Debug {
     fn test(&self, ray: &Ray, t: Interval, rng: &mut Pcg64Mcg) -> Option<HitRecord>;
 
     fn get_bounding_box(&self) -> AxisAlignedBoundingBox;

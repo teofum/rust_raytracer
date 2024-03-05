@@ -1,9 +1,11 @@
+use std::fmt::Debug;
+
 use crate::vec4::Point4;
 
 pub mod perlin;
 pub use perlin::PerlinNoise3D;
 
-pub trait Noise3D: Sync + Send {
+pub trait Noise3D: Sync + Send + Debug {
     type Output;
 
     fn sample(&self, p: &Point4) -> Self::Output;

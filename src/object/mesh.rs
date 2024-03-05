@@ -12,13 +12,14 @@ mod octree;
 use octree::{OctreeNode, OctreeNodeData};
 use rand_pcg::Pcg64Mcg;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Triangle {
     pub vert_indices: [usize; 3],
     pub normal_indices: [usize; 3],
     pub uv_indices: Option<[usize; 3]>,
 }
 
+#[derive(Debug)]
 pub struct TriangleMesh {
     pub material: Arc<dyn Material>,
     pub flat_shading: bool,

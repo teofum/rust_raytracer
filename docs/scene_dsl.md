@@ -246,11 +246,6 @@ A container that allows applying a transform matrix to an object. `<...transform
 - `ry=<f64>`: Rotation along the Y axis
 - `rz=<f64>`: Rotation along the Z axis
 
-Two additional parameters are used to determine the order of transforms:
-
-- `order=<r|s|t>{3}`: Order of operations, where `r`, `s` and `t` are rotation, scale and translation respectively. Defaults to `srt`.
-- `rot_order=<x|y|z>{3}`: Order of rotation, defaults to `yxz`.
-
 ### Object list
 
 **Type:** `list`

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{fmt::Debug, sync::Arc};
 
 use crate::vec4::Point4;
 
@@ -16,7 +16,7 @@ pub use interpolate::Interpolate;
 pub use noise::NoiseSolidTexture;
 pub use uv_debug::UvDebugTexture;
 
-pub trait Sampler: Send + Sync {
+pub trait Sampler: Send + Sync + Debug {
     type Output: Send + Sync + Copy;
 
     fn sample(&self, uv: (f64, f64), p: &Point4) -> Self::Output;

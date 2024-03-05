@@ -1,7 +1,10 @@
+use std::fmt::Debug;
+
 use crate::vec4::{Color, Point4, Vec4};
 
 use super::Sampler;
 
+#[derive(Debug)]
 pub struct ConstantTexture<T> {
     value: T,
 }
@@ -20,7 +23,7 @@ impl ConstantTexture<Color> {
 
 impl<T> Sampler for ConstantTexture<T>
 where
-    T: Send + Sync + Copy,
+    T: Send + Sync + Copy + Debug,
 {
     type Output = T;
 

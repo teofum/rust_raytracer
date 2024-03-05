@@ -513,7 +513,6 @@ impl<'a> SceneLoader<'a> {
             let origin = Vec4::point(x, y, z);
             let radius = radius.parse::<f64>()?;
 
-            // TODO get material
             let material = self.get_material(&mat_expr)?;
 
             let sphere = Sphere::new(origin, radius, material);
@@ -530,14 +529,20 @@ impl<'a> SceneLoader<'a> {
             let [x, y, z] = parse_vec(&origin)?;
             let origin = Vec4::point(x, y, z);
             let [ux, uy, uz] = parse_vec(&u)?;
-            let u = Vec4::point(ux, uy, uz);
+            let u = Vec4::vec(ux, uy, uz);
             let [vx, vy, vz] = parse_vec(&v)?;
-            let v = Vec4::point(vx, vy, vz);
+            let v = Vec4::vec(vx, vy, vz);
 
-            // TODO get material
             let material = self.get_material(&mat_expr)?;
 
-            let plane = Plane::new(origin, (u, v), material);
+            let mut plane = Plane::new(origin, (u, v), material);
+
+            if let Some(p) = params.next() {
+                if p == "backface" {
+                    plane.render_backface = true;
+                }
+            }
+
             Ok(Entity::Object(Arc::new(plane)))
         } else {
             Err(Box::new(ParseError::new("Plane missing parameters")))
@@ -553,7 +558,6 @@ impl<'a> SceneLoader<'a> {
             let [sx, sy, sz] = parse_vec(&size)?;
             let size = Vec4::point(sx, sy, sz);
 
-            // TODO get material
             let material = self.get_material(&mat_expr)?;
 
             let box_obj = obj_box::make_box(origin, size, material);
@@ -582,63 +586,35 @@ impl<'a> SceneLoader<'a> {
             let object = self.get_object(&obj_expr)?;
             let mut transform = Transform::new(object);
 
-            let mut order = "srt".to_owned();
-            let mut rot_order = "yxz".to_owned();
-
-            let mut translation = [0.0; 3];
-            let mut rotation = [0.0; 3];
-            let mut scale = [1.0; 3];
-
             while let Some(param) = params.next() {
                 for (_, [key, value]) in param_regex.captures_iter(&param).map(|c| c.extract()) {
                     match key {
                         "t" => {
                             let vec = parse_vec(value)?;
-                            translation = vec;
+                            transform.translate(vec[0], vec[1], vec[2]);
                         }
                         "s" => {
                             if let Ok(vec) = parse_vec(value) {
-                                scale = vec;
+                                transform.scale(vec[0], vec[1], vec[2]);
                             } else {
-                                let uniform = value.parse::<f64>()?;
-                                scale = [uniform; 3];
+                                let s = value.parse::<f64>()?;
+                                transform.scale_uniform(s);
                             }
                         }
                         "rx" => {
                             let deg = value.parse::<f64>()?;
-                            rotation[0] = deg_to_rad(deg);
+                            transform.rotate_x(deg_to_rad(deg));
                         }
                         "ry" => {
                             let deg = value.parse::<f64>()?;
-                            rotation[1] = deg_to_rad(deg);
+                            transform.rotate_y(deg_to_rad(deg));
                         }
                         "rz" => {
                             let deg = value.parse::<f64>()?;
-                            rotation[2] = deg_to_rad(deg);
+                            transform.rotate_z(deg_to_rad(deg));
                         }
-                        // TODO validate values
-                        "order" => order = value.to_owned(),
-                        "rot_order" => rot_order = value.to_owned(),
                         _ => (),
                     }
-                }
-            }
-
-            for i in order.chars() {
-                match i {
-                    'r' => {
-                        for axis in rot_order.chars() {
-                            match axis {
-                                'x' => transform.rotate_x(rotation[0]),
-                                'y' => transform.rotate_y(rotation[1]),
-                                'z' => transform.rotate_z(rotation[2]),
-                                _ => (),
-                            }
-                        }
-                    }
-                    's' => transform.scale(scale[0], scale[1], scale[2]),
-                    't' => transform.translate(translation[0], translation[1], translation[2]),
-                    _ => (),
                 }
             }
 

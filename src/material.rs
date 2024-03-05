@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use rand_pcg::Pcg64Mcg;
 
 use crate::object::HitRecord;
@@ -32,7 +34,7 @@ pub enum ScatterResult {
     Emissive,
 }
 
-pub trait Material: Send + Sync {
+pub trait Material: Send + Sync + Debug {
     /// Scatter a ray according to material properties.
     fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult;
 

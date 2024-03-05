@@ -12,6 +12,7 @@ use crate::vec4::{Color, Point4, Vec4};
 
 use super::{Hit, HitRecord};
 
+#[derive(Debug)]
 pub struct Sky {
     material: Emissive,
 }

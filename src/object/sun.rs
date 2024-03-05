@@ -13,6 +13,7 @@ use super::{Hit, HitRecord};
 
 const THETA_MAX: f64 = 0.001;
 
+#[derive(Debug)]
 pub struct Sun {
     direction: Vec4,
     material: Emissive,

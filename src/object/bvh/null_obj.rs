@@ -9,6 +9,7 @@ use crate::vec4::{Point4, Vec4};
 
 /// Hittable object that can never be hit.
 /// Used to fill out a BVH with a songle node.
+#[derive(Debug)]
 pub struct NullObject();
 
 impl Hit for NullObject {

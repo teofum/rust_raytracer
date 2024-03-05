@@ -5,11 +5,13 @@ use crate::vec4::{Color, Point4};
 
 use super::Sampler;
 
+#[derive(Debug)]
 pub enum TextureRepeat {
     Clamp,
     Repeat,
 }
 
+#[derive(Debug)]
 pub struct ImageTexture {
     buffer: Buffer,
     pub repeat: TextureRepeat,

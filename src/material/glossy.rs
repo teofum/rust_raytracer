@@ -12,6 +12,7 @@ use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
 
+#[derive(Debug)]
 pub struct Glossy {
     albedo: Arc<dyn Sampler<Output = Color>>,
     roughness: Arc<dyn Sampler<Output = f64>>,

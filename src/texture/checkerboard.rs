@@ -1,7 +1,10 @@
+use std::fmt::Debug;
+
 use crate::vec4::Point4;
 
 use super::{Sampler, TexturePointer};
 
+#[derive(Debug)]
 pub struct CheckerboardTexture<T> {
     even_squares: TexturePointer<T>,
     odd_squares: TexturePointer<T>,
@@ -24,7 +27,7 @@ impl<T> CheckerboardTexture<T> {
 
 impl<T> Sampler for CheckerboardTexture<T>
 where
-    T: Send + Sync + Copy,
+    T: Send + Sync + Copy + Debug,
 {
     type Output = T;
 
@@ -41,6 +44,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub struct CheckerboardSolidTexture<T> {
     even_volumes: TexturePointer<T>,
     odd_volumes: TexturePointer<T>,
@@ -63,7 +67,7 @@ impl<T> CheckerboardSolidTexture<T> {
 
 impl<T> Sampler for CheckerboardSolidTexture<T>
 where
-    T: Send + Sync + Copy,
+    T: Send + Sync + Copy + Debug,
 {
     type Output = T;
 

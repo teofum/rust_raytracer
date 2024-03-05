@@ -10,6 +10,7 @@ use crate::vec4::Color;
 
 use super::{Material, ScatterResult};
 
+#[derive(Debug)]
 pub struct Isotropic {
     albedo: Arc<dyn Sampler<Output = Color>>,
 }

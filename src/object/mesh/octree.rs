@@ -5,11 +5,13 @@ use super::Triangle;
 
 const MAX_TRIS_PER_LEAF: usize = 50;
 
+#[derive(Debug)]
 pub enum OctreeNodeData {
     Leaf(Vec<usize>),
     Branch([Box<OctreeNode>; 8]),
 }
 
+#[derive(Debug)]
 pub struct OctreeNode {
     pub data: OctreeNodeData,
     pub bounding_box: AxisAlignedBoundingBox,
