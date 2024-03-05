@@ -1,13 +1,13 @@
 use std::error::Error;
 use std::sync::Arc;
 
-use rust_raytracer::camera::Camera;
-use rust_raytracer::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
-use rust_raytracer::material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material};
-use rust_raytracer::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
-use rust_raytracer::texture::{CheckerboardTexture, ConstantTexture};
-use rust_raytracer::utils::deg_to_rad;
-use rust_raytracer::vec4::Vec4;
+use crate::camera::Camera;
+use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
+use crate::material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material};
+use crate::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
+use crate::texture::{CheckerboardTexture, ConstantTexture};
+use crate::utils::deg_to_rad;
+use crate::vec4::Vec4;
 
 use super::{Scene, SceneData};
 

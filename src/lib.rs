@@ -13,6 +13,7 @@ pub mod output;
 pub mod pdf;
 pub mod ppm;
 pub mod ray;
+pub mod scene;
 pub mod texture;
 pub mod tonemapping;
 pub mod utils;

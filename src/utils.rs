@@ -1,4 +1,4 @@
-use std::f64::consts::PI;
+use std::{error::Error, f64::consts::PI, fmt::Display};
 
 use crate::{mat4::Mat4, vec4::Vec4};
 
@@ -34,3 +34,37 @@ pub fn reflectance(cos_theta: f64, ior_ratio: f64) -> f64 {
 
     r0 + (1.0 - r0) * (1.0 - cos_theta).powi(5)
 }
+
+/// Parse a 3d vector from a string of format x,y,z, can panic
+pub fn parse_vec(str: &str) -> Result<[f64; 3], ParseError> {
+    let components: Vec<_> = str
+        .split(",")
+        .map(|x| x.parse::<f64>().expect("Vector component must be a number"))
+        .collect();
+    if components.len() != 3 {
+        return Err(ParseError::new("Vector must have three components"));
+    }
+
+    Ok([components[0], components[1], components[2]])
+}
+
+#[derive(Debug)]
+pub struct ParseError {
+    message: String,
+}
+
+impl ParseError {
+    pub fn new(message: &str) -> Self {
+        ParseError {
+            message: message.to_owned(),
+        }
+    }
+}
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ParseError: {}", self.message)
+    }
+}
+
+impl Error for ParseError {}

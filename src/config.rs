@@ -2,7 +2,7 @@ use std::env::Args;
 
 use regex::Regex;
 
-use crate::vec4::Vec4;
+use crate::{utils::parse_vec, vec4::Vec4};
 
 #[derive(Debug)]
 pub struct SceneConfig {
@@ -104,11 +104,11 @@ impl Config {
                             );
                         }
                         "c" | "-camera-position" => {
-                            let [x, y, z] = parse_vec(value);
+                            let [x, y, z] = parse_vec(value).unwrap();
                             camera_pos = Some(Vec4::point(x, y, z));
                         }
                         "l" | "-look-at" => {
-                            let [x, y, z] = parse_vec(value);
+                            let [x, y, z] = parse_vec(value).unwrap();
                             camera_target = Some(Vec4::point(x, y, z));
                         }
                         "t" | "-threads" => {
@@ -164,14 +164,4 @@ impl Config {
             scene_name,
         }
     }
-}
-
-fn parse_vec(str: &str) -> [f64; 3] {
-    let components: Vec<_> = str
-        .split(",")
-        .map(|x| x.parse::<f64>().expect("Vector component must be a number"))
-        .collect();
-    assert!(components.len() == 3, "Vector must have three components");
-
-    [components[0], components[1], components[2]]
 }

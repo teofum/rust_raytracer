@@ -1,10 +1,6 @@
 use std::error::Error;
 use std::sync::Arc;
 
-use rust_raytracer::camera::Camera;
-use rust_raytracer::config::Config;
-use rust_raytracer::object::Hit;
-
 mod cornell_box;
 pub use cornell_box::CornellBoxScene;
 mod cornell_smoke;
@@ -19,6 +15,10 @@ mod perlin_noise;
 pub use perlin_noise::PerlinScene;
 mod tonemap_test;
 pub use tonemap_test::TonemapTestScene;
+
+use crate::camera::Camera;
+use crate::config::Config;
+use crate::object::Hit;
 
 pub type SceneData = (Camera, Arc<dyn Hit>, Arc<dyn Hit>);
 

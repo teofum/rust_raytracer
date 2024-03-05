@@ -1,20 +1,21 @@
 use std::env;
 use std::error::Error;
+use std::fs::File;
 use std::time::Instant;
 
 use rust_raytracer::config::Config;
+use rust_raytracer::loaders::scene::SceneLoader;
 use rust_raytracer::output::Writer;
 
-mod scene;
+use rust_raytracer::scene::CornellBoxScene;
+use rust_raytracer::scene::CornellSmokeScene;
+use rust_raytracer::scene::EarthScene;
+use rust_raytracer::scene::GoldenMonkeyScene;
+use rust_raytracer::scene::LightTestScene;
+use rust_raytracer::scene::PerlinScene;
+use rust_raytracer::scene::Scene;
+use rust_raytracer::scene::TonemapTestScene;
 use rust_raytracer::tonemapping;
-use scene::CornellBoxScene;
-use scene::CornellSmokeScene;
-use scene::EarthScene;
-use scene::GoldenMonkeyScene;
-use scene::LightTestScene;
-use scene::PerlinScene;
-use scene::Scene;
-use scene::TonemapTestScene;
 
 const OUT_FILENAME: &str = "out.png";
 
@@ -31,7 +32,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         "cornell" => CornellBoxScene::init(config)?,
         "cornell_smoke" => CornellSmokeScene::init(config)?,
         "tonemap_test" => TonemapTestScene::init(config)?,
-        _ => panic!("Invalid scene name!"), // TODO support loading scenes from files
+        file_path => {
+            let scene_file = File::open(file_path)?;
+            let loader = SceneLoader::new();
+            loader.load(&scene_file, config)?
+        }
     };
 
     let elapsed = time.elapsed();

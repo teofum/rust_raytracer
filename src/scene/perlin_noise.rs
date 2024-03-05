@@ -3,17 +3,17 @@ use std::f64::consts::PI;
 use std::fs::File;
 use std::sync::Arc;
 
+use crate::camera::Camera;
+use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
+use crate::loaders::obj::load_mesh_from_file;
+use crate::material::{LambertianDiffuse, Material, Metal};
+use crate::noise::PerlinNoise3D;
+use crate::object::transform::Transform;
+use crate::object::{Hit, ObjectList, Plane, Sky, Sphere};
+use crate::texture::{ConstantTexture, Interpolate, NoiseSolidTexture};
+use crate::vec4::Vec4;
 use rand::SeedableRng;
 use rand_pcg::Pcg64Mcg;
-use rust_raytracer::camera::Camera;
-use rust_raytracer::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
-use rust_raytracer::loaders::obj::load_mesh_from_file;
-use rust_raytracer::material::{LambertianDiffuse, Material, Metal};
-use rust_raytracer::noise::PerlinNoise3D;
-use rust_raytracer::object::transform::Transform;
-use rust_raytracer::object::{Hit, ObjectList, Plane, Sky, Sphere};
-use rust_raytracer::texture::{ConstantTexture, Interpolate, NoiseSolidTexture};
-use rust_raytracer::vec4::Vec4;
 
 use super::{Scene, SceneData};
 

@@ -1,0 +1,5 @@
+floor: plane 0,-1,0 -1,0,0 0,0,1 $material
+
+# I am a comment
+world: sphere 0,0,0 0.2 (emissive (constant 1,0,0.2))
+lights: (list)
