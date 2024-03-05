@@ -6,12 +6,13 @@ use std::{
     sync::Arc,
 };
 
+use rand_pcg::Pcg64Mcg;
 use regex::Regex;
 
 use crate::{
     camera::Camera,
     material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material, Metal},
-    object::{obj_box, Plane, Sky, Sphere, Sun, Transform},
+    object::{obj_box, BoundingVolumeHierarchyNode, Plane, Sky, Sphere, Sun, Transform},
     texture::{
         CheckerboardSolidTexture, CheckerboardTexture, ConstantTexture, ImageTexture, Interpolate,
         Sampler, TexturePointer, UvDebugTexture,
@@ -42,20 +43,24 @@ enum Texture {
 
 type ParseResult = Result<Entity, Box<dyn Error>>;
 
-pub struct SceneLoader {
+pub struct SceneLoader<'a> {
     objects: HashMap<String, Arc<dyn Hit>>,
     materials: HashMap<String, Arc<dyn Material>>,
     color_textures: HashMap<String, Arc<dyn Sampler<Output = Vec4>>>,
     float_textures: HashMap<String, Arc<dyn Sampler<Output = f64>>>,
+
+    rng: &'a mut Pcg64Mcg,
 }
 
-impl SceneLoader {
-    pub fn new() -> Self {
+impl<'a> SceneLoader<'a> {
+    pub fn new(rng: &'a mut Pcg64Mcg) -> Self {
         SceneLoader {
             objects: HashMap::new(),
             materials: HashMap::new(),
             color_textures: HashMap::new(),
             float_textures: HashMap::new(),
+
+            rng,
         }
     }
 
@@ -152,7 +157,7 @@ impl SceneLoader {
         params
     }
 
-    fn parse_declaration(&self, decl: &str) -> ParseResult {
+    fn parse_declaration(&mut self, decl: &str) -> ParseResult {
         let mut params = self.parse_params(decl).into_iter();
 
         if let Some(item_type) = params.next() {
@@ -180,7 +185,7 @@ impl SceneLoader {
                 "mesh" => self.create_mesh(&mut params),
                 "transform" => self.create_transform(&mut params),
                 "list" => self.create_list(&mut params),
-                "bvh" => Err(Box::new(ParseError::new("Not implemented"))),
+                "bvh" => self.create_bvh(&mut params),
                 "sky" => self.create_sky(&mut params),
                 "sun" => self.create_sun(&mut params),
                 "volume" => Err(Box::new(ParseError::new("Not implemented"))),
@@ -194,7 +199,7 @@ impl SceneLoader {
     }
 
     /// Get a color (Vec4) texture from either a reference or inline declaration
-    fn get_color_texture(&self, expr: &str) -> Result<TexturePointer<Vec4>, Box<dyn Error>> {
+    fn get_color_texture(&mut self, expr: &str) -> Result<TexturePointer<Vec4>, Box<dyn Error>> {
         let is_reference = expr.starts_with('$');
         let is_inline = expr.starts_with('(') && expr.ends_with(')');
 
@@ -224,7 +229,7 @@ impl SceneLoader {
     }
 
     /// Get a float texture from either a reference or inline declaration
-    fn get_float_texture(&self, expr: &str) -> Result<TexturePointer<f64>, Box<dyn Error>> {
+    fn get_float_texture(&mut self, expr: &str) -> Result<TexturePointer<f64>, Box<dyn Error>> {
         let is_reference = expr.starts_with('$');
         let is_inline = expr.starts_with('(') && expr.ends_with(')');
 
@@ -253,7 +258,7 @@ impl SceneLoader {
         }
     }
 
-    fn get_texture(&self, expr: &str) -> Result<Texture, Box<dyn Error>> {
+    fn get_texture(&mut self, expr: &str) -> Result<Texture, Box<dyn Error>> {
         // First try to get a vec texture
         match self.get_color_texture(expr) {
             Ok(tex) => Ok(Texture::Color(tex)),
@@ -266,7 +271,7 @@ impl SceneLoader {
     }
 
     /// Get a material from either a reference or inline declaration
-    fn get_material(&self, expr: &str) -> Result<Arc<dyn Material>, Box<dyn Error>> {
+    fn get_material(&mut self, expr: &str) -> Result<Arc<dyn Material>, Box<dyn Error>> {
         let is_reference = expr.starts_with('$');
         let is_inline = expr.starts_with('(') && expr.ends_with(')');
 
@@ -296,7 +301,7 @@ impl SceneLoader {
     }
 
     /// Get an object from either a reference or inline declaration
-    fn get_object(&self, expr: &str) -> Result<Arc<dyn Hit>, Box<dyn Error>> {
+    fn get_object(&mut self, expr: &str) -> Result<Arc<dyn Hit>, Box<dyn Error>> {
         let is_reference = expr.starts_with('$');
         let is_inline = expr.starts_with('(') && expr.ends_with(')');
 
@@ -353,7 +358,7 @@ impl SceneLoader {
     }
 
     fn create_checker_tex(
-        &self,
+        &mut self,
         params: &mut dyn Iterator<Item = String>,
         solid: bool,
     ) -> ParseResult {
@@ -390,7 +395,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_lerp_tex(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_lerp_tex(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(tex1_expr), Some(tex2_expr), Some(t_expr)) =
             (params.next(), params.next(), params.next())
         {
@@ -431,7 +436,7 @@ impl SceneLoader {
     // Materials
     // =========================================================================
 
-    fn create_lambertian(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_lambertian(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let Some(albedo_expr) = params.next() {
             let albedo = self.get_color_texture(&albedo_expr)?;
             let material = LambertianDiffuse::new(albedo);
@@ -443,7 +448,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_metal(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_metal(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(albedo_expr), Some(rough_expr)) = (params.next(), params.next()) {
             let albedo = self.get_color_texture(&albedo_expr)?;
             let roughness = self.get_float_texture(&rough_expr)?;
@@ -468,7 +473,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_glossy(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_glossy(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(albedo_expr), Some(rough_expr), Some(ior)) =
             (params.next(), params.next(), params.next())
         {
@@ -484,7 +489,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_emissive(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_emissive(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let Some(expr) = params.next() {
             let texture = self.get_color_texture(&expr)?;
             let material = Emissive::new(texture);
@@ -500,7 +505,7 @@ impl SceneLoader {
     // Objects
     // =========================================================================
 
-    fn create_sphere(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_sphere(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(origin), Some(radius), Some(mat_expr)) =
             (params.next(), params.next(), params.next())
         {
@@ -518,7 +523,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_plane(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_plane(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(origin), Some(u), Some(v), Some(mat_expr)) =
             (params.next(), params.next(), params.next(), params.next())
         {
@@ -539,7 +544,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_box(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_box(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(origin), Some(size), Some(mat_expr)) =
             (params.next(), params.next(), params.next())
         {
@@ -558,7 +563,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_mesh(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_mesh(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(file_path), Some(mat_expr)) = (params.next(), params.next()) {
             let file = File::open(file_path)?;
             let material = self.get_material(&mat_expr)?;
@@ -570,7 +575,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_transform(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_transform(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         let param_regex = Regex::new(r"^([^=\s]+)=([^=\s]+)$").unwrap();
 
         if let Some(obj_expr) = params.next() {
@@ -643,7 +648,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_list(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_list(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         let mut list = ObjectList::new();
 
         while let Some(obj_expr) = params.next() {
@@ -654,7 +659,25 @@ impl SceneLoader {
         Ok(Entity::Object(Arc::new(list)))
     }
 
-    fn create_sky(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_bvh(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(axes) = params.next() {
+            let axes = [axes.contains('x'), axes.contains('y'), axes.contains('z')];
+            let mut objs = Vec::new();
+
+            while let Some(obj_expr) = params.next() {
+                let obj = self.get_object(&obj_expr)?;
+                objs.push(obj);
+            }
+
+            let bvh = BoundingVolumeHierarchyNode::from(objs, axes, self.rng);
+
+            Ok(Entity::Object(Arc::new(bvh)))
+        } else {
+            Err(Box::new(ParseError::new("BVH missing parameters")))
+        }
+    }
+
+    fn create_sky(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let Some(tex_expr) = params.next() {
             let texture = self.get_color_texture(&tex_expr)?;
             let sky = Sky::new(texture);
@@ -665,7 +688,7 @@ impl SceneLoader {
         }
     }
 
-    fn create_sun(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+    fn create_sun(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(dir), Some(tex_expr)) = (params.next(), params.next()) {
             let [x, y, z] = parse_vec(&dir)?;
             let dir = Vec4::point(x, y, z);

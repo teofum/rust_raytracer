@@ -80,7 +80,7 @@ impl Scene for GoldenMonkeyScene {
         // Random spheres
         let mut rng = Pcg64Mcg::from_rng(rand::thread_rng()).unwrap();
 
-        let mut random_spheres: Vec<Box<dyn Hit>> = Vec::with_capacity(21);
+        let mut random_spheres: Vec<Arc<dyn Hit>> = Vec::with_capacity(21);
         for i in -10..11 {
             for j in -10..11 {
                 let (x, z) = (i as f64, j as f64);
@@ -105,12 +105,12 @@ impl Scene for GoldenMonkeyScene {
                     ));
 
                     let sphere = Sphere::new(center, 0.2, material);
-                    random_spheres.push(Box::new(sphere));
+                    random_spheres.push(Arc::new(sphere));
                 } else {
                     let sphere = Sphere::new(center, 0.2, Arc::clone(&mat_glass));
                     let sphere_in = Sphere::new(center, -0.18, Arc::clone(&mat_glass));
-                    random_spheres.push(Box::new(sphere));
-                    random_spheres.push(Box::new(sphere_in));
+                    random_spheres.push(Arc::new(sphere));
+                    random_spheres.push(Arc::new(sphere_in));
                 }
             }
         }

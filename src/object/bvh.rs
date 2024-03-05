@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
@@ -21,18 +23,18 @@ pub const AXES_YZ: [bool; 3] = [false, true, true];
 pub const AXES_ALL: [bool; 3] = [true, true, true];
 
 pub struct BoundingVolumeHierarchyNode {
-    children: (Box<dyn Hit>, Box<dyn Hit>),
+    children: (Arc<dyn Hit>, Arc<dyn Hit>),
     bounds: AxisAlignedBoundingBox,
 }
 
 impl BoundingVolumeHierarchyNode {
-    pub fn from(mut objects: Vec<Box<dyn Hit>>, axes: [bool; 3], rng: &mut Pcg64Mcg) -> Self {
+    pub fn from(mut objects: Vec<Arc<dyn Hit>>, axes: [bool; 3], rng: &mut Pcg64Mcg) -> Self {
         let mut axis_idx = rng.gen_range(0..3);
         while !axes[axis_idx] {
             axis_idx = rng.gen_range(0..3);
         }
 
-        let comparator = |a: &Box<dyn Hit>, b: &Box<dyn Hit>| {
+        let comparator = |a: &Arc<dyn Hit>, b: &Arc<dyn Hit>| {
             let min_a = a.get_bounding_box()[0][axis_idx];
             let min_b = b.get_bounding_box()[0][axis_idx];
 
@@ -40,11 +42,11 @@ impl BoundingVolumeHierarchyNode {
         };
 
         let object_count = objects.len();
-        let children: (Box<dyn Hit>, Box<dyn Hit>);
+        let children: (Arc<dyn Hit>, Arc<dyn Hit>);
         let bounds: AxisAlignedBoundingBox;
 
         if object_count == 1 {
-            children = (objects.pop().unwrap(), Box::new(NullObject()));
+            children = (objects.pop().unwrap(), Arc::new(NullObject()));
             bounds = children.0.get_bounding_box();
 
             BoundingVolumeHierarchyNode { children, bounds }
@@ -64,8 +66,8 @@ impl BoundingVolumeHierarchyNode {
             let first_half = objects;
 
             children = (
-                Box::new(Self::from(first_half, axes, rng)),
-                Box::new(Self::from(second_half, axes, rng)),
+                Arc::new(Self::from(first_half, axes, rng)),
+                Arc::new(Self::from(second_half, axes, rng)),
             );
             bounds = aabb::combine_bounds(&[
                 children.0.get_bounding_box(),

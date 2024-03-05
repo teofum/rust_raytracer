@@ -3,6 +3,8 @@ use std::error::Error;
 use std::fs::File;
 use std::time::Instant;
 
+use rand::SeedableRng;
+use rand_pcg::Pcg64Mcg;
 use rust_raytracer::config::Config;
 use rust_raytracer::loaders::scene::SceneLoader;
 use rust_raytracer::output::Writer;
@@ -34,7 +36,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         "tonemap_test" => TonemapTestScene::init(config)?,
         file_path => {
             let scene_file = File::open(file_path)?;
-            let loader = SceneLoader::new();
+            let mut rng = Pcg64Mcg::from_rng(rand::thread_rng())?;
+            let loader = SceneLoader::new(&mut rng);
             loader.load(&scene_file, config)?
         }
     };
