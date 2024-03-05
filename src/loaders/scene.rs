@@ -6,15 +6,17 @@ use std::{
     sync::Arc,
 };
 
+use regex::Regex;
+
 use crate::{
     camera::Camera,
     material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material, Metal},
-    object::{obj_box, Plane, Sky, Sphere, Sun},
+    object::{obj_box, Plane, Sky, Sphere, Sun, Transform},
     texture::{
         CheckerboardSolidTexture, CheckerboardTexture, ConstantTexture, ImageTexture, Interpolate,
         Sampler, TexturePointer, UvDebugTexture,
     },
-    utils::ParseError,
+    utils::{deg_to_rad, ParseError},
     vec4::Color,
 };
 use crate::{
@@ -176,7 +178,7 @@ impl SceneLoader {
                 "plane" => self.create_plane(&mut params),
                 "box" => self.create_box(&mut params),
                 "mesh" => self.create_mesh(&mut params),
-                "transform" => Err(Box::new(ParseError::new("Not implemented"))),
+                "transform" => self.create_transform(&mut params),
                 "list" => self.create_list(&mut params),
                 "bvh" => Err(Box::new(ParseError::new("Not implemented"))),
                 "sky" => self.create_sky(&mut params),
@@ -565,6 +567,79 @@ impl SceneLoader {
             Ok(Entity::Object(Arc::new(mesh)))
         } else {
             Err(Box::new(ParseError::new("Mesh missing parameters")))
+        }
+    }
+
+    fn create_transform(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        let param_regex = Regex::new(r"^([^=\s]+)=([^=\s]+)$").unwrap();
+
+        if let Some(obj_expr) = params.next() {
+            let object = self.get_object(&obj_expr)?;
+            let mut transform = Transform::new(object);
+
+            let mut order = "srt".to_owned();
+            let mut rot_order = "yxz".to_owned();
+
+            let mut translation = [0.0; 3];
+            let mut rotation = [0.0; 3];
+            let mut scale = [1.0; 3];
+
+            while let Some(param) = params.next() {
+                for (_, [key, value]) in param_regex.captures_iter(&param).map(|c| c.extract()) {
+                    match key {
+                        "t" => {
+                            let vec = parse_vec(value)?;
+                            translation = vec;
+                        }
+                        "s" => {
+                            if let Ok(vec) = parse_vec(value) {
+                                scale = vec;
+                            } else {
+                                let uniform = value.parse::<f64>()?;
+                                scale = [uniform; 3];
+                            }
+                        }
+                        "rx" => {
+                            let deg = value.parse::<f64>()?;
+                            rotation[0] = deg_to_rad(deg);
+                        }
+                        "ry" => {
+                            let deg = value.parse::<f64>()?;
+                            rotation[1] = deg_to_rad(deg);
+                        }
+                        "rz" => {
+                            let deg = value.parse::<f64>()?;
+                            rotation[2] = deg_to_rad(deg);
+                        }
+                        // TODO validate values
+                        "order" => order = value.to_owned(),
+                        "rot_order" => rot_order = value.to_owned(),
+                        _ => (),
+                    }
+                }
+            }
+
+            for i in order.chars() {
+                match i {
+                    'r' => {
+                        for axis in rot_order.chars() {
+                            match axis {
+                                'x' => transform.rotate_x(rotation[0]),
+                                'y' => transform.rotate_y(rotation[1]),
+                                'z' => transform.rotate_z(rotation[2]),
+                                _ => (),
+                            }
+                        }
+                    }
+                    's' => transform.scale(scale[0], scale[1], scale[2]),
+                    't' => transform.translate(translation[0], translation[1], translation[2]),
+                    _ => (),
+                }
+            }
+
+            Ok(Entity::Object(Arc::new(transform)))
+        } else {
+            Err(Box::new(ParseError::new("Transform missing parameters")))
         }
     }
 

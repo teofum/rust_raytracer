@@ -77,7 +77,7 @@ impl Scene for PerlinScene {
 
         let mesh_file = File::open("monkey.obj")?;
         let mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_marble))?;
-        let mut mesh = Transform::new(Box::new(mesh));
+        let mut mesh = Transform::new(Arc::new(mesh));
         mesh.scale_uniform(1.5);
         mesh.rotate_y(PI / 4.0);
         mesh.translate(0.0, 0.45, -2.0);

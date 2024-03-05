@@ -102,7 +102,7 @@ impl Scene for CornellBoxScene {
             Vec4::vec(165.0, 330.0, 165.0),
             Arc::clone(&mat_white),
         );
-        let mut box1 = Transform::new(Box::new(box1));
+        let mut box1 = Transform::new(Arc::new(box1));
         box1.translate(82.5, 165.0, 82.5);
         box1.rotate_y(deg_to_rad(18.0));
         box1.translate(265.0, 0.0, 295.0);

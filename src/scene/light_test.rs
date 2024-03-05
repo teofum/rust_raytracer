@@ -72,7 +72,7 @@ impl Scene for LightTestScene {
 
         let mesh_file = File::open("monkey.obj")?;
         let mesh = load_mesh_from_file(&mesh_file, mat_metal)?;
-        let mut mesh = Transform::new(Box::new(mesh));
+        let mut mesh = Transform::new(Arc::new(mesh));
         mesh.translate(0.0, 0.0, -1.5);
 
         let mut world = ObjectList::new();

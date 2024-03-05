@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use rand_pcg::Pcg64Mcg;
 
 use crate::aabb::{self, AxisAlignedBoundingBox};
@@ -9,14 +11,14 @@ use crate::vec4::{Point4, Vec4};
 use super::{Hit, HitRecord};
 
 pub struct Transform {
-    object: Box<dyn Hit>,
+    object: Arc<dyn Hit>,
     transform: Mat4,
     inv_transform: Mat4,
     bounds: AxisAlignedBoundingBox,
 }
 
 impl Transform {
-    pub fn new(object: Box<dyn Hit>) -> Self {
+    pub fn new(object: Arc<dyn Hit>) -> Self {
         let transform = Mat4::identity();
         let inv_transform = Mat4::identity();
 
