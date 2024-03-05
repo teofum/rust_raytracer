@@ -8,10 +8,14 @@ use std::{
 
 use crate::{
     camera::Camera,
-    material::{Emissive, Glossy, Material},
-    object::{Plane, Sky, Sphere},
-    texture::{ConstantTexture, Sampler, TexturePointer},
+    material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material, Metal},
+    object::{obj_box, Plane, Sky, Sphere, Sun},
+    texture::{
+        CheckerboardSolidTexture, CheckerboardTexture, ConstantTexture, ImageTexture, Interpolate,
+        Sampler, TexturePointer, UvDebugTexture,
+    },
     utils::ParseError,
+    vec4::Color,
 };
 use crate::{
     config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG},
@@ -20,11 +24,18 @@ use crate::{
 use crate::{object::ObjectList, utils::parse_vec};
 use crate::{scene::SceneData, vec4::Vec4};
 
+use super::obj::load_mesh_from_file;
+
 enum Entity {
     Object(Arc<dyn Hit>),
     Material(Arc<dyn Material>),
     TextureColor(TexturePointer<Vec4>),
     TextureFloat(TexturePointer<f64>),
+}
+
+enum Texture {
+    Color(TexturePointer<Vec4>),
+    Float(TexturePointer<f64>),
 }
 
 type ParseResult = Result<Entity, Box<dyn Error>>;
@@ -146,34 +157,32 @@ impl SceneLoader {
             match &item_type[..] {
                 // Textures
                 "constant" => self.create_constant_tex(&mut params),
-                "checker" => Err(Box::new(ParseError::new("Not implemented"))),
-                "checker_solid" => Err(Box::new(ParseError::new("Not implemented"))),
-                "lerp" => Err(Box::new(ParseError::new("Not implemented"))),
+                "checker" => self.create_checker_tex(&mut params, false),
+                "checker_solid" => self.create_checker_tex(&mut params, true),
+                "lerp" => self.create_lerp_tex(&mut params),
                 "noise" => Err(Box::new(ParseError::new("Not implemented"))),
                 "noise_solid" => Err(Box::new(ParseError::new("Not implemented"))),
-                "image" => Err(Box::new(ParseError::new("Not implemented"))),
-                "uv_debug" => Err(Box::new(ParseError::new("Not implemented"))),
+                "image" => self.create_image_tex(&mut params),
+                "uv_debug" => Ok(Entity::TextureColor(Arc::new(UvDebugTexture))),
                 // Materials
-                "lambertian" => Err(Box::new(ParseError::new("Not implemented"))),
-                "metal" => Err(Box::new(ParseError::new("Not implemented"))),
-                "glass" => Err(Box::new(ParseError::new("Not implemented"))),
+                "lambertian" => self.create_lambertian(&mut params),
+                "metal" => self.create_metal(&mut params),
+                "glass" => self.create_dielectric(&mut params),
                 "glossy" => self.create_glossy(&mut params),
                 "emissive" => self.create_emissive(&mut params),
                 "isotropic" => Err(Box::new(ParseError::new("Not implemented"))),
                 // Objects
                 "sphere" => self.create_sphere(&mut params),
                 "plane" => self.create_plane(&mut params),
-                "box" => Err(Box::new(ParseError::new("Not implemented"))),
-                "mesh" => Err(Box::new(ParseError::new("Not implemented"))),
+                "box" => self.create_box(&mut params),
+                "mesh" => self.create_mesh(&mut params),
                 "transform" => Err(Box::new(ParseError::new("Not implemented"))),
                 "list" => self.create_list(&mut params),
                 "bvh" => Err(Box::new(ParseError::new("Not implemented"))),
                 "sky" => self.create_sky(&mut params),
-                "sun" => Err(Box::new(ParseError::new("Not implemented"))),
+                "sun" => self.create_sun(&mut params),
                 "volume" => Err(Box::new(ParseError::new("Not implemented"))),
-                _ => {
-                    return Err(Box::new(ParseError::new("Unknown object type")));
-                }
+                _ => Err(Box::new(ParseError::new("Unknown object type"))),
             }
         } else {
             Err(Box::new(ParseError::new(
@@ -192,7 +201,7 @@ impl SceneLoader {
             match self.color_textures.get(label) {
                 Some(tex) => Ok(Arc::clone(tex)),
                 None => {
-                    let err_str = format!("Invalid color texture reference {}", label);
+                    let err_str = format!("Invalid texture reference {}", label);
                     Err(Box::new(ParseError::new(&err_str)))
                 }
             }
@@ -222,7 +231,7 @@ impl SceneLoader {
             match self.float_textures.get(label) {
                 Some(tex) => Ok(Arc::clone(tex)),
                 None => {
-                    let err_str = format!("Invalid float texture reference {}", label);
+                    let err_str = format!("Invalid texture reference {}", label);
                     Err(Box::new(ParseError::new(&err_str)))
                 }
             }
@@ -239,6 +248,18 @@ impl SceneLoader {
             Err(Box::new(ParseError::new(
                 "Expected a reference or inline declaration",
             )))
+        }
+    }
+
+    fn get_texture(&self, expr: &str) -> Result<Texture, Box<dyn Error>> {
+        // First try to get a vec texture
+        match self.get_color_texture(expr) {
+            Ok(tex) => Ok(Texture::Color(tex)),
+            Err(_) => {
+                // Try to get a color texture
+                let tex = self.get_float_texture(expr)?;
+                Ok(Texture::Float(tex))
+            }
         }
     }
 
@@ -329,18 +350,118 @@ impl SceneLoader {
         }
     }
 
+    fn create_checker_tex(
+        &self,
+        params: &mut dyn Iterator<Item = String>,
+        solid: bool,
+    ) -> ParseResult {
+        if let (Some(tex1_expr), Some(tex2_expr), Some(scale)) =
+            (params.next(), params.next(), params.next())
+        {
+            let scale = scale.parse::<f64>()?;
+
+            let tex1 = self.get_texture(&tex1_expr)?;
+            match tex1 {
+                Texture::Color(tex1) => {
+                    let tex2 = self.get_color_texture(&tex2_expr)?;
+                    let texture: Arc<dyn Sampler<Output = Color>> = if solid {
+                        Arc::new(CheckerboardSolidTexture::new(tex1, tex2, scale))
+                    } else {
+                        Arc::new(CheckerboardTexture::new(tex1, tex2, scale))
+                    };
+                    Ok(Entity::TextureColor(texture))
+                }
+                Texture::Float(tex1) => {
+                    let tex2 = self.get_float_texture(&tex2_expr)?;
+                    let texture: Arc<dyn Sampler<Output = f64>> = if solid {
+                        Arc::new(CheckerboardSolidTexture::new(tex1, tex2, scale))
+                    } else {
+                        Arc::new(CheckerboardTexture::new(tex1, tex2, scale))
+                    };
+                    Ok(Entity::TextureFloat(texture))
+                }
+            }
+        } else {
+            Err(Box::new(ParseError::new(
+                "Checkerboard texture missing parameters",
+            )))
+        }
+    }
+
+    fn create_lerp_tex(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(tex1_expr), Some(tex2_expr), Some(t_expr)) =
+            (params.next(), params.next(), params.next())
+        {
+            let t = self.get_float_texture(&t_expr)?;
+            let tex1 = self.get_texture(&tex1_expr)?;
+            match tex1 {
+                Texture::Color(tex1) => {
+                    let tex2 = self.get_color_texture(&tex2_expr)?;
+                    let texture = Interpolate::new(tex1, tex2, t);
+                    Ok(Entity::TextureColor(Arc::new(texture)))
+                }
+                Texture::Float(tex1) => {
+                    let tex2 = self.get_float_texture(&tex2_expr)?;
+                    let texture = Interpolate::new(tex1, tex2, t);
+                    Ok(Entity::TextureFloat(Arc::new(texture)))
+                }
+            }
+        } else {
+            Err(Box::new(ParseError::new(
+                "Interpolate texture missing parameters",
+            )))
+        }
+    }
+
+    fn create_image_tex(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(file_path) = params.next() {
+            let texture = ImageTexture::from_file(&file_path)?;
+
+            Ok(Entity::TextureColor(Arc::new(texture)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Image texture missing parameters",
+            )))
+        }
+    }
+
     // =========================================================================
     // Materials
     // =========================================================================
 
-    fn create_emissive(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
-        if let Some(expr) = params.next() {
-            let texture = self.get_color_texture(&expr)?;
-            let material = Emissive::new(texture);
+    fn create_lambertian(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(albedo_expr) = params.next() {
+            let albedo = self.get_color_texture(&albedo_expr)?;
+            let material = LambertianDiffuse::new(albedo);
             Ok(Entity::Material(Arc::new(material)))
         } else {
             Err(Box::new(ParseError::new(
-                "Emissive material missing parameters",
+                "LambertianDiffuse material missing parameters",
+            )))
+        }
+    }
+
+    fn create_metal(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(albedo_expr), Some(rough_expr)) = (params.next(), params.next()) {
+            let albedo = self.get_color_texture(&albedo_expr)?;
+            let roughness = self.get_float_texture(&rough_expr)?;
+            let material = Metal::new(albedo, roughness);
+            Ok(Entity::Material(Arc::new(material)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Metal material missing parameters",
+            )))
+        }
+    }
+
+    fn create_dielectric(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(ior) = params.next() {
+            let ior = ior.parse::<f64>()?;
+            let material = Dielectric::new(ior);
+            Ok(Entity::Material(Arc::new(material)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Dielectric material missing parameters",
             )))
         }
     }
@@ -361,12 +482,24 @@ impl SceneLoader {
         }
     }
 
+    fn create_emissive(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(expr) = params.next() {
+            let texture = self.get_color_texture(&expr)?;
+            let material = Emissive::new(texture);
+            Ok(Entity::Material(Arc::new(material)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Emissive material missing parameters",
+            )))
+        }
+    }
+
     // =========================================================================
     // Objects
     // =========================================================================
 
     fn create_sphere(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
-        if let (Some(origin), Some(radius), Some(material)) =
+        if let (Some(origin), Some(radius), Some(mat_expr)) =
             (params.next(), params.next(), params.next())
         {
             let [x, y, z] = parse_vec(&origin)?;
@@ -374,7 +507,7 @@ impl SceneLoader {
             let radius = radius.parse::<f64>()?;
 
             // TODO get material
-            let material = self.get_material(&material)?;
+            let material = self.get_material(&mat_expr)?;
 
             let sphere = Sphere::new(origin, radius, material);
             Ok(Entity::Object(Arc::new(sphere)))
@@ -384,7 +517,7 @@ impl SceneLoader {
     }
 
     fn create_plane(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
-        if let (Some(origin), Some(u), Some(v), Some(material)) =
+        if let (Some(origin), Some(u), Some(v), Some(mat_expr)) =
             (params.next(), params.next(), params.next(), params.next())
         {
             let [x, y, z] = parse_vec(&origin)?;
@@ -395,20 +528,51 @@ impl SceneLoader {
             let v = Vec4::point(vx, vy, vz);
 
             // TODO get material
-            let material = self.get_material(&material)?;
+            let material = self.get_material(&mat_expr)?;
 
             let plane = Plane::new(origin, (u, v), material);
             Ok(Entity::Object(Arc::new(plane)))
         } else {
-            Err(Box::new(ParseError::new("Sphere missing parameters")))
+            Err(Box::new(ParseError::new("Plane missing parameters")))
+        }
+    }
+
+    fn create_box(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(origin), Some(size), Some(mat_expr)) =
+            (params.next(), params.next(), params.next())
+        {
+            let [x, y, z] = parse_vec(&origin)?;
+            let origin = Vec4::point(x, y, z);
+            let [sx, sy, sz] = parse_vec(&size)?;
+            let size = Vec4::point(sx, sy, sz);
+
+            // TODO get material
+            let material = self.get_material(&mat_expr)?;
+
+            let box_obj = obj_box::make_box(origin, size, material);
+            Ok(Entity::Object(Arc::new(box_obj)))
+        } else {
+            Err(Box::new(ParseError::new("Box missing parameters")))
+        }
+    }
+
+    fn create_mesh(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(file_path), Some(mat_expr)) = (params.next(), params.next()) {
+            let file = File::open(file_path)?;
+            let material = self.get_material(&mat_expr)?;
+
+            let mesh = load_mesh_from_file(&file, material)?;
+            Ok(Entity::Object(Arc::new(mesh)))
+        } else {
+            Err(Box::new(ParseError::new("Mesh missing parameters")))
         }
     }
 
     fn create_list(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         let mut list = ObjectList::new();
 
-        while let Some(expr) = params.next() {
-            let obj = self.get_object(&expr)?;
+        while let Some(obj_expr) = params.next() {
+            let obj = self.get_object(&obj_expr)?;
             list.add(obj);
         }
 
@@ -416,13 +580,27 @@ impl SceneLoader {
     }
 
     fn create_sky(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
-        if let Some(expr) = params.next() {
-            let texture = self.get_color_texture(&expr)?;
+        if let Some(tex_expr) = params.next() {
+            let texture = self.get_color_texture(&tex_expr)?;
             let sky = Sky::new(texture);
 
             Ok(Entity::Object(Arc::new(sky)))
         } else {
             Err(Box::new(ParseError::new("Sky missing parameters")))
+        }
+    }
+
+    fn create_sun(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(dir), Some(tex_expr)) = (params.next(), params.next()) {
+            let [x, y, z] = parse_vec(&dir)?;
+            let dir = Vec4::point(x, y, z);
+
+            let texture = self.get_color_texture(&tex_expr)?;
+            let sun = Sun::new(texture, dir);
+
+            Ok(Entity::Object(Arc::new(sun)))
+        } else {
+            Err(Box::new(ParseError::new("Sun missing parameters")))
         }
     }
 }

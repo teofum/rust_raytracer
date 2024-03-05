@@ -60,7 +60,7 @@ impl Scene for PerlinScene {
 
         let mat_floor: Arc<dyn Material> = Arc::new(Metal::new(
             Arc::new(ConstantTexture::from_values(0.8, 0.8, 0.8)),
-            0.02,
+            Arc::new(ConstantTexture::new(0.02)),
         ));
 
         // Set up objects

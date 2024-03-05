@@ -11,25 +11,25 @@ use super::{Material, ScatterResult};
 
 pub struct Metal {
     albedo: Arc<dyn Sampler<Output = Color>>,
-    roughness: f64,
+    roughness: Arc<dyn Sampler<Output = f64>>,
 }
 
 impl Metal {
-    pub fn new(albedo: Arc<dyn Sampler<Output = Color>>, roughness: f64) -> Self {
-        let roughness = roughness.clamp(0.0, 1.0);
-
+    pub fn new(
+        albedo: Arc<dyn Sampler<Output = Color>>,
+        roughness: Arc<dyn Sampler<Output = f64>>,
+    ) -> Self {
         Metal { albedo, roughness }
-    }
-
-    pub fn roughness(&self) -> f64 {
-        self.roughness
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut Pcg64Mcg) -> ScatterResult {
         let reflected = ray.dir().reflect(hit.normal());
-        let scatter_dir = reflected + Vec4::random_unit(rng) * self.roughness * reflected.length();
+        let scatter_dir = reflected
+            + Vec4::random_unit(rng)
+                * self.roughness.sample(hit.uv(), &hit.pos())
+                * reflected.length();
 
         if scatter_dir.dot(&hit.normal()) > 0.0 {
             let scattered = Ray::new(hit.pos(), scatter_dir);

@@ -49,7 +49,7 @@ impl Scene for LightTestScene {
             ))));
         let mat_metal: Arc<dyn Material> = Arc::new(Metal::new(
             Arc::new(ConstantTexture::from_values(0.8, 0.6, 0.2)),
-            0.05,
+            Arc::new(ConstantTexture::new(0.05)),
         ));
         let mat_light: Arc<dyn Material> = Arc::new(Emissive::new(Arc::new(
             ConstantTexture::from_values(7.0, 1.0, 7.0),
