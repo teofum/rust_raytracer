@@ -1,5 +1,9 @@
-floor: plane 0,-1,0 -1,0,0 0,0,1 $material
+material: glossy (constant 0.8,0.8,0.8) (constant 0.05) 1.5
 
-# I am a comment
-world: sphere 0,0,0 0.2 (emissive (constant 1,0,0.2))
-lights: (list)
+floor: plane 0,-0.2,0 -1,0,0 0,0,1 $material
+ball: sphere 0,0,0 0.2 (glossy (constant 0.8,0,0.2) (constant 1) 1.5)
+
+sky: sky (constant 2,2,2)
+
+world: list $ball $floor $sky
+lights: list $sky

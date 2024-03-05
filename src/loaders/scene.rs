@@ -8,8 +8,8 @@ use std::{
 
 use crate::{
     camera::Camera,
-    material::{Emissive, Material},
-    object::Sphere,
+    material::{Emissive, Glossy, Material},
+    object::{Plane, Sky, Sphere},
     texture::{ConstantTexture, Sampler, TexturePointer},
     utils::ParseError,
 };
@@ -95,12 +95,14 @@ impl SceneLoader {
             }
         }
 
-        if let Some(world_ref) = self.objects.get("world") {
+        if let (Some(world_ref), Some(lights_ref)) =
+            (self.objects.get("world"), self.objects.get("lights"))
+        {
             let world = Arc::clone(world_ref);
-            let lights = ObjectList::new();
-            Ok((camera, world, Arc::new(lights)))
+            let lights = Arc::clone(lights_ref);
+            Ok((camera, world, lights))
         } else {
-            Err(Box::new(ParseError::new("No world object")))
+            Err(Box::new(ParseError::new("No world/lights object")))
         }
     }
 
@@ -115,6 +117,10 @@ impl SceneLoader {
                 '(' => {
                     current.push('(');
                     nest_level += 1;
+                }
+                ')' => {
+                    current.push(')');
+                    nest_level -= 1;
                 }
                 ' ' => {
                     if nest_level > 0 {
@@ -151,18 +157,18 @@ impl SceneLoader {
                 "lambertian" => Err(Box::new(ParseError::new("Not implemented"))),
                 "metal" => Err(Box::new(ParseError::new("Not implemented"))),
                 "glass" => Err(Box::new(ParseError::new("Not implemented"))),
-                "glossy" => Err(Box::new(ParseError::new("Not implemented"))),
+                "glossy" => self.create_glossy(&mut params),
                 "emissive" => self.create_emissive(&mut params),
                 "isotropic" => Err(Box::new(ParseError::new("Not implemented"))),
                 // Objects
                 "sphere" => self.create_sphere(&mut params),
-                "plane" => Err(Box::new(ParseError::new("Not implemented"))),
+                "plane" => self.create_plane(&mut params),
                 "box" => Err(Box::new(ParseError::new("Not implemented"))),
                 "mesh" => Err(Box::new(ParseError::new("Not implemented"))),
                 "transform" => Err(Box::new(ParseError::new("Not implemented"))),
-                "list" => Err(Box::new(ParseError::new("Not implemented"))),
+                "list" => self.create_list(&mut params),
                 "bvh" => Err(Box::new(ParseError::new("Not implemented"))),
-                "sky" => Err(Box::new(ParseError::new("Not implemented"))),
+                "sky" => self.create_sky(&mut params),
                 "sun" => Err(Box::new(ParseError::new("Not implemented"))),
                 "volume" => Err(Box::new(ParseError::new("Not implemented"))),
                 _ => {
@@ -185,7 +191,10 @@ impl SceneLoader {
             let label = &expr[1..];
             match self.color_textures.get(label) {
                 Some(tex) => Ok(Arc::clone(tex)),
-                None => Err(Box::new(ParseError::new("Invalid color texture reference"))),
+                None => {
+                    let err_str = format!("Invalid color texture reference {}", label);
+                    Err(Box::new(ParseError::new(&err_str)))
+                }
             }
         } else if is_inline {
             let decl = &expr[1..(expr.len() - 1)];
@@ -203,7 +212,37 @@ impl SceneLoader {
         }
     }
 
-    /// Get a color (Vec4) texture from either a reference or inline declaration
+    /// Get a float texture from either a reference or inline declaration
+    fn get_float_texture(&self, expr: &str) -> Result<TexturePointer<f64>, Box<dyn Error>> {
+        let is_reference = expr.starts_with('$');
+        let is_inline = expr.starts_with('(') && expr.ends_with(')');
+
+        if is_reference {
+            let label = &expr[1..];
+            match self.float_textures.get(label) {
+                Some(tex) => Ok(Arc::clone(tex)),
+                None => {
+                    let err_str = format!("Invalid float texture reference {}", label);
+                    Err(Box::new(ParseError::new(&err_str)))
+                }
+            }
+        } else if is_inline {
+            let decl = &expr[1..(expr.len() - 1)];
+            match self.parse_declaration(decl) {
+                Ok(Entity::TextureFloat(tex)) => Ok(tex),
+                Ok(_) => Err(Box::new(ParseError::new(
+                    "Expression evaluates to a different entity type, expected float texture",
+                ))),
+                Err(err) => Err(err),
+            }
+        } else {
+            Err(Box::new(ParseError::new(
+                "Expected a reference or inline declaration",
+            )))
+        }
+    }
+
+    /// Get a material from either a reference or inline declaration
     fn get_material(&self, expr: &str) -> Result<Arc<dyn Material>, Box<dyn Error>> {
         let is_reference = expr.starts_with('$');
         let is_inline = expr.starts_with('(') && expr.ends_with(')');
@@ -212,7 +251,10 @@ impl SceneLoader {
             let label = &expr[1..];
             match self.materials.get(label) {
                 Some(mat) => Ok(Arc::clone(mat)),
-                None => Err(Box::new(ParseError::new("Invalid material reference"))),
+                None => {
+                    let err_str = format!("Invalid material reference {}", label);
+                    Err(Box::new(ParseError::new(&err_str)))
+                }
             }
         } else if is_inline {
             let decl = &expr[1..(expr.len() - 1)];
@@ -229,6 +271,40 @@ impl SceneLoader {
             )))
         }
     }
+
+    /// Get an object from either a reference or inline declaration
+    fn get_object(&self, expr: &str) -> Result<Arc<dyn Hit>, Box<dyn Error>> {
+        let is_reference = expr.starts_with('$');
+        let is_inline = expr.starts_with('(') && expr.ends_with(')');
+
+        if is_reference {
+            let label = &expr[1..];
+            match self.objects.get(label) {
+                Some(obj) => Ok(Arc::clone(obj)),
+                None => {
+                    let err_str = format!("Invalid object reference {}", label);
+                    Err(Box::new(ParseError::new(&err_str)))
+                }
+            }
+        } else if is_inline {
+            let decl = &expr[1..(expr.len() - 1)];
+            match self.parse_declaration(decl) {
+                Ok(Entity::Object(obj)) => Ok(obj),
+                Ok(_) => Err(Box::new(ParseError::new(
+                    "Expression evaluates to a different entity type, expected object",
+                ))),
+                Err(err) => Err(err),
+            }
+        } else {
+            Err(Box::new(ParseError::new(
+                "Expected a reference or inline declaration",
+            )))
+        }
+    }
+
+    // =========================================================================
+    // Textures
+    // =========================================================================
 
     fn create_constant_tex(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let Some(value) = params.next() {
@@ -253,6 +329,10 @@ impl SceneLoader {
         }
     }
 
+    // =========================================================================
+    // Materials
+    // =========================================================================
+
     fn create_emissive(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let Some(expr) = params.next() {
             let texture = self.get_color_texture(&expr)?;
@@ -264,6 +344,26 @@ impl SceneLoader {
             )))
         }
     }
+
+    fn create_glossy(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(albedo_expr), Some(rough_expr), Some(ior)) =
+            (params.next(), params.next(), params.next())
+        {
+            let albedo = self.get_color_texture(&albedo_expr)?;
+            let roughness = self.get_float_texture(&rough_expr)?;
+            let ior = ior.parse::<f64>()?;
+            let material = Glossy::new(albedo, roughness, ior);
+            Ok(Entity::Material(Arc::new(material)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Glossy material missing parameters",
+            )))
+        }
+    }
+
+    // =========================================================================
+    // Objects
+    // =========================================================================
 
     fn create_sphere(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(origin), Some(radius), Some(material)) =
@@ -280,6 +380,49 @@ impl SceneLoader {
             Ok(Entity::Object(Arc::new(sphere)))
         } else {
             Err(Box::new(ParseError::new("Sphere missing parameters")))
+        }
+    }
+
+    fn create_plane(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(origin), Some(u), Some(v), Some(material)) =
+            (params.next(), params.next(), params.next(), params.next())
+        {
+            let [x, y, z] = parse_vec(&origin)?;
+            let origin = Vec4::point(x, y, z);
+            let [ux, uy, uz] = parse_vec(&u)?;
+            let u = Vec4::point(ux, uy, uz);
+            let [vx, vy, vz] = parse_vec(&v)?;
+            let v = Vec4::point(vx, vy, vz);
+
+            // TODO get material
+            let material = self.get_material(&material)?;
+
+            let plane = Plane::new(origin, (u, v), material);
+            Ok(Entity::Object(Arc::new(plane)))
+        } else {
+            Err(Box::new(ParseError::new("Sphere missing parameters")))
+        }
+    }
+
+    fn create_list(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        let mut list = ObjectList::new();
+
+        while let Some(expr) = params.next() {
+            let obj = self.get_object(&expr)?;
+            list.add(obj);
+        }
+
+        Ok(Entity::Object(Arc::new(list)))
+    }
+
+    fn create_sky(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(expr) = params.next() {
+            let texture = self.get_color_texture(&expr)?;
+            let sky = Sky::new(texture);
+
+            Ok(Entity::Object(Arc::new(sky)))
+        } else {
+            Err(Box::new(ParseError::new("Sky missing parameters")))
         }
     }
 }
