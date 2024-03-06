@@ -1,3 +1,10 @@
+# Scene config
+@config output_width = 600
+@config aspect_ratio = 1
+@config camera_pos = 277.5,277.5,-800
+@config camera_target = 277.5,277.5,0
+@config focal_length = 33
+
 # Materials and textures
 mat_white: lambertian (constant 0.73,0.73,0.73)
 mat_green: lambertian (constant 0.12,0.45,0.15)

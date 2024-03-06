@@ -49,6 +49,8 @@ pub struct SceneLoader<'a> {
     color_textures: HashMap<String, Arc<dyn Sampler<Output = Vec4>>>,
     float_textures: HashMap<String, Arc<dyn Sampler<Output = f64>>>,
 
+    scene_config: SceneConfig,
+
     rng: &'a mut Pcg64Mcg,
 }
 
@@ -60,6 +62,8 @@ impl<'a> SceneLoader<'a> {
             color_textures: HashMap::new(),
             float_textures: HashMap::new(),
 
+            scene_config: DEFAULT_SCENE_CONFIG,
+
             rng,
         }
     }
@@ -67,17 +71,25 @@ impl<'a> SceneLoader<'a> {
     pub fn load(mut self, file: &File, config: Config) -> Result<SceneData, Box<dyn Error>> {
         let reader = BufReader::new(file);
 
-        let scene_config = SceneConfig::merge(&DEFAULT_SCENE_CONFIG, &config.scene);
-        let config = Config {
-            scene: scene_config,
-            ..config
-        };
-
-        let camera = Camera::new(&config);
-
         for (line_number, line) in reader.lines().flatten().enumerate() {
             if line.len() == 0 || line.starts_with('#') {
                 continue; // Skip empty lines and comments
+            }
+
+            if line.starts_with('@') {
+                if let Some((directive, content)) = line.split_once(' ') {
+                    match &directive[1..] {
+                        "config" => {
+                            let res = self.parse_config_directive(content);
+                            if let Err(err) = res {
+                                println!("Warning: invalid @config directive");
+                                println!("\t{err}\n");
+                            }
+                        }
+                        _ => (),
+                    }
+                }
+                continue;
             }
 
             let mut line_parts = line.split(":").map(|s| s.trim());
@@ -116,9 +128,74 @@ impl<'a> SceneLoader<'a> {
         {
             let world = Arc::clone(world_ref);
             let lights = Arc::clone(lights_ref);
+
+            let scene_config = SceneConfig::merge(&self.scene_config, &config.scene);
+            let config = Config {
+                scene: scene_config,
+                ..config
+            };
+
+            let camera = Camera::new(&config);
+
             Ok((camera, world, lights))
         } else {
             Err(Box::new(ParseError::new("No world/lights object")))
+        }
+    }
+
+    fn parse_config_directive(&mut self, content: &str) -> Result<(), Box<dyn Error>> {
+        if let Some((key, value)) = content.split_once('=') {
+            let value = value.trim();
+            match key.trim() {
+                "output_width" => {
+                    let w = value.parse::<usize>()?;
+                    self.scene_config.output_width = Some(w);
+                }
+                "aspect_ratio" => {
+                    let ratio = if value.contains('/') {
+                        if let Some((a, b)) = value.split_once('/') {
+                            let a = a.trim().parse::<f64>()?;
+                            let b = b.trim().parse::<f64>()?;
+
+                            a / b
+                        } else {
+                            return Err(Box::new(ParseError::new(
+                                "Aspect ratio must be a number or division",
+                            )));
+                        }
+                    } else {
+                        value.parse::<f64>()?
+                    };
+                    self.scene_config.aspect_ratio = Some(ratio);
+                }
+                "focal_length" => {
+                    let f = value.parse::<f64>()?;
+                    self.scene_config.focal_length = Some(f);
+                }
+                "f_number" => {
+                    let f = value.parse::<f64>()?;
+                    self.scene_config.f_number = Some(f);
+                }
+                "focus_distance" => {
+                    let d = value.parse::<f64>()?;
+                    self.scene_config.focus_distance = Some(d);
+                }
+                "camera_pos" => {
+                    let [x, y, z] = parse_vec(value)?;
+                    let vec = Vec4::point(x, y, z);
+                    self.scene_config.camera_pos = Some(vec);
+                }
+                "camera_target" => {
+                    let [x, y, z] = parse_vec(value)?;
+                    let vec = Vec4::point(x, y, z);
+                    self.scene_config.camera_target = Some(vec);
+                }
+                _ => (),
+            };
+
+            Ok(())
+        } else {
+            Err(Box::new(ParseError::new(&format!("@config {content}"))))
         }
     }
 
