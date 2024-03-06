@@ -62,6 +62,10 @@ lights: list (sky (emissive (constant 2,2,2)))
 
 Some constructors may have one or more optional parameters, for which a default value is used if left unset. Optional parameters always go at the end of a declaration, and will be noted with brackets `[]` in constructor syntax.
 
+### Directives
+
+Scenes support directives as well as object declarations. Directives provide meta-information about the scene, and are marked with the `@` symbol. Currently only the `@config` directive is implemented, which can be used to set default config options for the scene.
+
 ## Textures
 
 ### Constant texture
