@@ -69,7 +69,7 @@ impl Config {
         let mut thread_count = 1;
         let mut samples_per_pixel = 250;
         let mut max_depth = 20;
-        let mut light_bias = 0.75;
+        let mut light_bias = 0.25;
 
         let mut scene_name = String::new();
 
