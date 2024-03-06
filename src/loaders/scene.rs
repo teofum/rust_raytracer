@@ -437,10 +437,8 @@ impl<'a> SceneLoader<'a> {
         params: &mut dyn Iterator<Item = String>,
         solid: bool,
     ) -> ParseResult {
-        if let (Some(tex1_expr), Some(tex2_expr), Some(scale)) =
-            (params.next(), params.next(), params.next())
-        {
-            let scale = scale.parse::<f64>()?;
+        if let (Some(tex1_expr), Some(tex2_expr)) = (params.next(), params.next()) {
+            let scale = params.next().map_or(1.0, |s| s.parse::<f64>().unwrap());
 
             let tex1 = self.get_texture(&tex1_expr)?;
             match tex1 {
@@ -537,24 +535,16 @@ impl<'a> SceneLoader<'a> {
     }
 
     fn create_dielectric(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
-        if let Some(ior) = params.next() {
-            let ior = ior.parse::<f64>()?;
-            let material = Dielectric::new(ior);
-            Ok(Entity::Material(Arc::new(material)))
-        } else {
-            Err(Box::new(ParseError::new(
-                "Dielectric material missing parameters",
-            )))
-        }
+        let ior = params.next().map_or(1.5, |ior| ior.parse::<f64>().unwrap());
+        let material = Dielectric::new(ior);
+        Ok(Entity::Material(Arc::new(material)))
     }
 
     fn create_glossy(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
-        if let (Some(albedo_expr), Some(rough_expr), Some(ior)) =
-            (params.next(), params.next(), params.next())
-        {
+        if let (Some(albedo_expr), Some(rough_expr)) = (params.next(), params.next()) {
             let albedo = self.get_color_texture(&albedo_expr)?;
             let roughness = self.get_float_texture(&rough_expr)?;
-            let ior = ior.parse::<f64>()?;
+            let ior = params.next().map_or(1.5, |ior| ior.parse::<f64>().unwrap());
             let material = Glossy::new(albedo, roughness, ior);
             Ok(Entity::Material(Arc::new(material)))
         } else {
