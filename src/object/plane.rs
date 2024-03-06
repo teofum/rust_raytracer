@@ -17,8 +17,8 @@ pub struct Plane {
 
     corner: Point4,
     normal: Vec4,
-    u_unit: Vec4,
-    v_unit: Vec4,
+    u: Vec4,
+    v: Vec4,
     inv_u: Vec4,
     inv_v: Vec4,
     area: f64,
@@ -51,8 +51,8 @@ impl Plane {
             corner: corners[3],
             material,
             normal,
-            u_unit,
-            v_unit,
+            u,
+            v,
             inv_u: u_unit * 0.5 / u.length(),
             inv_v: v_unit * 0.5 / v.length(),
             area,
@@ -118,7 +118,7 @@ impl Hit for Plane {
     fn random(&self, origin: Point4, rng: &mut Pcg64Mcg) -> Vec4 {
         let u = rng.gen_range(0.0..1.0);
         let v = rng.gen_range(0.0..1.0);
-        let p = self.corner + self.u_unit * u + self.v_unit * v;
+        let p = self.corner + self.u * u + self.v * v;
 
         p - origin
     }
