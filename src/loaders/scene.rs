@@ -82,8 +82,6 @@ impl<'a> SceneLoader<'a> {
 
             let mut line_parts = line.split(":").map(|s| s.trim());
             if let (Some(label), Some(decl)) = (line_parts.next(), line_parts.next()) {
-                println!("{:4} {label}: {decl}", line_number);
-
                 match self.parse_declaration(decl) {
                     Ok(entity) => {
                         let label = label.to_owned();
