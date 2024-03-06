@@ -24,14 +24,14 @@ impl<'a> PDF for MixPDF<'a> {
         let first_val = self.source.0.value(dir, rng);
         let second_val = self.source.1.value(dir, rng);
 
-        first_val * self.mix + second_val * (1.0 - self.mix)
+        first_val * (1.0 - self.mix) + second_val * self.mix
     }
 
     fn generate(&self, rng: &mut Pcg64Mcg) -> Vec4 {
         if rng.gen_range(0.0..1.0) < self.mix {
-            self.source.0.generate(rng)
-        } else {
             self.source.1.generate(rng)
+        } else {
+            self.source.0.generate(rng)
         }
     }
 }
