@@ -38,7 +38,7 @@ impl Scene for EarthScene {
         let camera = Camera::new(&config);
 
         // Set up materials
-        let tex_earth = ImageTexture::from_file("resource/earthmap.jpg")?;
+        let tex_earth = ImageTexture::from_file("scenes/resource/earthmap.jpg")?;
         let mat_earth: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(tex_earth)));
 
         let mat_floor: Arc<dyn Material> = Arc::new(LambertianDiffuse::new(Arc::new(

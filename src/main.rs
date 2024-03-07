@@ -37,7 +37,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         file_path => {
             let scene_file = File::open(file_path)?;
             let mut rng = Pcg64Mcg::from_rng(rand::thread_rng())?;
-            let loader = SceneLoader::new(&mut rng);
+
+            let asset_path = if file_path.contains('/') {
+                if let Some((path, _)) = file_path.rsplit_once('/') {
+                    path.to_owned() + "/"
+                } else {
+                    "".to_owned()
+                }
+            } else {
+                "".to_owned()
+            };
+
+            let loader = SceneLoader::new(&mut rng, &asset_path);
             loader.load(&scene_file, config)?
         }
     };

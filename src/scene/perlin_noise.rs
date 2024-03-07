@@ -75,7 +75,7 @@ impl Scene for PerlinScene {
             mat_floor,
         );
 
-        let mesh_file = File::open("monkey.obj")?;
+        let mesh_file = File::open("scenes/resource/monkey.obj")?;
         let mesh = load_mesh_from_file(&mesh_file, Arc::clone(&mat_marble))?;
         let mut mesh = Transform::new(Arc::new(mesh));
         mesh.scale_uniform(1.5);

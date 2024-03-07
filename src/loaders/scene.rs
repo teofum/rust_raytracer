@@ -50,12 +50,13 @@ pub struct SceneLoader<'a> {
     float_textures: HashMap<String, Arc<dyn Sampler<Output = f64>>>,
 
     scene_config: SceneConfig,
+    asset_path: String,
 
     rng: &'a mut Pcg64Mcg,
 }
 
 impl<'a> SceneLoader<'a> {
-    pub fn new(rng: &'a mut Pcg64Mcg) -> Self {
+    pub fn new(rng: &'a mut Pcg64Mcg, asset_path: &str) -> Self {
         SceneLoader {
             objects: HashMap::new(),
             materials: HashMap::new(),
@@ -63,6 +64,7 @@ impl<'a> SceneLoader<'a> {
             float_textures: HashMap::new(),
 
             scene_config: DEFAULT_SCENE_CONFIG,
+            asset_path: asset_path.to_owned(),
 
             rng,
         }
@@ -495,7 +497,8 @@ impl<'a> SceneLoader<'a> {
 
     fn create_image_tex(&self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let Some(file_path) = params.next() {
-            let texture = ImageTexture::from_file(&file_path)?;
+            let path = &(self.asset_path.to_owned() + &file_path);
+            let texture = ImageTexture::from_file(path)?;
 
             Ok(Entity::TextureColor(Arc::new(texture)))
         } else {
@@ -634,7 +637,8 @@ impl<'a> SceneLoader<'a> {
 
     fn create_mesh(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
         if let (Some(file_path), Some(mat_expr)) = (params.next(), params.next()) {
-            let file = File::open(file_path)?;
+            let path = &(self.asset_path.to_owned() + &file_path);
+            let file = File::open(path)?;
             let material = self.get_material(&mat_expr)?;
 
             let mesh = load_mesh_from_file(&file, material)?;

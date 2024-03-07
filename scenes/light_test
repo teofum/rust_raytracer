@@ -1,0 +1,30 @@
+# Scene config
+
+@config output_width = 600
+@config aspect_ratio = 3 / 2
+@config focal_length = 70
+@config f_number = 4
+@config camera_pos = 10,1,6
+@config camera_target = 0,0,0
+
+# Materials and textures
+
+mat_metal: metal (constant 0.8,0.6,0.2) (constant 0.05)
+mat_light_1: emissive (constant 7,1,7)
+mat_light_2: emissive (constant 1,6,8)
+
+checker_alb: checker (constant 0.2,0.3,0.1) (constant 0.9,0.9,0.9) 0.02
+checker_rough: checker (constant 0.05) (constant 0.9) 0.02
+mat_floor: glossy $checker_alb $checker_rough
+
+# Objects
+
+floor: plane 0,-1,0 -10,0,0 0,0,10 $mat_floor
+monkey: transform (mesh resource/monkey.obj $mat_metal) t=0,0,-1.5
+sphere_1: sphere -1,0,1 0.5 $mat_light_1
+sphere_2: sphere 2,0.5,-1.2 0.4 $mat_light_2
+
+# World & Lights
+
+world: list $floor $monkey $sphere_1 $sphere_2
+lights: list $sphere_1 $sphere_2
