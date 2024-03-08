@@ -1,0 +1,31 @@
+# Scene config
+
+@config output_width = 600
+@config aspect_ratio = 3 / 2
+@config focal_length = 70
+@config f_number = 4
+@config camera_pos = 13,1,4
+@config camera_target = 0,0,0
+
+# Materials and textures
+
+tex_noise: noise_solid (perlin) 2
+
+marble_alb: lerp (constant 0.02,0.02,0.03) (constant 0.9,0.9,0.9) $tex_noise
+mat_marble: glossy $marble_alb (constant 0)
+
+checker_alb: checker (constant 0.1,0.1,0.1) (constant 0.9,0.9,0.9) 0.02
+mat_floor: glossy $checker_alb (constant 0.01)
+
+# Objects
+
+floor: plane 0,-1,0 -10,0,0 0,0,10 $mat_floor
+monkey: transform (mesh resource/monkey.obj $mat_marble) s=1.5 ry=45 t=0,0.45,-2
+sphere: sphere 0,0,1.5 1 $mat_marble
+
+sky: sky (constant 1,1,1)
+
+# World & Lights
+
+world: list $floor $monkey $sphere $sky
+lights: list $sky

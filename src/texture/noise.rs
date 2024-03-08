@@ -1,9 +1,11 @@
+use std::sync::Arc;
+
 use crate::noise::Noise3D;
 use crate::vec4::{Point4, Vec4};
 
 use super::Sampler;
 
-pub type FloatNoise = Box<dyn Noise3D<Output = f64>>;
+pub type FloatNoise = Arc<dyn Noise3D<Output = f64>>;
 
 #[derive(Debug)]
 pub struct NoiseSolidTexture {
@@ -20,7 +22,7 @@ impl NoiseSolidTexture {
             noise,
             scale: Vec4::vec(1.0, 1.0, 1.0),
             samples: 7,
-            map: |_, s| s,
+            map: |p, sampled| 0.5 * (1.0 + f64::sin(p.z() + 10.0 * sampled)),
         }
     }
 }

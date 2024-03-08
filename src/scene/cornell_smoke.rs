@@ -102,7 +102,7 @@ impl Scene for CornellSmokeScene {
         let mut box1 = Transform::new(Arc::new(box1));
         box1.rotate_y(deg_to_rad(-15.0));
         box1.translate(27.5 - 21.25, 8.25 - 27.5, 27.5 - 14.75);
-        let box1 = Volume::new(Box::new(box1), mat_smoke, 0.15);
+        let box1 = Volume::new(Arc::new(box1), mat_smoke, 0.15);
 
         let mut box2 = make_box(
             Vec4::point(0.0, 0.0, 0.0),
@@ -113,7 +113,7 @@ impl Scene for CornellSmokeScene {
         let mut box2 = Transform::new(Arc::new(box2));
         box2.rotate_y(deg_to_rad(18.0));
         box2.translate(27.5 - 34.75, 16.5 - 27.5, 27.5 - 37.75);
-        let box2 = Volume::new(Box::new(box2), mat_fog, 0.15);
+        let box2 = Volume::new(Arc::new(box2), mat_fog, 0.15);
 
         let mut world = ObjectList::new();
         world.add(Arc::new(floor));

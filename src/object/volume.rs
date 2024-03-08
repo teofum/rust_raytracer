@@ -13,13 +13,13 @@ use super::{Hit, HitRecord};
 
 #[derive(Debug)]
 pub struct Volume {
-    boundary: Box<dyn Hit>,
+    boundary: Arc<dyn Hit>,
     material: Arc<dyn Material>,
     neg_inv_density: f64,
 }
 
 impl Volume {
-    pub fn new(boundary: Box<dyn Hit>, material: Arc<dyn Material>, density: f64) -> Self {
+    pub fn new(boundary: Arc<dyn Hit>, material: Arc<dyn Material>, density: f64) -> Self {
         let neg_inv_density = -1.0 / density;
         Volume {
             boundary,

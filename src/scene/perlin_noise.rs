@@ -47,7 +47,7 @@ impl Scene for PerlinScene {
         // Set up materials
         let mut rng = Pcg64Mcg::from_rng(rand::thread_rng()).unwrap();
 
-        let noise_perlin = Box::new(PerlinNoise3D::new(&mut rng));
+        let noise_perlin = Arc::new(PerlinNoise3D::new(&mut rng));
         let mut tex_marble = NoiseSolidTexture::new(noise_perlin);
         tex_marble.scale = Vec4::vec(2.0, 2.0, 2.0);
         tex_marble.map = |p, sampled| 0.5 * (1.0 + f64::sin(p.z() + 10.0 * sampled));

@@ -11,11 +11,12 @@ use regex::Regex;
 
 use crate::{
     camera::Camera,
-    material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material, Metal},
-    object::{obj_box, BoundingVolumeHierarchyNode, Plane, Sky, Sphere, Sun, Transform},
+    material::{Dielectric, Emissive, Glossy, Isotropic, LambertianDiffuse, Material, Metal},
+    noise::{Noise3D, PerlinNoise3D},
+    object::{obj_box, BoundingVolumeHierarchyNode, Plane, Sky, Sphere, Sun, Transform, Volume},
     texture::{
         CheckerboardSolidTexture, CheckerboardTexture, ConstantTexture, ImageTexture, Interpolate,
-        Sampler, TexturePointer, UvDebugTexture,
+        NoiseSolidTexture, Sampler, TexturePointer, UvDebugTexture,
     },
     utils::{deg_to_rad, ParseError},
     vec4::Color,
@@ -34,6 +35,7 @@ enum Entity {
     Material(Arc<dyn Material>),
     TextureColor(TexturePointer<Vec4>),
     TextureFloat(TexturePointer<f64>),
+    Noise(Arc<dyn Noise3D<Output = f64>>),
 }
 
 enum Texture {
@@ -46,8 +48,9 @@ type ParseResult = Result<Entity, Box<dyn Error>>;
 pub struct SceneLoader<'a> {
     objects: HashMap<String, Arc<dyn Hit>>,
     materials: HashMap<String, Arc<dyn Material>>,
-    color_textures: HashMap<String, Arc<dyn Sampler<Output = Vec4>>>,
-    float_textures: HashMap<String, Arc<dyn Sampler<Output = f64>>>,
+    color_textures: HashMap<String, TexturePointer<Vec4>>,
+    float_textures: HashMap<String, TexturePointer<f64>>,
+    noise: HashMap<String, Arc<dyn Noise3D<Output = f64>>>,
 
     scene_config: SceneConfig,
     asset_path: String,
@@ -62,6 +65,7 @@ impl<'a> SceneLoader<'a> {
             materials: HashMap::new(),
             color_textures: HashMap::new(),
             float_textures: HashMap::new(),
+            noise: HashMap::new(),
 
             scene_config: DEFAULT_SCENE_CONFIG,
             asset_path: asset_path.to_owned(),
@@ -111,6 +115,9 @@ impl<'a> SceneLoader<'a> {
                             }
                             Entity::TextureFloat(tex) => {
                                 self.float_textures.insert(label, tex);
+                            }
+                            Entity::Noise(n) => {
+                                self.noise.insert(label, n);
                             }
                         }
                     }
@@ -245,7 +252,7 @@ impl<'a> SceneLoader<'a> {
                 "checker_solid" => self.create_checker_tex(&mut params, true),
                 "lerp" => self.create_lerp_tex(&mut params),
                 "noise" => Err(Box::new(ParseError::new("Not implemented"))),
-                "noise_solid" => Err(Box::new(ParseError::new("Not implemented"))),
+                "noise_solid" => self.create_noise_tex(&mut params),
                 "image" => self.create_image_tex(&mut params),
                 "uv_debug" => Ok(Entity::TextureColor(Arc::new(UvDebugTexture))),
                 // Materials
@@ -254,7 +261,7 @@ impl<'a> SceneLoader<'a> {
                 "glass" => self.create_dielectric(&mut params),
                 "glossy" => self.create_glossy(&mut params),
                 "emissive" => self.create_emissive(&mut params),
-                "isotropic" => Err(Box::new(ParseError::new("Not implemented"))),
+                "isotropic" => self.create_isotropic(&mut params),
                 // Objects
                 "sphere" => self.create_sphere(&mut params),
                 "plane" => self.create_plane(&mut params),
@@ -265,7 +272,9 @@ impl<'a> SceneLoader<'a> {
                 "bvh" => self.create_bvh(&mut params),
                 "sky" => self.create_sky(&mut params),
                 "sun" => self.create_sun(&mut params),
-                "volume" => Err(Box::new(ParseError::new("Not implemented"))),
+                "volume" => self.create_volume(&mut params),
+                // Noise
+                "perlin" => Ok(Entity::Noise(Arc::new(PerlinNoise3D::new(&mut self.rng)))),
                 _ => Err(Box::new(ParseError::new("Unknown object type"))),
             }
         } else {
@@ -407,6 +416,36 @@ impl<'a> SceneLoader<'a> {
         }
     }
 
+    /// Get a noise generator from either a reference or inline declaration
+    fn get_noise(&mut self, expr: &str) -> Result<Arc<dyn Noise3D<Output = f64>>, Box<dyn Error>> {
+        let is_reference = expr.starts_with('$');
+        let is_inline = expr.starts_with('(') && expr.ends_with(')');
+
+        if is_reference {
+            let label = &expr[1..];
+            match self.noise.get(label) {
+                Some(n) => Ok(Arc::clone(n)),
+                None => {
+                    let err_str = format!("Invalid noise gen reference {}", label);
+                    Err(Box::new(ParseError::new(&err_str)))
+                }
+            }
+        } else if is_inline {
+            let decl = &expr[1..(expr.len() - 1)];
+            match self.parse_declaration(decl) {
+                Ok(Entity::Noise(n)) => Ok(n),
+                Ok(_) => Err(Box::new(ParseError::new(
+                    "Expression evaluates to a different entity type, expected noise gen",
+                ))),
+                Err(err) => Err(err),
+            }
+        } else {
+            Err(Box::new(ParseError::new(
+                "Expected a reference or inline declaration",
+            )))
+        }
+    }
+
     // =========================================================================
     // Textures
     // =========================================================================
@@ -508,6 +547,23 @@ impl<'a> SceneLoader<'a> {
         }
     }
 
+    fn create_noise_tex(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(noise_expr) = params.next() {
+            let noise = self.get_noise(&noise_expr)?;
+            let scale = params.next().map_or(1.0, |s| s.parse::<f64>().unwrap());
+            let samples = params.next().map_or(7, |s| s.parse::<usize>().unwrap());
+
+            let mut texture = NoiseSolidTexture::new(noise);
+            texture.scale = Vec4::vec(scale, scale, scale);
+            texture.samples = samples;
+            Ok(Entity::TextureFloat(Arc::new(texture)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Noise texture missing parameters",
+            )))
+        }
+    }
+
     // =========================================================================
     // Materials
     // =========================================================================
@@ -565,6 +621,18 @@ impl<'a> SceneLoader<'a> {
         } else {
             Err(Box::new(ParseError::new(
                 "Emissive material missing parameters",
+            )))
+        }
+    }
+
+    fn create_isotropic(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let Some(albedo_expr) = params.next() {
+            let albedo = self.get_color_texture(&albedo_expr)?;
+            let material = Isotropic::new(albedo);
+            Ok(Entity::Material(Arc::new(material)))
+        } else {
+            Err(Box::new(ParseError::new(
+                "Isotropic material missing parameters",
             )))
         }
     }
@@ -744,6 +812,22 @@ impl<'a> SceneLoader<'a> {
             Ok(Entity::Object(Arc::new(sun)))
         } else {
             Err(Box::new(ParseError::new("Sun missing parameters")))
+        }
+    }
+
+    fn create_volume(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        if let (Some(bound_expr), Some(mat_expr), Some(density)) =
+            (params.next(), params.next(), params.next())
+        {
+            let boundary = self.get_object(&bound_expr)?;
+            let material = self.get_material(&mat_expr)?;
+
+            let density = density.parse::<f64>()?;
+
+            let volume = Volume::new(boundary, material, density);
+            Ok(Entity::Object(Arc::new(volume)))
+        } else {
+            Err(Box::new(ParseError::new("Volume missing parameters")))
         }
     }
 }
