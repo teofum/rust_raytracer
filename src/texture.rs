@@ -2,6 +2,7 @@ use std::{fmt::Debug, sync::Arc};
 
 use crate::vec4::Point4;
 
+pub mod channel;
 pub mod checkerboard;
 pub mod constant;
 pub mod image;
@@ -9,6 +10,7 @@ pub mod interpolate;
 pub mod noise;
 pub mod uv_debug;
 
+pub use channel::Channel;
 pub use checkerboard::{CheckerboardSolidTexture, CheckerboardTexture};
 pub use constant::ConstantTexture;
 pub use image::ImageTexture;

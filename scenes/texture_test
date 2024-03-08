@@ -1,0 +1,30 @@
+# Scene config
+
+@config output_width = 600
+@config aspect_ratio = 3 / 2
+@config focal_length = 70
+@config camera_pos = 13,2,3
+@config camera_target = 0,0,0
+
+# Materials and textures
+
+tex_albedo: image resource/bricks_albedo.png
+tex_normal: image resource/bricks_normal.png
+tex_rough: channel (image resource/bricks_rough.png) 1
+
+mat_bricks: glossy $tex_albedo $tex_rough 1.5 $tex_normal
+
+mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
+
+# Objects
+
+sphere: sphere 0,0,0 1.5 $mat_bricks
+floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
+
+sun: sun 0,1,2 (constant 7,7,7)
+sky: sky (constant 1,1,1)
+
+# World & Lights
+
+world: list $floor $sphere $sun $sky
+lights: list $sun $sky
