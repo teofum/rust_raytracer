@@ -20,11 +20,12 @@ mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
 
 sphere: sphere 0,0,0 1.5 $mat_bricks
 floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
+light: plane -3,0,0 0,1.5,0 0,0,1.5 (emissive (constant 10,10,10)) backface
+light2: plane 0,0,-3 0,1.5,0 -1.5,0,0 (emissive (constant 10,10,10)) backface
 
-sun: sun 0,1,2 (constant 3,3,3)
-sky: sky (constant 0.2,0.2,0.2)
+sky: sky (constant 0.02,0.02,0.05)
 
 # World & Lights
 
-world: list $floor $sphere $sun
-lights: list $sun
+world: list $floor $sphere $light $light2 $sky
+lights: list $light $light2
