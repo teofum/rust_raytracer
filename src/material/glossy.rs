@@ -36,9 +36,9 @@ impl Glossy {
             // Calculate surface-space normal
             let sampled = normal_map.sample(hit.uv(), &hit.pos());
             let basis = onb_from_vec(hit.normal());
-            let offset = basis * (sampled * 2.0 - Vec4::vec(1.0, 1.0, 1.0));
+            (basis * (sampled * 2.0 - Vec4::vec(1.0, 1.0, 1.0))).to_unit()
 
-            (hit.normal() + offset).to_unit()
+            // (hit.normal() + offset).to_unit()
         } else {
             hit.normal()
         }

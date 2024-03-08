@@ -21,10 +21,10 @@ mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
 sphere: sphere 0,0,0 1.5 $mat_bricks
 floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
 
-sun: sun 0,1,2 (constant 7,7,7)
-sky: sky (constant 1,1,1)
+sun: sun 0,1,2 (constant 3,3,3)
+sky: sky (constant 0.2,0.2,0.2)
 
 # World & Lights
 
-world: list $floor $sphere $sun $sky
-lights: list $sun $sky
+world: list $floor $sphere $sun
+lights: list $sun
