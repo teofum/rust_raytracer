@@ -1,0 +1,36 @@
+# Scene config
+
+@config output_width = 600
+@config aspect_ratio = 1
+@config focal_length = 35
+@config camera_pos = 0,30,15
+@config camera_target = 0,0,-0.75
+
+# Objects
+
+sphere_r_0: sphere -2.5,0.5,-5 0.5 (glossy (constant 0.1,0,0) (constant 0))
+sphere_r_1: sphere -2.5,0.5,-2.5 0.5 (glossy (constant 0.2,0,0) (constant 0))
+sphere_r_2: sphere -2.5,0.5,0 0.5 (glossy (constant 0.5,0,0) (constant 0))
+sphere_r_3: sphere -2.5,0.5,2.5 0.5 (glossy (constant 1,0,0) (constant 0))
+
+sphere_g_0: sphere 0,0.5,-5 0.5 (glossy (constant 0,0.1,0) (constant 0))
+sphere_g_1: sphere 0,0.5,-2.5 0.5 (glossy (constant 0,0.2,0) (constant 0))
+sphere_g_2: sphere 0,0.5,0 0.5 (glossy (constant 0,0.5,0) (constant 0))
+sphere_g_3: sphere 0,0.5,2.5 0.5 (glossy (constant 0,1,0) (constant 0))
+
+sphere_b_0: sphere 2.5,0.5,-5 0.5 (glossy (constant 0,0,0.1) (constant 0))
+sphere_b_1: sphere 2.5,0.5,-2.5 0.5 (glossy (constant 0,0,0.2) (constant 0))
+sphere_b_2: sphere 2.5,0.5,0 0.5 (glossy (constant 0,0,0.5) (constant 0))
+sphere_b_3: sphere 2.5,0.5,2.5 0.5 (glossy (constant 0,0,1) (constant 0))
+
+floor: plane 0,0,0 -10,0,0 0,0,10 (glossy (constant 0.5,0.5,0.5) (constant 0.5))
+sky: sky (constant 25,25,25)
+
+red:   list $sphere_r_0 $sphere_r_1 $sphere_r_2 $sphere_r_3
+green: list $sphere_g_0 $sphere_g_1 $sphere_g_2 $sphere_g_3
+blue:  list $sphere_b_0 $sphere_b_1 $sphere_b_2 $sphere_b_3
+
+# World & Lights
+
+world: list $floor $sky $red $green $blue
+lights: list $sky

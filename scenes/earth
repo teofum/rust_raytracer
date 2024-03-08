@@ -1,0 +1,26 @@
+# Scene config
+
+@config output_width = 600
+@config aspect_ratio = 3 / 2
+@config focal_length = 70
+@config camera_pos = 13,2,3
+@config camera_target = 0,0,0
+
+# Materials and textures
+
+tex_earth: image resource/earthmap.jpg
+mat_earth: glossy $tex_earth (constant 0.7)
+
+mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
+
+# Objects
+
+earth: sphere 0,0,0 1.5 $mat_earth
+floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
+
+sun: sun 0,1,2 (constant 10,10,10)
+
+# World & Lights
+
+world: list $floor $earth $sun
+lights: list $sun
