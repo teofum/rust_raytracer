@@ -3,11 +3,12 @@ use std::f64::consts::PI;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
+use crate::mat4::Mat4;
 use crate::object::HitRecord;
 use crate::pdf::CosinePDF;
 use crate::ray::Ray;
 use crate::texture::TexturePointer;
-use crate::utils::{onb_from_vec, reflectance};
+use crate::utils::reflectance;
 use crate::vec4::{Color, Vec4};
 
 use super::{Material, ScatterResult};
@@ -35,10 +36,14 @@ impl Glossy {
         if let Some(normal_map) = &self.normal_map {
             // Calculate surface-space normal
             let sampled = normal_map.sample(hit.uv(), &hit.pos());
-            let basis = onb_from_vec(hit.normal());
-            (basis * (sampled * 2.0 - Vec4::vec(1.0, 1.0, 1.0))).to_unit()
+            let basis = Mat4::from_columns(
+                hit.tangent(),
+                hit.bitangent(),
+                hit.normal(),
+                Vec4([0.0, 0.0, 0.0, 1.0]),
+            );
 
-            // (hit.normal() + offset).to_unit()
+            (basis * (sampled - Vec4::vec(0.5, 0.5, 0.5))).to_unit()
         } else {
             hit.normal()
         }

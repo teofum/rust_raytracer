@@ -23,7 +23,7 @@ floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
 light: plane -3,0,0 0,1.5,0 0,0,1.5 (emissive (constant 10,10,10)) backface
 light2: plane 0,0,-3 0,1.5,0 -1.5,0,0 (emissive (constant 10,10,10)) backface
 
-sky: sky (constant 0.02,0.02,0.05)
+sky: sky (constant 0.1,0.1,0.1)
 
 # World & Lights
 

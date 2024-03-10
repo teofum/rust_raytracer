@@ -94,6 +94,8 @@ impl Hit for Plane {
             hit_t,
             (u, v),
             self.normal,
+            self.u.to_unit(),
+            self.v.to_unit(),
             Arc::as_ref(&self.material),
         ))
     }

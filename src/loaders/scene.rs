@@ -11,7 +11,10 @@ use regex::Regex;
 
 use crate::{
     camera::Camera,
-    material::{Dielectric, Emissive, Glossy, Isotropic, LambertianDiffuse, Material, Metal},
+    material::{
+        normal_debug::NormalDebug, Dielectric, Emissive, Glossy, Isotropic, LambertianDiffuse,
+        Material, Metal,
+    },
     noise::{Noise3D, PerlinNoise3D},
     object::{obj_box, BoundingVolumeHierarchyNode, Plane, Sky, Sphere, Sun, Transform, Volume},
     texture::{
@@ -263,6 +266,7 @@ impl<'a> SceneLoader<'a> {
                 "glossy" => self.create_glossy(&mut params),
                 "emissive" => self.create_emissive(&mut params),
                 "isotropic" => self.create_isotropic(&mut params),
+                "normal_debug" => self.create_normal_debug(&mut params),
                 // Objects
                 "sphere" => self.create_sphere(&mut params),
                 "plane" => self.create_plane(&mut params),
@@ -656,6 +660,17 @@ impl<'a> SceneLoader<'a> {
                 "Isotropic material missing parameters",
             )))
         }
+    }
+
+    fn create_normal_debug(&mut self, params: &mut dyn Iterator<Item = String>) -> ParseResult {
+        let mut material = NormalDebug::new();
+
+        if let Some(normal_expr) = params.next() {
+            let normal_map = self.get_color_texture(&normal_expr)?;
+            material.normal_map = Some(normal_map);
+        }
+
+        Ok(Entity::Material(Arc::new(material)))
     }
 
     // =========================================================================

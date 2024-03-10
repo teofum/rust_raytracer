@@ -32,6 +32,8 @@ pub use volume::Volume;
 pub struct HitRecord<'a> {
     hit_pos: Point4,
     normal: Vec4,
+    tangent: Vec4,
+    bitangent: Vec4,
     t: f64,
     uv: (f64, f64),
     front_face: bool,
@@ -46,6 +48,8 @@ impl<'a> HitRecord<'a> {
         t: f64,
         uv: (f64, f64),
         outward_normal: Vec4,
+        tangent: Vec4,
+        bitangent: Vec4,
         material: &'a dyn Material,
     ) -> Self {
         let front_face = ray.dir().dot(&outward_normal) < 0.0;
@@ -58,6 +62,8 @@ impl<'a> HitRecord<'a> {
         HitRecord {
             hit_pos,
             normal,
+            tangent,
+            bitangent,
             t,
             uv,
             front_face,
@@ -71,6 +77,14 @@ impl<'a> HitRecord<'a> {
 
     pub fn normal(&self) -> Vec4 {
         self.normal
+    }
+
+    pub fn tangent(&self) -> Vec4 {
+        self.tangent
+    }
+
+    pub fn bitangent(&self) -> Vec4 {
+        self.bitangent
     }
 
     pub fn t(&self) -> f64 {

@@ -135,6 +135,8 @@ impl TriangleMesh {
                 t,
                 (tex_coords.x(), tex_coords.y()),
                 normal,
+                normal,
+                normal,
                 Arc::as_ref(&self.material),
             ))
         }

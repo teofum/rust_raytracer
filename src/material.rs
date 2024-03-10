@@ -13,6 +13,7 @@ pub mod glossy;
 pub mod isotropic;
 pub mod lambertian;
 pub mod metal;
+pub mod normal_debug;
 
 pub use dielectric::Dielectric;
 pub use emissive::Emissive;
