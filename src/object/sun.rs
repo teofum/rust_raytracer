@@ -65,13 +65,8 @@ impl Hit for Sun {
         [min, max]
     }
 
-    fn pdf_value(&self, _: Point4, dir: Vec4, _: &mut Pcg64Mcg) -> f64 {
-        let unit_dir = dir.to_unit();
-        if (self.direction.dot(&unit_dir) - 1.0).abs() > THETA_MAX {
-            0.0
-        } else {
-            1.0
-        }
+    fn pdf_value(&self, _: Point4, _: Vec4, _: &mut Pcg64Mcg) -> f64 {
+        1.0
     }
 
     fn random(&self, _: Point4, _: &mut Pcg64Mcg) -> Vec4 {
