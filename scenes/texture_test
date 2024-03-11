@@ -18,7 +18,7 @@ mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
 
 # Objects
 
-sphere: sphere 0,0,0 1.5 $mat_bricks
+bricks: transform (box 0,0.01,0 3,3,3 $mat_bricks) -ry=45
 floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
 light: plane -3,0,0 0,1.5,0 0,0,1.5 (emissive (constant 10,10,10)) backface
 light2: plane 0,0,-3 0,1.5,0 -1.5,0,0 (emissive (constant 10,10,10)) backface
@@ -27,5 +27,5 @@ sky: sky (constant 0.1,0.1,0.1)
 
 # World & Lights
 
-world: list $floor $sphere $light $light2 $sky
+world: list $floor $bricks $light $light2 $sky
 lights: list $light $light2
