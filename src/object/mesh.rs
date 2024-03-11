@@ -116,6 +116,8 @@ impl TriangleMesh {
                 n0 * w + n1 * u + n2 * v
             };
 
+            let mut tangent = Vec4::vec(1.0, 0.0, 0.0);
+            let mut bitangent = Vec4::vec(1.0, 0.0, 0.0);
             let tex_coords = match triangle.uv_indices {
                 Some(uv_i) => {
                     let [uv0, uv1, uv2] = [
@@ -123,6 +125,24 @@ impl TriangleMesh {
                         self.vertex_uvs[uv_i[1]],
                         self.vertex_uvs[uv_i[2]],
                     ];
+
+                    // Calculate tangent/bitangent for local coordinate frame
+                    // Based on http://www.thetenthplanet.de/archives/1180
+                    let duv1 = uv1 - uv0;
+                    let duv2 = uv2 - uv0;
+
+                    let edge1perp = Vec4::cross(&normal, &edge1);
+                    let edge2perp = Vec4::cross(&edge2, &normal);
+
+                    tangent = edge2perp * duv1[0] + edge1perp * duv2[0];
+                    bitangent = edge2perp * duv1[1] + edge1perp * duv2[1];
+                    let inv_max = 1.0
+                        / f64::sqrt(f64::max(
+                            tangent.length_squared(),
+                            bitangent.length_squared(),
+                        ));
+                    tangent *= -inv_max;
+                    bitangent *= inv_max;
 
                     uv0 * w + uv1 * u + uv2 * v
                 }
@@ -133,10 +153,10 @@ impl TriangleMesh {
                 ray,
                 hit_pos,
                 t,
-                (tex_coords.x(), tex_coords.y()),
+                (tex_coords[0], tex_coords[1]),
                 normal,
-                normal,
-                normal,
+                tangent,
+                bitangent,
                 Arc::as_ref(&self.material),
             ))
         }

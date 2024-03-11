@@ -66,10 +66,10 @@ impl Sphere {
 
         // Get UV coordinates and TB vectors
         let (uv, tangent, bitangent) = if !skip_uvs {
-            let theta = f64::acos(normal.y());
-            let phi = f64::atan2(-normal.z(), normal.x()) + PI;
+            let theta = f64::acos(normal[1]);
+            let phi = f64::atan2(-normal[2], normal[0]) + PI;
 
-            let tangent = Vec4::vec(-normal.z(), 0.0, -normal.x());
+            let tangent = Vec4::vec(-normal[2], 0.0, -normal[0]);
             let bitangent = normal.cross(&tangent);
 
             ((phi / (2.0 * PI), theta / PI), tangent, bitangent)

@@ -18,7 +18,7 @@ mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
 
 # Objects
 
-bricks: transform (box 0,0.01,0 3,3,3 $mat_bricks) -ry=45
+bricks: transform (mesh resource/monkey.obj $mat_bricks) ry=135 s=1.5
 floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
 light: plane -3,0,0 0,1.5,0 0,0,1.5 (emissive (constant 10,10,10)) backface
 light2: plane 0,0,-3 0,1.5,0 -1.5,0,0 (emissive (constant 10,10,10)) backface
