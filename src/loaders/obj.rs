@@ -49,28 +49,30 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
             }
             Some("f") => {
                 let params = params.map(|p| {
-                    let parts: Vec<_> = p
-                        .split('/')
-                        .map(|n| match n {
-                            "" => None,
-                            _ => Some(n.parse::<i32>().unwrap()),
-                        })
-                        .collect();
-                    assert!(parts.len() >= 3, "Vertices without normals are unsupported");
+                    let parts = p.split('/').map(|n| match n {
+                        "" => None,
+                        _ => Some(n.parse::<i32>().unwrap()),
+                    });
                     parts
                 });
 
                 let mut i_vert: [usize; 3] = [0; 3];
                 let mut i_norm: [usize; 3] = [0; 3];
-                let i_uv: Option<[usize; 3]> = None;
+                let mut i_uv: [usize; 3] = [0; 3];
 
-                for (i, param) in params.enumerate() {
-                    i_vert[i] = match param.first().unwrap().unwrap() {
+                for (i, mut param) in params.enumerate() {
+                    i_vert[i] = match param.next().unwrap().unwrap() {
                         idx if idx > 0 => idx - 1,
                         idx if idx < 0 => vertex_positions.len() as i32 + idx,
                         _ => 0,
                     } as usize;
-                    i_norm[i] = match param.get(2).unwrap().unwrap() {
+                    i_uv[i] = match param.next().unwrap() {
+                        Some(idx) if idx > 0 => idx - 1,
+                        Some(idx) if idx < 0 => vertex_uvs.len() as i32 + idx,
+                        Some(_) => 0,
+                        None => 0,
+                    } as usize;
+                    i_norm[i] = match param.next().unwrap().unwrap() {
                         idx if idx > 0 => idx - 1,
                         idx if idx < 0 => vertex_normals.len() as i32 + idx,
                         _ => 0,
@@ -80,7 +82,7 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
                 triangles.push(Triangle {
                     vert_indices: i_vert,
                     normal_indices: i_norm,
-                    uv_indices: i_uv,
+                    uv_indices: Some(i_uv),
                 })
             }
             Some(_) => continue,

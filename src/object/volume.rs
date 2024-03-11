@@ -60,6 +60,8 @@ impl Hit for Volume {
                     t,
                     (0.0, 0.0),               // Arbitrary, unused
                     Vec4::vec(1.0, 0.0, 0.0), // Arbitrary, unused
+                    Vec4::vec(1.0, 0.0, 0.0), // Arbitrary, unused
+                    Vec4::vec(1.0, 0.0, 0.0), // Arbitrary, unused
                     self.material.as_ref(),
                 ));
             }

@@ -64,13 +64,21 @@ impl Sphere {
         let hit_pos = ray.at(root);
         let normal = (hit_pos - self.center) / self.radius;
 
-        // Get UV coordinates
-        let uv = if !skip_uvs {
-            let theta = f64::acos(normal.y());
-            let phi = f64::atan2(-normal.z(), normal.x()) + PI;
-            (phi / (2.0 * PI), theta / PI)
+        // Get UV coordinates and TB vectors
+        let (uv, tangent, bitangent) = if !skip_uvs {
+            let theta = f64::acos(normal[1]);
+            let phi = f64::atan2(-normal[2], normal[0]) + PI;
+
+            let tangent = Vec4::vec(-normal[2], 0.0, -normal[0]);
+            let bitangent = normal.cross(&tangent);
+
+            ((phi / (2.0 * PI), theta / PI), tangent, bitangent)
         } else {
-            (0.0, 0.0)
+            (
+                (0.0, 0.0),
+                Vec4::vec(1.0, 0.0, 0.0),
+                Vec4::vec(1.0, 0.0, 0.0),
+            )
         };
 
         Some(HitRecord::new(
@@ -79,6 +87,8 @@ impl Sphere {
             root,
             uv,
             normal,
+            tangent,
+            bitangent,
             Arc::as_ref(&self.material),
         ))
     }

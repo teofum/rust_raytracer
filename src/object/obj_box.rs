@@ -25,22 +25,22 @@ pub fn make_box(center: Point4, size: Vec4, material: Arc<dyn Material>) -> Obje
     )));
     sides.add(Arc::new(Plane::new(
         center - dx,
-        (dy, -dz),
+        (dz, dy),
         Arc::clone(&material),
     )));
     sides.add(Arc::new(Plane::new(
         center + dx,
-        (dy, dz),
+        (-dz, dy),
         Arc::clone(&material),
     )));
     sides.add(Arc::new(Plane::new(
         center - dz,
-        (dy, dx),
+        (-dx, dy),
         Arc::clone(&material),
     )));
     sides.add(Arc::new(Plane::new(
         center + dz,
-        (dy, -dx),
+        (dx, dy),
         Arc::clone(&material),
     )));
 

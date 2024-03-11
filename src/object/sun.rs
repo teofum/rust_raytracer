@@ -54,6 +54,8 @@ impl Hit for Sun {
             hit_t,
             (u, v),
             normal,
+            Vec4::vec(1.0, 0.0, 0.0), // Arbitrary, unused
+            Vec4::vec(1.0, 0.0, 0.0), // Arbitrary, unused
             &self.material,
         ))
     }
