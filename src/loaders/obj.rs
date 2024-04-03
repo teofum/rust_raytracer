@@ -58,7 +58,7 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
 
                 let mut i_vert: [usize; 3] = [0; 3];
                 let mut i_norm: [usize; 3] = [0; 3];
-                let mut i_uv: [usize; 3] = [0; 3];
+                let mut i_uv: [Option<usize>; 3] = [None; 3];
 
                 for (i, mut param) in params.enumerate() {
                     i_vert[i] = match param.next().unwrap().unwrap() {
@@ -67,11 +67,11 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
                         _ => 0,
                     } as usize;
                     i_uv[i] = match param.next().unwrap() {
-                        Some(idx) if idx > 0 => idx - 1,
-                        Some(idx) if idx < 0 => vertex_uvs.len() as i32 + idx,
-                        Some(_) => 0,
-                        None => 0,
-                    } as usize;
+                        Some(idx) if idx > 0 => Some(idx as usize - 1),
+                        Some(idx) if idx < 0 => Some((vertex_uvs.len() as i32 + idx) as usize),
+                        Some(_) => Some(0),
+                        None => None,
+                    };
                     i_norm[i] = match param.next().unwrap().unwrap() {
                         idx if idx > 0 => idx - 1,
                         idx if idx < 0 => vertex_normals.len() as i32 + idx,
@@ -79,10 +79,16 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
                     } as usize;
                 }
 
+                let has_uvs = i_uv[0].is_some() && i_uv[1].is_some() && i_uv[2].is_some();
+
                 triangles.push(Triangle {
                     vert_indices: i_vert,
                     normal_indices: i_norm,
-                    uv_indices: Some(i_uv),
+                    uv_indices: if has_uvs {
+                        Some(i_uv.map(|x| x.unwrap()))
+                    } else {
+                        None
+                    },
                 })
             }
             Some(_) => continue,
@@ -90,6 +96,7 @@ pub fn load_mesh_from_file(file: &File, material: Arc<dyn Material>) -> io::Resu
         }
     }
 
+    println!("Loaded {} tris", triangles.len());
     Ok(TriangleMesh::new(
         vertex_positions,
         vertex_uvs,
