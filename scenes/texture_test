@@ -8,17 +8,17 @@
 
 # Materials and textures
 
-tex_albedo: image resource/bricks_albedo.png
-tex_normal: image resource/bricks_normal.png
-tex_rough: channel (image resource/bricks_rough.png) 1
+tex_albedo: image resource/rust_albedo.png
+tex_normal: image resource/rust_normal.png
+tex_rough: channel (image resource/rust_rough.png) 1
 
-mat_bricks: glossy $tex_albedo $tex_rough 1.5 $tex_normal
+mat_rust: glossy $tex_albedo $tex_rough 1.5 $tex_normal
 
 mat_floor: glossy (constant 0.5,0.5,0.5) (constant 0.01)
 
 # Objects
 
-bricks: transform (mesh resource/monkey.obj $mat_bricks) ry=135 s=1.5
+monkey: transform (mesh resource/monkey.obj $mat_rust) ry=135 s=1.5
 floor: plane 0,-1.5,0 -10,0,0 0,0,10 $mat_floor
 light: plane -3,0,0 0,1.5,0 0,0,1.5 (emissive (constant 10,10,10)) backface
 light2: plane 0,0,-3 0,1.5,0 -1.5,0,0 (emissive (constant 10,10,10)) backface
@@ -27,5 +27,5 @@ sky: sky (constant 0.1,0.1,0.1)
 
 # World & Lights
 
-world: list $floor $bricks $light $light2 $sky
+world: list $floor $monkey $light $light2 $sky
 lights: list $light $light2
