@@ -4,6 +4,7 @@ use crate::vec4::{Point4, Vec4};
 use super::Triangle;
 
 const MAX_TRIS_PER_LEAF: usize = 50;
+const MAX_DEPTH: usize = 50;
 
 #[derive(Debug)]
 pub enum OctreeNodeData {
@@ -24,16 +25,22 @@ impl OctreeNode {
         filter: Option<&Vec<usize>>,
         [b_min, b_max]: AxisAlignedBoundingBox,
     ) -> Self {
-        let triangle_idx_pairs: Vec<_> = triangles
-            .iter()
-            .enumerate()
-            .filter(|(i, _)| match filter {
-                None => true,
-                Some(filter) => filter.contains(i),
-            })
-            .collect();
+        Self::new_impl(vertices, triangles, filter, [b_min, b_max], 0)
+    }
 
-        if triangle_idx_pairs.len() <= MAX_TRIS_PER_LEAF {
+    fn new_impl(
+        vertices: &Vec<Point4>,
+        triangles: &Vec<Triangle>,
+        filter: Option<&Vec<usize>>,
+        [b_min, b_max]: AxisAlignedBoundingBox,
+        depth: usize,
+    ) -> Self {
+        let triangle_idx_pairs: Vec<_> = match filter {
+            None => triangles.iter().enumerate().collect(),
+            Some(filter) => filter.iter().map(|i| (*i, &triangles[*i])).collect(),
+        };
+
+        if triangle_idx_pairs.len() <= MAX_TRIS_PER_LEAF || depth >= MAX_DEPTH {
             let indices: Vec<_> = triangle_idx_pairs.into_iter().map(|(i, _)| i).collect();
             OctreeNode {
                 data: OctreeNodeData::Leaf(indices),
@@ -119,13 +126,14 @@ impl OctreeNode {
             let mid_z = midpoint.z();
 
             let data = OctreeNodeData::Branch([
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[0]),
                     [b_min, midpoint],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[1]),
@@ -133,8 +141,9 @@ impl OctreeNode {
                         Vec4::point(min_x, min_y, mid_z),
                         Vec4::point(mid_x, mid_y, max_z),
                     ],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[2]),
@@ -142,8 +151,9 @@ impl OctreeNode {
                         Vec4::point(min_x, mid_y, min_z),
                         Vec4::point(mid_x, max_y, mid_z),
                     ],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[3]),
@@ -151,8 +161,9 @@ impl OctreeNode {
                         Vec4::point(min_x, mid_y, mid_z),
                         Vec4::point(mid_x, max_y, max_z),
                     ],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[4]),
@@ -160,8 +171,9 @@ impl OctreeNode {
                         Vec4::point(mid_x, min_y, min_z),
                         Vec4::point(max_x, mid_y, mid_z),
                     ],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[5]),
@@ -169,8 +181,9 @@ impl OctreeNode {
                         Vec4::point(mid_x, min_y, mid_z),
                         Vec4::point(max_x, mid_y, max_z),
                     ],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[6]),
@@ -178,12 +191,14 @@ impl OctreeNode {
                         Vec4::point(mid_x, mid_y, min_z),
                         Vec4::point(max_x, max_y, mid_z),
                     ],
+                    depth + 1,
                 )),
-                Box::new(Self::new(
+                Box::new(Self::new_impl(
                     vertices,
                     triangles,
                     Some(&index_lists[7]),
                     [midpoint, b_max],
+                    depth + 1,
                 )),
             ]);
 
