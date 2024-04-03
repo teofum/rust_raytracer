@@ -133,6 +133,18 @@ impl Camera {
         Buffer::new(self.image_width, self.image_height)
     }
 
+    pub fn samples_per_pixel(&self) -> usize {
+        self.samples_per_pixel
+    }
+
+    pub fn thread_count(&self) -> usize {
+        self.thread_count
+    }
+
+    pub fn image_size(&self) -> (usize, usize) {
+        (self.image_width, self.image_height)
+    }
+
     // Property setters
 
     pub fn set_focal_length(&mut self, f: f64) {

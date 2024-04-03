@@ -56,6 +56,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let elapsed = time.elapsed();
     println!("Ready: {:.2?}", elapsed);
 
+    let (w, h) = camera.image_size();
+    let spp = camera.samples_per_pixel();
+    let threads = camera.thread_count();
+    let spt = spp / threads;
+    println!(
+        "Rendering: {}x{} @{}spp on {} threads ({} samples/thread)",
+        w, h, spp, threads, spt
+    );
+
     // Output
     let mut buf = camera.create_buffer();
     camera.render(world, lights, &mut buf);
