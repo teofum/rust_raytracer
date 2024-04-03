@@ -27,7 +27,7 @@ right_wall: plane 0,277.5,277.5 0,277.5,0 0,0,277.5 $mat_red
 
 light: plane 277.5,554.9,277.5 -130,0,0 0,0,-105 $mat_light backface
 
-dragon: transform (mesh resource/dragon_high.obj $mat_gloss) s=60 ry=225 t=267.5,-10,277.5
+dragon: transform (mesh resource/dragon_high.obj $mat_gloss) s=60 ry=225 t=267.5,0.5,277.5
 
 # World & Lights
 
