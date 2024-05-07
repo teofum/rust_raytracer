@@ -1,0 +1,35 @@
+# Scene config
+
+@config output_width = 600
+@config aspect_ratio = 1
+@config camera_pos = 277.5,277.5,-800
+@config camera_target = 277.5,277.5,0
+@config focal_length = 33
+
+# Materials and textures
+
+mat_white: lambertian (constant 0.73,0.73,0.73)
+mat_green: lambertian (constant 0.12,0.45,0.15)
+mat_red: lambertian (constant 0.65,0.05,0.05)
+
+mat_light: emissive (constant 15,15,15)
+mat_glass: glass
+
+mat_gloss: glossy (constant 0.73,0.73,0.73) (constant 0)
+
+# Objects
+
+floor: plane 277.5,0,277.5 277.5,0,0 0,0,-277.5 $mat_white
+ceiling: plane 277.5,555,277.5 277.5,0,0 0,0,277.5 $mat_white
+back_wall: plane 277.5,277.5,555 0,277.5,0 277.5,0,0 $mat_white
+left_wall: plane 555,277.5,277.5 0,277.5,0 0,0,-277.5 $mat_green
+right_wall: plane 0,277.5,277.5 0,277.5,0 0,0,277.5 $mat_red
+
+light: plane 277.5,554.9,277.5 -130,0,0 0,0,-105 $mat_light backface
+
+flircle: transform (mesh resource/flircle.obj $mat_gloss) s=75 ry=45 rx=45 t=267.5,267.5,277.5
+
+# World & Lights
+
+world: list $floor $ceiling $back_wall $left_wall $right_wall $light $flircle
+lights: list $light
