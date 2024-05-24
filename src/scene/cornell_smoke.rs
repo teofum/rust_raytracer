@@ -2,18 +2,18 @@ use std::error::Error;
 use std::sync::Arc;
 
 use crate::camera::Camera;
-use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
+use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
 use crate::material::{Emissive, Isotropic, LambertianDiffuse, Material};
-use crate::object::{make_box, Hit, ObjectList, Plane, Transform, Volume};
+use crate::object::{Hit, make_box, ObjectList, Plane, Transform, Volume};
 use crate::texture::ConstantTexture;
 use crate::utils::deg_to_rad;
 use crate::vec4::Vec4;
 
-use super::{Scene, SceneData};
+use super::{SceneData, SceneInit};
 
 pub struct CornellSmokeScene;
 
-impl Scene for CornellSmokeScene {
+impl SceneInit for CornellSmokeScene {
     fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
@@ -23,6 +23,7 @@ impl Scene for CornellSmokeScene {
             focus_distance: None,
             camera_pos: Some(Vec4::point(0.0, 0.0, 110.0)),
             camera_target: Some(Vec4::point(0.0, 0.0, 0.0)),
+            background: None,
         };
 
         let scene_config = SceneConfig::merge(

@@ -2,17 +2,17 @@ use std::error::Error;
 use std::sync::Arc;
 
 use crate::camera::Camera;
-use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
+use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
 use crate::material::{LambertianDiffuse, Material};
 use crate::object::{Hit, ObjectList, Plane, Sphere, Sun};
 use crate::texture::{ConstantTexture, ImageTexture};
 use crate::vec4::Vec4;
 
-use super::{Scene, SceneData};
+use super::{SceneData, SceneInit};
 
 pub struct EarthScene;
 
-impl Scene for EarthScene {
+impl SceneInit for EarthScene {
     fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
@@ -22,6 +22,7 @@ impl Scene for EarthScene {
             focus_distance: None,
             camera_pos: Some(Vec4::point(13.0, 2.0, 3.0)),
             camera_target: Some(Vec4::point(0.0, 0.0, 0.0)),
+            background: None,
         };
 
         let scene_config = SceneConfig::merge(

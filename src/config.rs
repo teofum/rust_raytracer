@@ -3,6 +3,7 @@ use std::env::Args;
 use regex::Regex;
 
 use crate::{utils::parse_vec, vec4::Vec4};
+use crate::vec4::Color;
 
 #[derive(Debug)]
 pub struct SceneConfig {
@@ -13,6 +14,7 @@ pub struct SceneConfig {
     pub focus_distance: Option<f64>,
     pub camera_pos: Option<Vec4>,
     pub camera_target: Option<Vec4>,
+    pub background: Option<Color>,
 }
 
 pub const DEFAULT_SCENE_CONFIG: SceneConfig = SceneConfig {
@@ -23,6 +25,7 @@ pub const DEFAULT_SCENE_CONFIG: SceneConfig = SceneConfig {
     focus_distance: None,
     camera_pos: Some(Vec4([0.0, 0.0, 1.0, 1.0])),
     camera_target: Some(Vec4([0.0, 0.0, 0.0, 1.0])),
+    background: Some(Vec4([0.0, 0.0, 0.0, 1.0])),
 };
 
 impl SceneConfig {
@@ -35,6 +38,7 @@ impl SceneConfig {
             focus_distance: overrides.focus_distance.or(base.focus_distance),
             camera_pos: overrides.camera_pos.or(base.camera_pos),
             camera_target: overrides.camera_target.or(base.camera_target),
+            background: overrides.background.or(base.background),
         }
     }
 }
@@ -65,6 +69,7 @@ impl Config {
         let mut focus_distance: Option<f64> = None;
         let mut camera_pos: Option<Vec4> = None;
         let mut camera_target: Option<Vec4> = None;
+        let mut background: Option<Vec4> = None;
 
         let mut thread_count = 1;
         let mut samples_per_pixel = 250;
@@ -121,6 +126,10 @@ impl Config {
                                 .parse::<usize>()
                                 .expect("Sample count must be a positive integer");
                         }
+                        "b" | "-background-color" => {
+                            let [r, g, b] = parse_vec(value).unwrap();
+                            background = Some(Vec4::point(r, g, b));
+                        }
                         "-max-depth" => {
                             max_depth = value
                                 .parse::<usize>()
@@ -154,6 +163,7 @@ impl Config {
                 focus_distance,
                 camera_pos,
                 camera_target,
+                background,
             },
             camera: CameraConfig {
                 thread_count,

@@ -3,19 +3,19 @@ use std::fs::File;
 use std::sync::Arc;
 
 use crate::camera::Camera;
-use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
+use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
 use crate::loaders::obj::load_mesh_from_file;
 use crate::material::{Emissive, LambertianDiffuse, Material, Metal};
-use crate::object::transform::Transform;
 use crate::object::{Hit, ObjectList, Plane, Sphere};
+use crate::object::transform::Transform;
 use crate::texture::{CheckerboardTexture, ConstantTexture};
 use crate::vec4::Vec4;
 
-use super::{Scene, SceneData};
+use super::{SceneData, SceneInit};
 
 pub struct LightTestScene;
 
-impl Scene for LightTestScene {
+impl SceneInit for LightTestScene {
     fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
@@ -25,6 +25,7 @@ impl Scene for LightTestScene {
             focus_distance: None,
             camera_pos: Some(Vec4::point(10.0, 1.0, 6.0)),
             camera_target: Some(Vec4::point(0.0, 0.0, 0.0)),
+            background: None,
         };
 
         let scene_config = SceneConfig::merge(

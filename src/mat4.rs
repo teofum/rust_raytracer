@@ -2,6 +2,8 @@ use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
 
+use russimp::Matrix4x4;
+
 use crate::vec4::Vec4;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -38,6 +40,15 @@ impl Mat4 {
             c0[1], c1[1], c2[1], c3[1], //
             c0[2], c1[2], c2[2], c3[2], //
             c0[3], c1[3], c2[3], c3[3],
+        ])
+    }
+
+    pub fn from_assimp(m: &Matrix4x4) -> Self {
+        Mat4([
+            m.a1 as f64, m.a2 as f64, m.a3 as f64, m.a4 as f64,
+            m.b1 as f64, m.b2 as f64, m.b3 as f64, m.b4 as f64,
+            m.c1 as f64, m.c2 as f64, m.c3 as f64, m.c4 as f64,
+            m.d1 as f64, m.d2 as f64, m.d3 as f64, m.d4 as f64,
         ])
     }
 
