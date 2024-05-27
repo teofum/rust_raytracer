@@ -3,23 +3,24 @@ use std::f64::consts::PI;
 use std::fs::File;
 use std::sync::Arc;
 
-use crate::camera::Camera;
-use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
-use crate::loaders::obj::load_mesh_from_file;
-use crate::material::{LambertianDiffuse, Material, Metal};
-use crate::noise::PerlinNoise3D;
-use crate::object::transform::Transform;
-use crate::object::{Hit, ObjectList, Plane, Sky, Sphere};
-use crate::texture::{ConstantTexture, Interpolate, NoiseSolidTexture};
-use crate::vec4::Vec4;
 use rand::SeedableRng;
 use rand_pcg::Pcg64Mcg;
 
-use super::{Scene, SceneData};
+use crate::camera::Camera;
+use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
+use crate::loaders::obj::load_mesh_from_file;
+use crate::material::{LambertianDiffuse, Material, Metal};
+use crate::noise::PerlinNoise3D;
+use crate::object::{Hit, ObjectList, Plane, Sky, Sphere};
+use crate::object::transform::Transform;
+use crate::texture::{ConstantTexture, Interpolate, NoiseSolidTexture};
+use crate::vec4::Vec4;
+
+use super::{SceneData, SceneInit};
 
 pub struct PerlinScene;
 
-impl Scene for PerlinScene {
+impl SceneInit for PerlinScene {
     fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
@@ -29,6 +30,7 @@ impl Scene for PerlinScene {
             focus_distance: None,
             camera_pos: Some(Vec4::point(13.0, 1.0, 4.0)),
             camera_target: Some(Vec4::point(0.0, 0.0, 0.0)),
+            background: None,
         };
 
         let scene_config = SceneConfig::merge(

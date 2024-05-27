@@ -4,3 +4,4 @@ out.png
 flamegraph.svg
 profile.json
 .DS_Store
+models/deccer-cubes/

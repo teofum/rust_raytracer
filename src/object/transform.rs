@@ -31,6 +31,16 @@ impl Transform {
         }
     }
 
+    // Assumes a few things, for instance, no negative scaling or shear
+    pub fn from_matrix(object: Arc<dyn Hit>, mat: &Mat4) -> Option<Self> {
+        let mut transform = Self::new(object);
+        transform.transform = mat.clone();
+        transform.inv_transform = mat.inverse()?;
+        transform.update_bounds();
+
+        Some(transform)
+    }
+
     pub fn translate(&mut self, x: f64, y: f64, z: f64) {
         let translation = Mat4::translation(x, y, z);
         let inv_translation = Mat4::translation(-x, -y, -z);

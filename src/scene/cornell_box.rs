@@ -2,18 +2,18 @@ use std::error::Error;
 use std::sync::Arc;
 
 use crate::camera::Camera;
-use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
+use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
 use crate::material::{Dielectric, Emissive, Glossy, LambertianDiffuse, Material};
-use crate::object::{make_box, Hit, ObjectList, Plane, Sphere, Transform};
+use crate::object::{Hit, make_box, ObjectList, Plane, Sphere, Transform};
 use crate::texture::{CheckerboardTexture, ConstantTexture};
 use crate::utils::deg_to_rad;
 use crate::vec4::Vec4;
 
-use super::{Scene, SceneData};
+use super::{SceneData, SceneInit};
 
 pub struct CornellBoxScene;
 
-impl Scene for CornellBoxScene {
+impl SceneInit for CornellBoxScene {
     fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
@@ -23,6 +23,7 @@ impl Scene for CornellBoxScene {
             focus_distance: None,
             camera_pos: Some(Vec4::point(277.5, 277.5, -800.0)),
             camera_target: Some(Vec4::point(277.5, 277.5, 0.0)),
+            background: None,
         };
 
         let scene_config = SceneConfig::merge(

@@ -5,17 +5,18 @@ use std::time::Instant;
 
 use rand::SeedableRng;
 use rand_pcg::Pcg64Mcg;
+
 use rust_raytracer::config::Config;
+use rust_raytracer::loaders::assimp::AssimpLoader;
 use rust_raytracer::loaders::scene::SceneLoader;
 use rust_raytracer::output::Writer;
-
 use rust_raytracer::scene::CornellBoxScene;
 use rust_raytracer::scene::CornellSmokeScene;
 use rust_raytracer::scene::EarthScene;
 use rust_raytracer::scene::GoldenMonkeyScene;
 use rust_raytracer::scene::LightTestScene;
 use rust_raytracer::scene::PerlinScene;
-use rust_raytracer::scene::Scene;
+use rust_raytracer::scene::SceneInit;
 use rust_raytracer::scene::TonemapTestScene;
 use rust_raytracer::tonemapping;
 
@@ -34,6 +35,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         "cornell" => CornellBoxScene::init(config)?,
         "cornell_smoke" => CornellSmokeScene::init(config)?,
         "tonemap_test" => TonemapTestScene::init(config)?,
+        file_path if file_path.starts_with("model:") => {
+            let loader = AssimpLoader::new(file_path.strip_prefix("model:").unwrap())?;
+            loader.load(config)?
+        }
         file_path => {
             let scene_file = File::open(file_path)?;
             let mut rng = Pcg64Mcg::from_rng(rand::thread_rng())?;

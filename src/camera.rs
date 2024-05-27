@@ -17,7 +17,8 @@ use crate::vec4::{Color, Point4, Vec4};
 
 #[derive(Debug)]
 pub struct Camera {
-    pub background_color: fn(ray: &Ray) -> Color,
+    pub background_fn: fn(ray: &Ray) -> Color,
+    background_color: Option<Color>,
 
     image_width: usize,
     aspect_ratio: f64,
@@ -51,7 +52,8 @@ impl Camera {
         let inv_sqrt_spt = 1.0 / sqrt_spt as f64;
 
         let mut camera = Camera {
-            background_color: |_| Vec4::vec(0.0, 0.0, 0.0),
+            background_fn: |_| Vec4([0.0, 0.0, 0.0, 0.0]),
+            background_color: config.scene.background,
 
             image_width: config.scene.output_width.unwrap(),
             aspect_ratio: config.scene.aspect_ratio.unwrap(),
@@ -326,7 +328,7 @@ impl Camera {
             };
         }
 
-        (self.background_color)(ray)
+        self.background_color.unwrap_or_else(|| (self.background_fn)(ray))
     }
 
     fn pixel_sample_square(&self, sample_x: usize, sample_y: usize, rng: &mut Pcg64Mcg) -> Vec4 {

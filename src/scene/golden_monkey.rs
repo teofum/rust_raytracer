@@ -2,23 +2,24 @@ use std::error::Error;
 use std::fs::File;
 use std::sync::Arc;
 
-use crate::camera::Camera;
-use crate::config::{Config, SceneConfig, DEFAULT_SCENE_CONFIG};
-use crate::loaders::obj::load_mesh_from_file;
-use crate::material::{Dielectric, Glossy, LambertianDiffuse, Material, Metal};
-use crate::object::bvh::{self, BoundingVolumeHierarchyNode};
-use crate::object::transform::Transform;
-use crate::object::{Hit, ObjectList, Plane, Sky, Sphere, Sun};
-use crate::texture::{CheckerboardTexture, ConstantTexture};
-use crate::vec4::Vec4;
 use rand::{Rng, SeedableRng};
 use rand_pcg::Pcg64Mcg;
 
-use super::{Scene, SceneData};
+use crate::camera::Camera;
+use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
+use crate::loaders::obj::load_mesh_from_file;
+use crate::material::{Dielectric, Glossy, LambertianDiffuse, Material, Metal};
+use crate::object::{Hit, ObjectList, Plane, Sky, Sphere, Sun};
+use crate::object::bvh::{self, BoundingVolumeHierarchyNode};
+use crate::object::transform::Transform;
+use crate::texture::{CheckerboardTexture, ConstantTexture};
+use crate::vec4::Vec4;
+
+use super::{SceneData, SceneInit};
 
 pub struct GoldenMonkeyScene;
 
-impl Scene for GoldenMonkeyScene {
+impl SceneInit for GoldenMonkeyScene {
     fn init(config: Config) -> Result<SceneData, Box<dyn Error>> {
         let scene_defaults = SceneConfig {
             output_width: Some(600),
@@ -28,6 +29,7 @@ impl Scene for GoldenMonkeyScene {
             focus_distance: None,
             camera_pos: Some(Vec4::point(5.0, 2.0, 9.0)),
             camera_target: Some(Vec4::point(0.0, 0.5, 0.0)),
+            background: None,
         };
 
         let scene_config = SceneConfig::merge(
