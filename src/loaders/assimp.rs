@@ -3,7 +3,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use rand_distr::num_traits::ToPrimitive;
-use russimp::material::{Material as AssimpMaterial, PropertyTypeInfo};
+use russimp::material::{Material as AssimpMaterial, PropertyTypeInfo, TextureType};
 use russimp::mesh::Mesh as AssimpMesh;
 use russimp::node::Node;
 use russimp::scene::{PostProcess, Scene};
@@ -11,17 +11,18 @@ use russimp::scene::{PostProcess, Scene};
 use crate::camera::Camera;
 use crate::config::{Config, DEFAULT_SCENE_CONFIG, SceneConfig};
 use crate::mat4::Mat4;
-use crate::material::{Emissive, Glossy, LambertianDiffuse};
+use crate::material::{Emissive, Glossy};
 use crate::material::Material;
 use crate::object::{Hit, ObjectList, Sphere, Transform};
 use crate::object::mesh::{Triangle, TriangleMesh};
 use crate::scene::SceneData;
-use crate::texture::ConstantTexture;
+use crate::texture::{Channel, ConstantTexture, ImageTexture, TexturePointer};
 use crate::utils::ParseError;
-use crate::vec4::{Point4, Vec4};
+use crate::vec4::{Color, Point4, Vec4};
 
 pub struct AssimpLoader {
     scene: Scene,
+    base_path: String,
 }
 
 impl AssimpLoader {
@@ -29,7 +30,8 @@ impl AssimpLoader {
         let scene = Scene::from_file(file_path, vec![
             PostProcess::Triangulate
         ])?;
-        Ok(AssimpLoader { scene })
+        let base_path = file_path.rsplit_once("/").unwrap().0.to_owned();
+        Ok(AssimpLoader { scene, base_path })
     }
 
     pub fn load(&self, config: Config) -> Result<SceneData, Box<dyn Error>> {
@@ -58,8 +60,9 @@ impl AssimpLoader {
 
             let mut lights: Vec<Arc<dyn Hit>> = Vec::new();
             let world = self.load_node(root_node, Vec4::point(0.0, 0.0, 0.0), &mut lights);
+
             let lights: Arc<dyn Hit> = Arc::new(ObjectList::from(lights));
-            Ok((camera, Arc::clone(&world), lights))
+            Ok((camera, world, lights))
         } else {
             Err(Box::new(ParseError::new("Assimp load fail")))
         }
@@ -83,7 +86,7 @@ impl AssimpLoader {
         }
 
         let list = ObjectList::from(objects);
-        let transform = Transform::from_matrix(Arc::new(list), &t_mat);
+        let transform = Transform::from_matrix(Arc::new(list), &t_mat).unwrap();
         Arc::new(transform)
     }
 
@@ -140,22 +143,36 @@ impl AssimpLoader {
 
         // Use glossy material for anything else
         // TODO: metals
-        if let Some(albedo) = get_vec3_property(mat, "$clr.base") {
-            let roughness = get_float_property(mat, "$mat.roughnessFactor").unwrap_or(0.0);
-            let ior = 1.5;
+        let ior = 1.5;
+        let roughness = get_float_property(mat, "$mat.roughnessFactor").unwrap_or(0.0);
+        let albedo = get_vec3_property(mat, "$clr.base").unwrap_or(Vec4::vec(0.5, 0.5, 0.5));
 
-            return (
-                Arc::new(Glossy::new(
-                    Arc::new(ConstantTexture::new(albedo)),
-                    Arc::new(ConstantTexture::new(roughness)),
-                    ior,
-                )),
-                false,
-            );
+        let mut albedo: TexturePointer<Color> = Arc::new(ConstantTexture::new(albedo));
+        let mut roughness: TexturePointer<f64> = Arc::new(ConstantTexture::new(roughness));
+
+        for (tex_type, texture) in &mat.textures {
+            let texture = texture.borrow();
+            let mut filename = String::from(&self.base_path);
+            filename.push_str("/");
+            filename.push_str(&texture.filename);
+            filename.push_str(".");
+            filename.push_str(&texture.ach_format_hint);
+
+            match tex_type {
+                TextureType::BaseColor => {
+                    let tex = ImageTexture::from_file(&filename).unwrap();
+                    albedo = Arc::new(tex);
+                }
+                TextureType::Roughness => {
+                    let tex = ImageTexture::from_file(&filename).unwrap();
+                    roughness = Arc::new(Channel::new(Arc::new(tex), 0));
+                }
+                _ => (),
+            }
         }
 
         (
-            Arc::new(LambertianDiffuse::new(Arc::new(ConstantTexture::from_values(0.5, 0.5, 0.5)))),
+            Arc::new(Glossy::new(albedo, roughness, ior)),
             false,
         )
     }
